@@ -16,7 +16,7 @@ class OngkirController extends Controller
             'key' => env('RAJAONGKIR_API_KEY')
         ])->get('https://rajaongkir.komerce.id/api/v1/destination/province');
 
-        return $response->json()['data'];
+        return $response->json()['data']; 
     }
 
     // 2. Ambil Data Kota berdasarkan ID Provinsi
