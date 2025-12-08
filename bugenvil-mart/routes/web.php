@@ -1,122 +1,124 @@
 <?php
 
+use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth;
+
+// --- IMPORT CONTROLLER ---
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\PageController;
+use App\Http\Controllers\CartController;
+use App\Http\Controllers\OrderController;
+use App\Http\Controllers\OngkirController;
 use App\Http\Controllers\ReportController;
-use App\Http\Controllers\AdminProductController; // Kita akan buat ini
-use App\Http\Controllers\AdminVideoController;   // Kita akan buat ini
-use Illuminate\Support\Facades\Route;
-use App\Models\Product;
-use App\Models\Report;
-use App\Models\User;
+use App\Http\Controllers\AdminProductController;
+use App\Http\Controllers\AdminVideoController;
 
-// --- HALAMAN PUBLIK (CUSTOMER) ---
+/*
+|--------------------------------------------------------------------------
+| 1. HALAMAN PUBLIK
+|--------------------------------------------------------------------------
+*/
+
+// Beranda
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
-use App\Http\Controllers\CartController;
+// Halaman Produk (Katalog)
+// PERBAIKAN: Ubah ke 'products.index' agar cocok dengan Navbar & Layout
+Route::get('/produk', [PageController::class, 'products'])->name('products.index');
 
-use App\Http\Controllers\OrderController; // Pastikan baris ini ada di paling atas file
+// Detail Produk
+// PERBAIKAN: Ubah ke 'products.show' agar cocok dengan Card Produk
+Route::get('/produk/{id}/detail', [PageController::class, 'detail'])->name('products.show');
 
-use App\Http\Controllers\OngkirController;
-
-// ... (Di luar group middleware atau di dalam auth, terserah. Aman di dalam auth)
-
-Route::middleware(['auth'])->group(function () {
-    // API LOKAL UNTUK RAJAONGKIR
-    Route::get('/api/provinces', [OngkirController::class, 'getProvinces']);
-    Route::get('/api/cities/{province_id}', [OngkirController::class, 'getCities']);
-    Route::post('/api/cost', [OngkirController::class, 'checkOngkir']);
-    
-    // ... route checkout dll tetap ada ...
-});
-
-// GANTI ROUTE CHECKOUT DENGAN INI:
-Route::middleware(['auth'])->group(function () {
-    Route::get('/checkout', [OrderController::class, 'index'])->name('checkout');     // Halaman Form
-    Route::post('/checkout', [OrderController::class, 'store'])->name('checkout.store'); // Proses Simpan
-});
-
-use App\Http\Controllers\PageController;
-
-// ... route home yang sudah ada ...
-
-
-Route::middleware(['auth'])->group(function () {
-    // API LOKAL RAJAONGKIR
-    Route::get('/api/provinces', [OngkirController::class, 'getProvinces']);
-    Route::get('/api/cities/{province_id}', [OngkirController::class, 'getCities']);
-    Route::post('/api/cost', [OngkirController::class, 'checkOngkir']);
-    
-    // Route checkout lama tetap ada...
-});
-
-// HALAMAN PUBLIK (Navigasi Header)
-Route::get('/produk', [PageController::class, 'products'])->name('products.all');
+// Halaman Statis Lain
 Route::get('/tutorial', [PageController::class, 'tutorials'])->name('tutorials.all');
 Route::get('/kontak', [PageController::class, 'contact'])->name('contact');
-Route::get('/produk/{id}/detail', [PageController::class, 'detail'])->name('product.detail');
 
-// CHECKOUT SYSTEM (Ganti route checkout lama dengan yang ini)
-Route::middleware(['auth'])->group(function () {
-    Route::get('/checkout', [OrderController::class, 'index'])->name('checkout');
-    Route::post('/checkout', [OrderController::class, 'store'])->name('checkout.store'); // Action POST
-});
+// Keranjang Belanja (Cart)
+// PERBAIKAN: Ubah ke 'cart.index' (Penyebab Error Utama Anda)
+Route::get('cart', [CartController::class, 'viewCart'])->name('cart.index');
 
-// --- CART SYSTEM (Bisa diakses Guest/Pengunjung) ---
-Route::get('cart', [CartController::class, 'viewCart'])->name('cart.view');
-Route::get('add-to-cart/{id}', [CartController::class, 'addToCart'])->name('cart.add');
+// Tambah ke Keranjang
+// Gunakan POST jika form, GET jika link biasa. (Disarankan POST untuk aksi ubah data)
+Route::match(['get', 'post'], 'add-to-cart/{id}', [CartController::class, 'addToCart'])->name('cart.add');
 Route::delete('remove-from-cart', [CartController::class, 'remove'])->name('cart.remove');
 
 
-// --- LOGIKA DASHBOARD PINTAR ---
-Route::get('/dashboard', function () {
-    $user = Auth::user();
+/*
+|--------------------------------------------------------------------------
+| 2. HALAMAN LOGIN (User & Admin)
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth', 'verified'])->group(function () {
 
-    if ($user->is_admin) {
-        // --- JIKA ADMIN: Tampilkan Dashboard Admin (Data Penjualan dll) ---
-        
-        // Ambil data statistik untuk admin
-        $totalProducts = \App\Models\Product::count();
-        $totalReports = \App\Models\Report::where('status', 'pending')->count();
-        $recentReports = \App\Models\Report::with('user')->latest()->take(5)->get();
+    // --- A. DASHBOARD ---
+    Route::get('/dashboard', function () {
+        $user = Auth::user();
+        if ($user->is_admin) {
+            $totalProducts = \App\Models\Product::count();
+            $totalReports = \App\Models\Report::where('status', 'pending')->count();
+            $recentReports = \App\Models\Report::with('user')->latest()->take(5)->get();
+            return view('admin.dashboard', compact('totalProducts', 'totalReports', 'recentReports'));
+        } else {
+            return view('dashboard');
+        }
+    })->name('dashboard');
 
-        // Arahkan ke view admin yang sudah kita pindahkan tadi
-        return view('admin.dashboard', compact('totalProducts', 'totalReports', 'recentReports'));
-    } else {
-        // --- JIKA USER BIASA: Tampilkan Dashboard User (Riwayat Pesanan dll) ---
-        return view('dashboard');
-    }
-})->middleware(['auth', 'verified'])->name('dashboard');
-
-// --- FITUR ADMIN & USER LOGIN ---
-Route::middleware('auth')->group(function () {
-    // 1. Profil
+    // --- B. PROFIL ---
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-// Route untuk Update Status Laporan
-    Route::patch('/laporan/{id}', [App\Http\Controllers\ReportController::class, 'updateStatus'])->name('admin.reports.update');
 
+    // --- C. CHECKOUT ---
+    Route::get('/checkout', [OrderController::class, 'index'])->name('checkout');
+    // TETAP: 'checkout.store' (Sesuai permintaan form Checkout RajaOngkir Bapak)
+    Route::post('/checkout', [OrderController::class, 'store'])->name('checkout.store');
 
-    // 2. Laporan Komplain (Customer)
+    // --- D. API ONGKIR (RajaOngkir) ---
+    Route::get('/api/provinces', [OngkirController::class, 'getProvinces']);
+    Route::get('/api/cities/{province_id}', [OngkirController::class, 'getCities']);
+    Route::get('/api/districts', [OngkirController::class, 'getDistricts']);
+    Route::get('/api/subdistricts', [OngkirController::class, 'getSubdistricts']);
+    Route::post('/api/cost', [OngkirController::class, 'checkOngkir']);
+
+    // --- E. LAPORAN ---
     Route::get('/lapor-kerusakan', [ReportController::class, 'create'])->name('reports.create');
     Route::post('/lapor-kerusakan', [ReportController::class, 'store'])->name('reports.store');
-    
-    // 3. Admin: Manajemen Laporan
-    Route::get('/admin/laporan', [ReportController::class, 'indexAdmin'])->name('admin.reports');
 
-    // 4. Admin: Manajemen Produk (CRUD)
-    Route::resource('admin/products', AdminProductController::class);
-    
-// Route Update Status Order (Bertahap)
-    Route::patch('/admin/orders/{id}/status', [OrderController::class, 'updateStatus'])->name('admin.orders.update');
-    
-// Route untuk Admin update video tutorial
-Route::put('/admin/videos/{id}', [App\Http\Controllers\AdminVideoController::class, 'update'])->name('admin.videos.update');
+    /*
+    |--------------------------------------------------------------------------
+    | 3. ADMIN ROUTES
+    |--------------------------------------------------------------------------
+    */
+    // Resource Admin Produk (Gunakan names agar tidak bentrok dengan user)
+    Route::resource('admin/products', AdminProductController::class)->names('admin.products');
 
-    // 5. Admin: Manajemen Video
     Route::get('/admin/videos', [AdminVideoController::class, 'index'])->name('admin.videos.index');
     Route::put('/admin/videos/{id}', [AdminVideoController::class, 'update'])->name('admin.videos.update');
+
+    Route::get('/admin/laporan', [ReportController::class, 'indexAdmin'])->name('admin.reports');
+    Route::patch('/laporan/{id}', [ReportController::class, 'updateStatus'])->name('admin.reports.update');
+
+    Route::patch('/admin/orders/{id}/status', [OrderController::class, 'updateStatus'])->name('admin.orders.update');
+
 });
 
 require __DIR__.'/auth.php';
+
+// Debug Route (Tes RajaOngkir)
+Route::get('/debug-rajaongkir', function () {
+    $apiKey = env('RAJAONGKIR_API_KEY');
+    if (!$apiKey) dd("FATAL ERROR: API Key tidak terbaca.");
+    try {
+        $response = Illuminate\Support\Facades\Http::withoutVerifying()
+            ->withHeaders(['key' => $apiKey, 'Accept' => 'application/json'])
+            ->get('https://rajaongkir.komerce.id/api/v1/destination/province');
+        dd([
+            'STATUS' => $response->status(),
+            'PESAN' => $response->json()['meta']['message'] ?? '-',
+        ]);
+    } catch (\Exception $e) {
+        dd("ERROR: " . $e->getMessage());
+    }
+});

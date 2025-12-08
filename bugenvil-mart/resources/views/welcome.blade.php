@@ -23,6 +23,7 @@
     </div>
 
     <div class="bg-white py-12">
+        <!-- Fitur Unggulan (Tetap Sama) -->
         <div class="container mx-auto px-6">
             <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
                 <div>
@@ -70,7 +71,8 @@
                 <div class="bg-white rounded-3xl shadow-lg hover:shadow-xl transition overflow-hidden group border border-purple-50 flex flex-col h-full">
                     
                     <div class="relative h-64 bg-gray-200 flex-shrink-0 cursor-pointer">
-                        <a href="{{ route('product.detail', $product->id) }}" class="block w-full h-full">
+                        <!-- UPDATE: product.detail -> products.show -->
+                        <a href="{{ route('products.show', $product->id) }}" class="block w-full h-full">
                             @php 
                                 $badges = ['Paling Laris', 'Tersedia', 'Baru', 'Favorit'];
                                 $badge = $badges[array_rand($badges)];
@@ -84,7 +86,7 @@
                     </div>
                     
                     <div class="p-6 flex flex-col flex-grow">
-                        <a href="{{ route('product.detail', $product->id) }}" class="hover:text-fuchsia-600 transition">
+                        <a href="{{ route('products.show', $product->id) }}" class="hover:text-fuchsia-600 transition">
                             <h3 class="font-bold text-lg text-gray-800 mb-1 serif">{{ $product->name }}</h3>
                         </a>
 
@@ -96,11 +98,15 @@
                             <span class="text-xl font-bold text-fuchsia-600">Rp {{ number_format($product->price, 0, ',', '.') }}</span>
                             
                             @if(!Auth::check() || (Auth::check() && !Auth::user()->is_admin))
-                                <a href="{{ route('cart.add', $product->id) }}" class="bg-purple-100 text-purple-600 p-3 rounded-full hover:bg-fuchsia-500 hover:text-white transition shadow-sm">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-                                    </svg>
-                                </a>
+                                <!-- UPDATE: Menggunakan Form POST untuk Add to Cart -->
+                                <form action="{{ route('cart.add', $product->id) }}" method="POST">
+                                    @csrf
+                                    <button type="submit" class="bg-purple-100 text-purple-600 p-3 rounded-full hover:bg-fuchsia-500 hover:text-white transition shadow-sm">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                                        </svg>
+                                    </button>
+                                </form>
                             @endif
                         </div>
                     </div>
@@ -109,11 +115,13 @@
             </div>
 
             <div class="text-center mt-16">
-                 <a href="{{ route('products.all') }}" class="bg-fuchsia-500 hover:bg-fuchsia-600 text-white font-bold py-3 px-10 rounded-full shadow-lg transition">Lihat Semua Produk</a>
+                 <!-- UPDATE: products.all -> products.index -->
+                 <a href="{{ route('products.index') }}" class="bg-fuchsia-500 hover:bg-fuchsia-600 text-white font-bold py-3 px-10 rounded-full shadow-lg transition">Lihat Semua Produk</a>
             </div>
         </div>
     </div>
 
+    <!-- Sisa Halaman Tetap Sama -->
     <div id="tutorials" class="bg-white py-20">
         <div class="container mx-auto px-6">
             <div class="text-center mb-12">
@@ -152,6 +160,7 @@
         </div>
     </div>
 
+    <!-- Bagian Ulasan dan Laporan tetap sama, tidak perlu diubah -->
     <div class="bg-pink-50 py-20">
         <div class="container mx-auto px-6">
             <div class="text-center mb-12">

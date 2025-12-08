@@ -14,7 +14,8 @@ class OrderController extends Controller
     public function index()
     {
         if (!session('cart') || count(session('cart')) == 0) {
-            return redirect()->route('products.all')->with('error', 'Keranjang belanja Anda kosong.');
+            // PERBAIKAN: products.all -> products.index
+            return redirect()->route('products.index')->with('error', 'Keranjang belanja Anda kosong.');
         }
         return view('checkout');
     }
@@ -76,20 +77,17 @@ class OrderController extends Controller
         return redirect()->route('dashboard')->with('success', 'Pesanan Berhasil! Ongkir dihitung otomatis dari Tulungagung.');
     }
 
-    // 3. Update Status Pesanan (Admin) - INI YANG TADI ERROR
+    // 3. Update Status Pesanan (Admin)
     public function updateStatus(Request $request, $id) 
     {
         $order = Order::findOrFail($id);
         
-        // Validasi status yang diperbolehkan
         $request->validate([
             'status' => 'required|in:packing,shipping,completed'
         ]);
 
-        // Update database
         $order->update(['status' => $request->status]);
 
-        // Pesan notifikasi dinamis
         $pesan = '';
         if($request->status == 'packing') {
             $pesan = 'Status diubah: Pesanan sedang DIKEMAS.';

@@ -7,6 +7,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
+use Illuminate\Support\Facades\Storage; // Penting untuk upload file
 use Illuminate\View\View;
 
 class ProfileController extends Controller
@@ -26,15 +27,32 @@ class ProfileController extends Controller
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
-        $request->user()->fill($request->validated());
+        $user = $request->user();
+        
+        // Isi data nama dan email yang sudah divalidasi
+        $user->fill($request->validated());
 
-        if ($request->user()->isDirty('email')) {
-            $request->user()->email_verified_at = null;
+        // Jika email berubah, reset verifikasi
+        if ($user->isDirty('email')) {
+            $user->email_verified_at = null;
         }
 
-        $request->user()->save();
+        // --- LOGIKA UPLOAD FOTO PROFIL ---
+        if ($request->hasFile('avatar')) {
+            // Hapus foto lama jika ada (opsional, agar hemat storage)
+            if ($user->avatar && Storage::disk('public')->exists($user->avatar)) {
+                Storage::disk('public')->delete($user->avatar);
+            }
 
-        return Redirect::route('profile.edit')->with('status', 'profile-updated');
+            // Simpan foto baru ke folder 'avatars' di storage public
+            $path = $request->file('avatar')->store('avatars', 'public');
+            $user->avatar = $path;
+        }
+
+        $user->save();
+
+        // Redirect kembali ke halaman sebelumnya (Dashboard), bukan ke profile.edit
+        return back()->with('status', 'profile-updated');
     }
 
     /**

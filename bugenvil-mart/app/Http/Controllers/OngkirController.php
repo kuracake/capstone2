@@ -4,45 +4,93 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Log; // Wajib import Log
 
 class OngkirController extends Controller
 {
-    // 1. Ambil Data Provinsi
+    private $baseUrl = 'https://rajaongkir.komerce.id/api/v1';
+
+    private function getHeaders() {
+        return [
+            'Accept' => 'application/json',
+            'key' => env('RAJAONGKIR_API_KEY') // Pastikan tidak ada spasi di .env
+        ];
+    }
+
+    // Fungsi Pembantu agar tidak Crash
+    private function safeRequest($method, $url, $params = []) {
+        try {
+            // 1. Kirim Request (Abaikan SSL agar aman di local)
+            $response = Http::withoutVerifying()
+                ->withHeaders($this->getHeaders());
+
+            if ($method == 'GET') {
+                $response = $response->get($url, $params);
+            } else {
+                $response = $response->post($url, $params);
+            }
+
+            // 2. Ambil Data JSON
+            $body = $response->json();
+
+            // 3. LOGGING (Cek storage/logs/laravel.log jika error)
+            if ($response->failed() || !isset($body['data'])) {
+                Log::error("API Error di URL: $url", ['response' => $body]);
+                
+                // Kembalikan pesan error dari API jika ada
+                return response()->json([
+                    'error' => true,
+                    'message' => $body['meta']['message'] ?? 'Gagal mengambil data dari API',
+                    'raw_response' => $body
+                ], 500);
+            }
+
+            // 4. Jika Sukses, kembalikan isinya
+            return response()->json($body['data']);
+
+        } catch (\Exception $e) {
+            Log::error("Koneksi Error: " . $e->getMessage());
+            return response()->json(['error' => true, 'message' => $e->getMessage()], 500);
+        }
+    }
+
     public function getProvinces()
     {
-        $response = Http::withHeaders([
-            'Accept' => 'application/json',
-            'key' => env('RAJAONGKIR_API_KEY')
-        ])->get('https://rajaongkir.komerce.id/api/v1/destination/province');
-
-        return $response->json()['data']; 
+        return $this->safeRequest('GET', $this->baseUrl . '/destination/province');
     }
 
-    // 2. Ambil Data Kota berdasarkan ID Provinsi
-    public function getCities($province_id)
+    public function getCities(Request $request)
     {
-        $response = Http::withHeaders([
-            'key' => env('RAJAONGKIR_API_KEY')
-        ])->get("https://rajaongkir.komerce.id/api/v1/destination/city/$province_id", [
-            'province' => $province_id
+        // Debug ID yang dikirim
+        if (!$request->id) {
+            return response()->json(['error' => 'ID Provinsi tidak ditemukan'], 400);
+        }
+        return $this->safeRequest('GET', $this->baseUrl . '/destination/city', [
+            'province_id' => $request->id
         ]);
-
-         return $response->json()['data'];
     }
 
-    // 3. Cek Ongkir (Dari Tulungagung ke Tujuan)
+    public function getDistricts(Request $request)
+    {
+        return $this->safeRequest('GET', $this->baseUrl . '/destination/district', [
+            'city_id' => $request->id
+        ]);
+    }
+
+    public function getSubdistricts(Request $request)
+    {
+        return $this->safeRequest('GET', $this->baseUrl . '/destination/sub-district', [
+            'district_id' => $request->id
+        ]);
+    }
+
     public function checkOngkir(Request $request)
     {
-        $response = Http::withHeaders([
-            'key' => env('RAJAONGKIR_API_KEY')
-        ])->post('https://api.rajaongkir.com/starter/cost', [
-            'origin'      => env('RAJAONGKIR_ORIGIN'), // 474 (Tulungagung)
-            'destination' => $request->city_id,        // Kota Tujuan Pembeli
-            'weight'      => 1000,                     // Berat 1kg (bisa dinamis nanti)
-            'courier'     => $request->courier         // jne, pos, atau tiki
+        return $this->safeRequest('POST', $this->baseUrl . '/calculate/district/domestic-cost', [
+            'origin_district_id'      => env('RAJAONGKIR_ORIGIN'),
+            'destination_district_id' => $request->district_id,    
+            'weight'                  => 1000,
+            'courier'                 => $request->courier
         ]);
-
-        return response()->json($response['rajaongkir']['results']);
     }
 }

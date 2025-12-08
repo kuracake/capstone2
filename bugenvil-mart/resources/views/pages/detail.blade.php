@@ -5,7 +5,8 @@
             <div class="text-sm text-gray-500 mb-6 flex items-center gap-2">
                 <a href="{{ route('home') }}" class="hover:text-fuchsia-600">Beranda</a> 
                 <span>/</span> 
-                <a href="{{ route('products.all') }}" class="hover:text-fuchsia-600">Produk</a>
+                <!-- PERBAIKAN: products.all -> products.index -->
+                <a href="{{ route('products.index') }}" class="hover:text-fuchsia-600">Produk</a>
                 <span>/</span>
                 <span class="text-gray-800 font-bold truncate max-w-xs">{{ $product->name }}</span>
             </div>
@@ -87,19 +88,23 @@
 
                         <div class="flex gap-4 mt-auto">
                             @if(!Auth::check() || (Auth::check() && !Auth::user()->is_admin))
-                                <a href="{{ route('cart.add', $product->id) }}" 
-                                   class="flex-1 border-2 border-fuchsia-600 bg-fuchsia-50 text-fuchsia-600 font-bold py-3 px-6 rounded-lg hover:bg-fuchsia-100 transition flex items-center justify-center gap-2">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-                                    </svg>
-                                    Masukkan Keranjang
-                                </a>
+                                <!-- FIX: Gunakan Form POST untuk Cart -->
+                                <form action="{{ route('cart.add', $product->id) }}" method="POST" class="flex-1">
+                                    @csrf
+                                    <button type="submit" class="w-full border-2 border-fuchsia-600 bg-fuchsia-50 text-fuchsia-600 font-bold py-3 px-6 rounded-lg hover:bg-fuchsia-100 transition flex items-center justify-center gap-2">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                                        </svg>
+                                        Masukkan Keranjang
+                                    </button>
+                                </form>
                                 
-                                <a href="{{ route('cart.add', $product->id) }}" 
-                                   onclick="setTimeout(function(){ window.location.href='/checkout'; }, 500);"
-                                   class="flex-1 bg-fuchsia-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-fuchsia-700 transition flex items-center justify-center shadow-lg transform active:scale-95">
-                                    Beli Sekarang
-                                </a>
+                                <form action="{{ route('cart.add', $product->id) }}" method="POST" class="flex-1">
+                                    @csrf
+                                    <button type="submit" onclick="setTimeout(function(){ window.location.href='/checkout'; }, 500);" class="w-full bg-fuchsia-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-fuchsia-700 transition flex items-center justify-center shadow-lg transform active:scale-95">
+                                        Beli Sekarang
+                                    </button>
+                                </form>
                             @else
                                 <div class="w-full bg-gray-200 text-gray-500 py-3 text-center rounded-lg cursor-not-allowed font-bold">
                                     Login sebagai User untuk membeli
@@ -133,7 +138,8 @@
                 <h3 class="text-2xl font-bold text-gray-800 mb-6">Produk Lainnya</h3>
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
                     @foreach($relatedProducts as $related)
-                    <a href="{{ route('product.detail', $related->id) }}" class="bg-white rounded-2xl shadow hover:shadow-xl transition overflow-hidden group border border-transparent hover:border-fuchsia-300">
+                    <!-- PERBAIKAN: product.detail -> products.show -->
+                    <a href="{{ route('products.show', $related->id) }}" class="bg-white rounded-2xl shadow hover:shadow-xl transition overflow-hidden group border border-transparent hover:border-fuchsia-300">
                         <div class="relative h-48 bg-gray-200">
                             <img src="{{ $related->image_path ? asset('storage/' . $related->image_path) : 'https://source.unsplash.com/random/400x400?flower&sig='.$related->id }}" 
                                  class="w-full h-full object-cover">

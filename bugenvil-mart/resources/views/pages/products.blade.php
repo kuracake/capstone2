@@ -8,7 +8,8 @@
                     Temukan berbagai jenis bunga Bugenvil berkualitas tinggi yang siap mempercantik taman rumah Anda.
                 </p>
                 
-                <form action="{{ route('products.all') }}" method="GET" class="max-w-md mx-auto flex gap-2 mb-10">
+                <!-- PERBAIKAN: route('products.index') -->
+                <form action="{{ route('products.index') }}" method="GET" class="max-w-md mx-auto flex gap-2 mb-10">
                     @if(request('filter'))
                         <input type="hidden" name="filter" value="{{ request('filter') }}">
                     @endif
@@ -17,19 +18,19 @@
                 </form>
 
                 <div class="flex flex-wrap justify-center gap-4">
-                    <a href="{{ route('products.all') }}" 
+                    <a href="{{ route('products.index') }}" 
                        class="{{ !request('filter') ? 'bg-fuchsia-500 text-white shadow-lg scale-105' : 'bg-white text-gray-600 hover:text-fuchsia-600 hover:bg-fuchsia-50' }} px-6 py-2 rounded-full text-sm font-bold shadow-sm transition border border-transparent hover:border-fuchsia-200">
                        Semua
                     </a>
-                    <a href="{{ route('products.all', ['filter' => 'terpopuler']) }}" 
+                    <a href="{{ route('products.index', ['filter' => 'terpopuler']) }}" 
                        class="{{ request('filter') == 'terpopuler' ? 'bg-fuchsia-500 text-white shadow-lg scale-105' : 'bg-white text-gray-600 hover:text-fuchsia-600 hover:bg-fuchsia-50' }} px-6 py-2 rounded-full text-sm font-bold shadow-sm transition border border-transparent hover:border-fuchsia-200">
                        Terpopuler
                     </a>
-                    <a href="{{ route('products.all', ['filter' => 'terlaris']) }}" 
+                    <a href="{{ route('products.index', ['filter' => 'terlaris']) }}" 
                        class="{{ request('filter') == 'terlaris' ? 'bg-fuchsia-500 text-white shadow-lg scale-105' : 'bg-white text-gray-600 hover:text-fuchsia-600 hover:bg-fuchsia-50' }} px-6 py-2 rounded-full text-sm font-bold shadow-sm transition border border-transparent hover:border-fuchsia-200">
                        Terlaris
                     </a>
-                    <a href="{{ route('products.all', ['filter' => 'terbaru']) }}" 
+                    <a href="{{ route('products.index', ['filter' => 'terbaru']) }}" 
                        class="{{ request('filter') == 'terbaru' ? 'bg-fuchsia-500 text-white shadow-lg scale-105' : 'bg-white text-gray-600 hover:text-fuchsia-600 hover:bg-fuchsia-50' }} px-6 py-2 rounded-full text-sm font-bold shadow-sm transition border border-transparent hover:border-fuchsia-200">
                        Terbaru
                     </a>
@@ -38,11 +39,10 @@
 
             <div class="grid grid-cols-1 md:grid-cols-4 gap-10">
                 @foreach($products as $product)
-                <a href="{{ route('product.detail', $product->id) }}" class="bg-white rounded-3xl shadow-lg hover:shadow-xl transition overflow-hidden group border border-purple-50 block cursor-pointer">
-    </a>
+                <!-- PERBAIKAN: route('products.show') -->
+                <a href="{{ route('products.show', $product->id) }}" class="bg-white rounded-3xl shadow-lg hover:shadow-xl transition overflow-hidden group border border-purple-50 block cursor-pointer">
                     <div class="relative h-64 bg-gray-200 flex-shrink-0">
                         @php 
-                            // Logika Badge Random (Hiasan)
                             $badges = ['Best Seller', 'In Stock', 'New', 'Hot'];
                             $badge = $badges[array_rand($badges)];
                             $color = $badge == 'Best Seller' ? 'bg-fuchsia-500' : ($badge == 'In Stock' ? 'bg-green-500' : 'bg-orange-500');
@@ -61,15 +61,21 @@
                             <span class="text-xl font-bold text-fuchsia-600">Rp {{ number_format($product->price, 0, ',', '.') }}</span>
                             
                             @if(!Auth::check() || (Auth::check() && !Auth::user()->is_admin))
-                                <a href="{{ route('cart.add', $product->id) }}" class="bg-purple-100 text-purple-600 p-3 rounded-full hover:bg-fuchsia-500 hover:text-white transition shadow-sm group-hover:scale-110">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-                                    </svg>
-                                </a>
+                                <!-- Gunakan event preventDefault agar tidak bentrok dengan link card -->
+                                <object>
+                                    <form action="{{ route('cart.add', $product->id) }}" method="POST">
+                                        @csrf
+                                        <button type="submit" class="bg-purple-100 text-purple-600 p-3 rounded-full hover:bg-fuchsia-500 hover:text-white transition shadow-sm group-hover:scale-110">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                                            </svg>
+                                        </button>
+                                    </form>
+                                </object>
                             @endif
                         </div>
                     </div>
-                </div>
+                </a>
                 @endforeach
             </div>
             
@@ -80,7 +86,7 @@
                     </div>
                     <h3 class="text-xl font-bold text-gray-700 mb-2">Produk tidak ditemukan</h3>
                     <p class="text-gray-500">Coba gunakan kata kunci lain atau hapus filter.</p>
-                    <a href="{{ route('products.all') }}" class="inline-block mt-4 text-fuchsia-600 font-bold hover:underline">Reset Pencarian</a>
+                    <a href="{{ route('products.index') }}" class="inline-block mt-4 text-fuchsia-600 font-bold hover:underline">Reset Pencarian</a>
                 </div>
             @endif
         </div>

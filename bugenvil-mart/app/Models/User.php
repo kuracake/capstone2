@@ -7,22 +7,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-
-
 class User extends Authenticatable
 {
-
-// Tambahkan ini di dalam class User
-public function orders() {
-    return $this->hasMany(Order::class)->latest();
-}
-
-public function reports()
-{
-    return $this->hasMany(Report::class);
-}
-
-    /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
 
     /**
@@ -34,6 +20,7 @@ public function reports()
         'name',
         'email',
         'password',
+        'avatar', // Tambahkan ini agar foto bisa disimpan
     ];
 
     /**
@@ -57,5 +44,15 @@ public function reports()
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    // Relasi yang sudah ada
+    public function orders() {
+        return $this->hasMany(Order::class)->latest();
+    }
+
+    public function reports()
+    {
+        return $this->hasMany(Report::class);
     }
 }

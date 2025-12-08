@@ -23,17 +23,19 @@
             </a>
 
             <div class="hidden md:flex space-x-8 text-gray-600 font-medium">
-    <a href="{{ route('home') }}" class="hover:text-fuchsia-600 transition {{ request()->routeIs('home') ? 'text-fuchsia-600 font-bold' : '' }}">Beranda</a>
-    <a href="{{ route('products.all') }}" class="hover:text-fuchsia-600 transition {{ request()->routeIs('products.all') ? 'text-fuchsia-600 font-bold' : '' }}">Produk</a>
-    <a href="{{ route('tutorials.all') }}" class="hover:text-fuchsia-600 transition {{ request()->routeIs('tutorials.all') ? 'text-fuchsia-600 font-bold' : '' }}">Tutorial</a>
-    <a href="{{ route('contact') }}" class="hover:text-fuchsia-600 transition {{ request()->routeIs('contact') ? 'text-fuchsia-600 font-bold' : '' }}">Kontak</a>
-</div>
+                <a href="{{ route('home') }}" class="hover:text-fuchsia-600 transition {{ request()->routeIs('home') ? 'text-fuchsia-600 font-bold' : '' }}">Beranda</a>
+                <!-- UPDATE: products.all -> products.index -->
+                <a href="{{ route('products.index') }}" class="hover:text-fuchsia-600 transition {{ request()->routeIs('products.index') ? 'text-fuchsia-600 font-bold' : '' }}">Produk</a>
+                <a href="{{ route('tutorials.all') }}" class="hover:text-fuchsia-600 transition {{ request()->routeIs('tutorials.all') ? 'text-fuchsia-600 font-bold' : '' }}">Tutorial</a>
+                <a href="{{ route('contact') }}" class="hover:text-fuchsia-600 transition {{ request()->routeIs('contact') ? 'text-fuchsia-600 font-bold' : '' }}">Kontak</a>
+            </div>
 
             <div class="flex items-center gap-5">
                 <button class="text-gray-600 hover:text-fuchsia-600"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg></button>
                 
-                <a href="{{ route('cart.view') }}" class="relative text-gray-600 hover:text-fuchsia-600">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                <!-- UPDATE: cart.view -> cart.index -->
+                <a href="{{ route('cart.index') }}" class="relative text-gray-600 hover:text-fuchsia-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 00-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
                     @if(session('cart'))
                         <span class="absolute -top-2 -right-2 bg-fuchsia-600 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">{{ count(session('cart')) }}</span>
                     @endif
