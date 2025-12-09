@@ -16,7 +16,7 @@
                     
                     <div class="space-y-4">
                         <div class="border border-gray-200 rounded-lg overflow-hidden relative group">
-                            <img src="{{ $product->image_path ? asset('storage/' . $product->image_path) : 'https://source.unsplash.com/random/600x600?flower&sig='.$product->id }}" 
+                            <img src="{{ $product->image ? asset('storage/' . $product->image) : 'https://source.unsplash.com/random/600x600?flower&sig='.$product->id }}" 
                                  class="w-full h-96 object-cover transform group-hover:scale-110 transition duration-500 cursor-zoom-in" 
                                  alt="{{ $product->name }}">
                             

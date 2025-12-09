@@ -9,11 +9,14 @@ class Product extends Model
 {
     use HasFactory;
 
+    // KITA IZINKAN SEMUA KOLOM INI DISIMPAN
     protected $fillable = [
         'name',
-        'description',
         'price',
-        'stock',
+        'description',
         'image',
+        'stock',          // Wajib
+        'weight',         // Wajib untuk ongkir
+        'discount_price', // Opsional
     ];
 }

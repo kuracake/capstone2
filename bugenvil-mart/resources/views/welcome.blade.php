@@ -1,29 +1,32 @@
 <x-app-layout>
-    
-    <div class="relative h-[600px] w-full bg-cover bg-center flex items-center" style="background-image: url('https://images.unsplash.com/photo-1572969032062-8e7c1f10777e?q=80&w=1920&auto=format&fit=crop');">
-        <div class="absolute inset-0 bg-fuchsia-900/60 mix-blend-multiply"></div>
-        <div class="absolute inset-0 bg-gradient-to-r from-fuchsia-900/80 to-transparent"></div>
 
-        <div class="container mx-auto px-6 relative z-10 text-white">
-            <h1 class="text-5xl md:text-7xl font-bold serif mb-6 leading-tight">
+    <div class="relative w-full h-[800px] flex items-center justify-center overflow-hidden">
+
+        <div class="absolute inset-0 z-0">
+            <img src="{{ asset('img/background-utama.jpg') }}"
+                 alt="Background Bugenvil"
+                 class="w-full h-full object-cover">
+        </div>
+
+        <div class="absolute inset-0 bg-black/50 z-10"></div>
+
+        <div class="relative z-20 container mx-auto px-6 text-center text-white">
+            <h1 class="text-5xl md:text-7xl font-bold serif mb-6 drop-shadow-lg">
                 Bawa Keindahan Alam <br> Ke Taman Anda
             </h1>
-            <p class="text-lg md:text-xl text-fuchsia-100 mb-8 max-w-xl font-light">
+
+            <p class="text-lg md:text-xl text-gray-100 mb-10 max-w-2xl mx-auto font-light leading-relaxed drop-shadow-md">
                 Temukan koleksi premium bunga Bugenvil kami. Warna cerah, tanaman sehat, dikirim langsung ke depan pintu rumah Anda.
             </p>
-            <div class="flex gap-4">
-                <a href="#products" class="bg-fuchsia-500 hover:bg-fuchsia-600 text-white font-bold py-3 px-8 rounded-full shadow-lg transition transform hover:scale-105">
-                    Belanja Sekarang
-                </a>
-                <a href="#tutorials" class="bg-transparent border-2 border-white text-white font-bold py-3 px-8 rounded-full hover:bg-white hover:text-fuchsia-900 transition">
-                    Pelajari Lebih Lanjut
-                </a>
-            </div>
+
+            <a href="#products" class="inline-block bg-fuchsia-600 hover:bg-fuchsia-700 text-white font-bold py-4 px-12 rounded-full shadow-xl transition transform hover:scale-105">
+                Belanja Sekarang
+            </a>
         </div>
+
     </div>
 
     <div class="bg-white py-12">
-        <!-- Fitur Unggulan (Tetap Sama) -->
         <div class="container mx-auto px-6">
             <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
                 <div>
@@ -60,7 +63,7 @@
 
     <div id="products" class="bg-pink-50 py-24">
         <div class="container mx-auto px-6">
-            
+
             <div class="text-center mb-16">
                 <h2 class="text-4xl font-bold text-fuchsia-600 serif mb-4">Produk Unggulan</h2>
                 <p class="text-gray-600 text-lg">Jelajahi varietas Bugenvil paling populer kami</p>
@@ -69,22 +72,21 @@
             <div class="grid grid-cols-1 md:grid-cols-4 gap-10">
                 @foreach($products as $product)
                 <div class="bg-white rounded-3xl shadow-lg hover:shadow-xl transition overflow-hidden group border border-purple-50 flex flex-col h-full">
-                    
+
                     <div class="relative h-64 bg-gray-200 flex-shrink-0 cursor-pointer">
-                        <!-- UPDATE: product.detail -> products.show -->
                         <a href="{{ route('products.show', $product->id) }}" class="block w-full h-full">
-                            @php 
+                            @php
                                 $badges = ['Paling Laris', 'Tersedia', 'Baru', 'Favorit'];
                                 $badge = $badges[array_rand($badges)];
                                 $color = $badge == 'Paling Laris' ? 'bg-fuchsia-500' : ($badge == 'Tersedia' ? 'bg-green-500' : 'bg-orange-500');
                             @endphp
                             <span class="absolute top-4 right-4 {{ $color }} text-white text-xs font-bold px-3 py-1 rounded-full z-10">{{ $badge }}</span>
-                            
-                            <img src="{{ $product->image_path ? asset('storage/' . $product->image_path) : 'https://source.unsplash.com/random/400x400?bougainvillea,flower&sig='.$product->id }}" 
+
+                            <img src="{{ $product->image ? asset('storage/' . $product->image) : 'https://source.unsplash.com/random/400x400?bougainvillea,flower&sig='.$product->id }}"
                                  class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
                         </a>
                     </div>
-                    
+
                     <div class="p-6 flex flex-col flex-grow">
                         <a href="{{ route('products.show', $product->id) }}" class="hover:text-fuchsia-600 transition">
                             <h3 class="font-bold text-lg text-gray-800 mb-1 serif">{{ $product->name }}</h3>
@@ -93,12 +95,11 @@
                         <div class="flex text-yellow-400 text-xs mb-3">
                             ★★★★★ <span class="text-gray-400 ml-1">({{ rand(20, 100) }})</span>
                         </div>
-                        
+
                         <div class="flex items-center justify-between mt-auto pt-4 border-t border-gray-100">
                             <span class="text-xl font-bold text-fuchsia-600">Rp {{ number_format($product->price, 0, ',', '.') }}</span>
-                            
+
                             @if(!Auth::check() || (Auth::check() && !Auth::user()->is_admin))
-                                <!-- UPDATE: Menggunakan Form POST untuk Add to Cart -->
                                 <form action="{{ route('cart.add', $product->id) }}" method="POST">
                                     @csrf
                                     <button type="submit" class="bg-purple-100 text-purple-600 p-3 rounded-full hover:bg-fuchsia-500 hover:text-white transition shadow-sm">
@@ -115,52 +116,93 @@
             </div>
 
             <div class="text-center mt-16">
-                 <!-- UPDATE: products.all -> products.index -->
                  <a href="{{ route('products.index') }}" class="bg-fuchsia-500 hover:bg-fuchsia-600 text-white font-bold py-3 px-10 rounded-full shadow-lg transition">Lihat Semua Produk</a>
             </div>
         </div>
     </div>
 
-    <!-- Sisa Halaman Tetap Sama -->
-    <div id="tutorials" class="bg-white py-20">
-        <div class="container mx-auto px-6">
-            <div class="text-center mb-12">
-                <h2 class="text-4xl font-bold text-fuchsia-500 serif mb-3">Tutorial Perawatan</h2>
-                <p class="text-gray-500">Pelajari cara merawat bunga Bugenvil Anda</p>
+    <section id="tutorials" class="py-24 bg-slate-50">
+        <div class="max-w-7xl mx-auto px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <span class="text-fuchsia-600 font-bold tracking-wider uppercase text-sm">Edukasi Pelanggan</span>
+                <h2 class="mt-2 text-4xl font-extrabold text-gray-900 serif">
+                    Video Tutorial & Panduan
+                </h2>
+                <p class="mt-4 text-lg text-gray-600 max-w-2xl mx-auto">
+                    Pelajari cara merawat tanaman dan tips budidaya terbaik langsung dari ahli kami.
+                </p>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                @foreach($videos as $index => $video)
-                <div class="bg-pink-50 rounded-3xl p-6 hover:shadow-lg transition">
-                    <div class="relative h-48 rounded-2xl overflow-hidden mb-6 group cursor-pointer">
-                        <img src="https://source.unsplash.com/random/400x300?gardening&sig={{$index}}" class="w-full h-full object-cover">
-                        <div class="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition"></div>
-                        <div class="absolute inset-0 flex items-center justify-center">
-                            <div class="bg-white w-12 h-12 rounded-full flex items-center justify-center text-fuchsia-600 shadow-lg group-hover:scale-110 transition">
-                                <svg class="w-6 h-6 ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                @foreach($videos as $video)
+                    <div x-data="{ playing: false }" class="group bg-white rounded-[2rem] shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100 flex flex-col h-full p-3">
+                        <div class="relative h-60 rounded-[1.5rem] overflow-hidden bg-black">
+                            <video
+                                class="w-full h-full object-contain"
+                                controls
+                                preload="metadata"
+                                poster="https://source.unsplash.com/random/800x450?garden,plant&sig={{ $video->id }}"
+                                @play="playing = true"
+                                @pause="playing = false"
+                                @ended="playing = false"
+                            >
+                                <source src="{{ asset('storage/' . $video->video_url) }}" type="video/mp4">
+                                Browser Anda tidak mendukung pemutar video.
+                            </video>
+
+                            <div
+                                x-show="!playing"
+                                x-transition:enter="transition ease-out duration-300"
+                                x-transition:enter-start="opacity-0 scale-90"
+                                x-transition:enter-end="opacity-100 scale-100"
+                                x-transition:leave="transition ease-in duration-200"
+                                x-transition:leave-start="opacity-100 scale-100"
+                                x-transition:leave-end="opacity-0 scale-90"
+                                class="absolute inset-0 flex items-center justify-center pointer-events-none bg-black/30 group-hover:bg-black/20 transition-colors"
+                            >
+                                <div class="w-16 h-16 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-8 h-8 text-fuchsia-600 pl-1">
+                                        <path fill-rule="evenodd" d="M4.5 5.653c0-1.426 1.529-2.33 2.779-1.643l11.54 6.348c1.295.712 1.295 2.573 0 3.285L7.28 19.991c-1.25.687-2.779-.217-2.779-1.643V5.653z" clip-rule="evenodd" />
+                                    </svg>
+                                </div>
                             </div>
                         </div>
-                        <a href="{{ $video->video_url }}" target="_blank" class="absolute inset-0 z-10"></a>
-                    </div>
 
-                    <div class="flex justify-between items-center mb-2">
-                        <span class="bg-fuchsia-100 text-fuchsia-600 text-xs font-bold px-2 py-1 rounded">Langkah {{ $index + 1 }}</span>
-                        <span class="text-gray-400 text-xs flex items-center"><svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg> {{ rand(3,10) }}:00</span>
-                    </div>
+                        <div class="px-4 pt-5 pb-4 flex-1 flex flex-col">
+                            <div class="mb-3">
+                                <span class="inline-block bg-fuchsia-100 text-fuchsia-600 text-xs font-extrabold px-3 py-1.5 rounded-full tracking-wider uppercase">
+                                    Tutorial
+                                </span>
+                            </div>
 
-                    <h3 class="font-bold text-xl text-gray-800 mb-2 serif">{{ $video->title }}</h3>
-                    <p class="text-sm text-gray-500 mb-4">{{ Str::limit($video->description, 60) }}</p>
-                    
-                    <a href="{{ $video->video_url }}" class="text-fuchsia-600 font-bold text-sm flex items-center hover:underline">
-                        Tonton Tutorial <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
-                    </a>
-                </div>
+                            <h3 class="text-xl font-bold text-gray-900 leading-tight mb-2 line-clamp-2 group-hover:text-fuchsia-600 transition-colors">
+                                {{ $video->title }}
+                            </h3>
+
+                            @if($video->description)
+                                <p class="text-gray-500 text-sm line-clamp-3">
+                                    {{ $video->description }}
+                                </p>
+                            @endif
+                        </div>
+                    </div>
                 @endforeach
             </div>
-        </div>
-    </div>
 
-    <!-- Bagian Ulasan dan Laporan tetap sama, tidak perlu diubah -->
+            @if($videos->isEmpty())
+                <div class="text-center py-16 bg-white rounded-[2rem] shadow-sm border-2 border-dashed border-gray-200 mx-auto max-w-2xl">
+                    <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-fuchsia-50 mb-6">
+                        <svg class="w-10 h-10 text-fuchsia-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">Belum ada video tutorial</h3>
+                    <p class="text-gray-500 max-w-md mx-auto">Kami sedang menyiapkan konten video menarik untuk Anda. Silakan kembali lagi nanti.</p>
+                </div>
+            @endif
+        </div>
+    </section>
+
     <div class="bg-pink-50 py-20">
         <div class="container mx-auto px-6">
             <div class="text-center mb-12">
@@ -208,9 +250,9 @@
 
     <div id="report-issue" class="bg-pink-50 pb-24 pt-10">
         <div class="container mx-auto px-6 flex justify-center">
-            
+
             <div class="bg-white rounded-[2rem] shadow-2xl overflow-hidden max-w-5xl w-full flex flex-col md:flex-row">
-                
+
                 <div class="bg-[#d946ef] md:w-2/5 p-12 text-white flex flex-col justify-center relative overflow-hidden">
                     <div class="absolute -top-10 -left-10 w-40 h-40 bg-white/20 rounded-full blur-2xl"></div>
                     <div class="absolute bottom-10 right-10 w-32 h-32 bg-purple-600/20 rounded-full blur-xl"></div>
@@ -221,7 +263,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                             </svg>
                         </div>
-                        
+
                         <h2 class="text-3xl font-bold serif mb-4">Layanan Pengaduan</h2>
                         <p class="text-fuchsia-50 mb-8 leading-relaxed text-sm">
                             Apakah pesanan Anda mengalami kendala? Kami berkomitmen memberikan garansi kepuasan. Sampaikan keluhan Anda, dan kami akan segera menanganinya.
@@ -247,7 +289,7 @@
                 <div class="bg-white md:w-3/5 p-12">
                     <form action="{{ route('reports.store') }}" method="POST" enctype="multipart/form-data" class="space-y-6">
                         @csrf
-                        
+
                         <div>
                             <label class="block text-gray-700 font-bold mb-2 text-xs uppercase tracking-wide">Nomor Pesanan</label>
                             <input type="text" name="subject" class="w-full border border-gray-200 rounded-lg p-3 text-sm focus:ring-fuchsia-500 focus:border-fuchsia-500 placeholder-gray-400" placeholder="Contoh: ORD-2024-001" required>

@@ -45,7 +45,7 @@ class AdminController extends Controller
             'name' => $request->name,
             'price' => $request->price,
             'description' => $request->description,
-            'image_url' => $imagePath, // Pastikan nama kolom di database sesuai (image_url atau image)
+            'image' => $imagePath, // Pastikan kolom di DB bernama 'image'
         ]);
 
         // 4. Redirect kembali ke dashboard
@@ -61,12 +61,12 @@ class AdminController extends Controller
     }
 
     // Menyimpan Video
-   public function storeVideo(Request $request)
+    public function storeVideo(Request $request)
     {
         // 1. Validasi
         $request->validate([
             'title' => 'required|string|max:255',
-            'video_file' => 'required|file|mimes:mp4,mov,ogg,qt|max:20000', // Max 20MB (sesuaikan kebutuhan)
+            'video_file' => 'required|file|mimes:mp4,mov,ogg,qt|max:20000', // Max 20MB
         ]);
 
         // 2. Upload Video
@@ -76,15 +76,13 @@ class AdminController extends Controller
         }
 
         // 3. Simpan ke Database
-        // Pastikan nama kolom di database kamu sesuai ('title' dan 'video_url')
-        // Jika nama kolom di tabel video_tutorials kamu beda, sesuaikan di sini.
         \App\Models\VideoTutorial::create([
             'title' => $request->title,
-            'video_url' => $videoPath, 
+            'video_url' => $videoPath,
         ]);
 
         // 4. Redirect
-       return redirect()->route('dashboard')->with('success', 'Video tutorial berhasil ditambahkan!');
+        return redirect()->route('dashboard')->with('success', 'Video tutorial berhasil ditambahkan!');
     }
 
     // --- TAMBAHAN CRUD VIDEO ---
@@ -118,9 +116,6 @@ class AdminController extends Controller
 
         // Cek jika ada file video BARU yang diupload
         if ($request->hasFile('video_file')) {
-            // Hapus video lama dari penyimpanan (opsional tapi disarankan agar hemat storage)
-            // \Illuminate\Support\Facades\Storage::disk('public')->delete($video->video_url);
-
             // Upload video baru
             $videoPath = $request->file('video_file')->store('videos', 'public');
             $video->video_url = $videoPath;
@@ -135,14 +130,10 @@ class AdminController extends Controller
     public function destroyVideo($id)
     {
         $video = VideoTutorial::findOrFail($id);
-        
-        // Hapus file dari folder penyimpanan
-        // \Illuminate\Support\Facades\Storage::disk('public')->delete($video->video_url);
 
         // Hapus data dari database
         $video->delete();
 
         return redirect()->route('tutorials.index')->with('success', 'Video berhasil dihapus!');
     }
-    
 }

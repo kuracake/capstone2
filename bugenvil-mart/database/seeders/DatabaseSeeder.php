@@ -2,64 +2,33 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
-use App\Models\Product;
-use App\Models\VideoTutorial;
 use App\Models\User;
+use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        // 1. ADMIN
+        // Hapus user lama jika ada (untuk mencegah duplikat)
+        User::where('email', 'admin@gmail.com')->delete();
+
+        // Buat Akun Admin
         User::create([
-            'name' => 'Administrator',
-            'email' => 'admin@bougainvilla.com',
-            'is_admin' => true,
-            'password' => bcrypt('password'),
+            'name' => 'Admin Ganteng',
+            'email' => 'admin@gmail.com',
+            'password' => Hash::make('12345678'),
+            'is_admin' => 1, // Pastikan kolom ini sesuai dengan migrasi Anda
+            'email_verified_at' => now(),
         ]);
-
-        // 2. PRODUK (Bahasa Indonesia)
-        Product::create([
-            'name' => 'Pink Paradise',
-            'description' => 'Kelopak merah muda lembut yang menawan hati.',
-            'price' => 150000,
-            'image_path' => null, 
-        ]);
-        Product::create([
-            'name' => 'Crimson Beauty',
-            'description' => 'Warna merah menyala yang berani dan elegan.',
-            'price' => 175000,
-            'image_path' => null,
-        ]);
-        Product::create([
-            'name' => 'White Angel',
-            'description' => 'Putih suci yang memberikan kesan damai.',
-            'price' => 160000,
-            'image_path' => null,
-        ]);
-        Product::create([
-            'name' => 'Sunset Orange',
-            'description' => 'Warna oranye cerah seperti matahari terbenam.',
-            'price' => 180000,
-            'image_path' => null,
-        ]);
-
-        // 3. VIDEO TUTORIAL
-        VideoTutorial::create([
-            'title' => 'Cara Membuka Paket', 
-            'description' => 'Pelajari cara aman membuka kotak bugenvil Anda.',
-            'video_url' => 'https://www.youtube.com/embed/S2q8-gOq-0A'
-        ]);
-        VideoTutorial::create([
-            'title' => 'Panduan Menanam', 
-            'description' => 'Langkah demi langkah menanam di tanah atau pot.',
-            'video_url' => 'https://www.youtube.com/embed/abc456'
-        ]);
-        VideoTutorial::create([
-            'title' => 'Perawatan & Pemupukan', 
-            'description' => 'Tips penting agar bunga tetap sehat dan mekar.',
-            'video_url' => 'https://www.youtube.com/embed/def789'
+        
+        // Buat User Biasa (Opsional, untuk tes)
+        User::create([
+            'name' => 'User Biasa',
+            'email' => 'user@gmail.com',
+            'password' => Hash::make('12345678'),
+            'is_admin' => 0,
+            'email_verified_at' => now(),
         ]);
     }
 }

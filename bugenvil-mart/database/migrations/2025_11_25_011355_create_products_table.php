@@ -12,9 +12,14 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->text('description')->nullable();
-            $table->decimal('price', 12, 2); // Harga (contoh: 150000.00)
-            $table->integer('stock')->default(0);
-            $table->string('image')->nullable(); // Kolom untuk path gambar
+            $table->decimal('price', 12, 2); // Harga Asli
+            $table->integer('stock')->default(0); // Stok
+            $table->string('image')->nullable(); // Foto Produk
+            
+            // --- KOLOM LENGKAP ---
+            $table->integer('weight')->default(1000); // Berat (Gram)
+            $table->decimal('discount_price', 12, 2)->nullable(); // Harga Diskon
+            
             $table->timestamps();
         });
     }
