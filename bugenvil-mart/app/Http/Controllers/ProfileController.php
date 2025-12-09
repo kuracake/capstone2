@@ -7,7 +7,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
-use Illuminate\Support\Facades\Storage; // Penting untuk upload file
+use Illuminate\Support\Facades\Storage; // PENTING: Untuk menangani file gambar
 use Illuminate\View\View;
 
 class ProfileController extends Controller
@@ -28,31 +28,35 @@ class ProfileController extends Controller
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
         $user = $request->user();
-        
-        // Isi data nama dan email yang sudah divalidasi
-        $user->fill($request->validated());
 
-        // Jika email berubah, reset verifikasi
-        if ($user->isDirty('email')) {
-            $user->email_verified_at = null;
-        }
+        // 1. Ambil data yang sudah divalidasi (name, email, phone, gender, address)
+        $data = $request->validated();
 
-        // --- LOGIKA UPLOAD FOTO PROFIL ---
+        // 2. Logika Upload Avatar/Foto
         if ($request->hasFile('avatar')) {
-            // Hapus foto lama jika ada (opsional, agar hemat storage)
+            // Hapus avatar lama jika ada (agar storage tidak penuh sampah file lama)
             if ($user->avatar && Storage::disk('public')->exists($user->avatar)) {
                 Storage::disk('public')->delete($user->avatar);
             }
 
             // Simpan foto baru ke folder 'avatars' di storage public
             $path = $request->file('avatar')->store('avatars', 'public');
-            $user->avatar = $path;
+            
+            // Masukkan path gambar ke array data
+            $data['avatar'] = $path;
+        }
+
+        // 3. Update data User dengan array $data
+        $user->fill($data);
+
+        // Jika email diubah, reset status verifikasi
+        if ($user->isDirty('email')) {
+            $user->email_verified_at = null;
         }
 
         $user->save();
 
-        // Redirect kembali ke halaman sebelumnya (Dashboard), bukan ke profile.edit
-        return back()->with('status', 'profile-updated');
+        return Redirect::route('profile.edit')->with('status', 'profile-updated');
     }
 
     /**

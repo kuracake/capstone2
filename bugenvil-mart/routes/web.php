@@ -122,3 +122,35 @@ Route::get('/debug-rajaongkir', function () {
         dd("ERROR: " . $e->getMessage());
     }
 });
+
+use App\Http\Controllers\AdminController;
+
+// Group Route khusus Admin (Wajib Login)
+Route::middleware(['auth'])->group(function () {
+    
+    // Dashboard Admin
+    Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
+
+    // Route Produk
+    Route::get('/admin/products/create', [AdminController::class, 'createProduct'])->name('products.create');
+    Route::post('/admin/products', [AdminController::class, 'storeProduct'])->name('products.store');
+
+    // Route Video
+    // ... di dalam middleware auth ...
+
+    // --- MANAJEMEN VIDEO TUTORIAL ---
+    
+    // 1. Daftar Semua Video (READ)
+    Route::get('/admin/tutorials', [AdminController::class, 'indexVideo'])->name('tutorials.index');
+
+    // 2. Form Tambah (CREATE) - Sudah ada
+    Route::get('/admin/tutorials/create', [AdminController::class, 'createVideo'])->name('tutorials.create');
+    Route::post('/admin/tutorials', [AdminController::class, 'storeVideo'])->name('tutorials.store');
+
+    // 3. Form Edit & Update (UPDATE)
+    Route::get('/admin/tutorials/{id}/edit', [AdminController::class, 'editVideo'])->name('tutorials.edit');
+    Route::put('/admin/tutorials/{id}', [AdminController::class, 'updateVideo'])->name('tutorials.update');
+
+    // 4. Hapus (DELETE)
+    Route::delete('/admin/tutorials/{id}', [AdminController::class, 'destroyVideo'])->name('tutorials.destroy');
+});

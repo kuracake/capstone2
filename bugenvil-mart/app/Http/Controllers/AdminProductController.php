@@ -8,48 +8,55 @@ use Illuminate\Support\Facades\Storage;
 
 class AdminProductController extends Controller
 {
-    // Tampilkan List Produk
+    // Menampilkan daftar produk
     public function index()
     {
-        $products = Product::all();
+        $products = Product::latest()->paginate(10);
         return view('admin.products.index', compact('products'));
     }
 
-    // Tampilkan Form Tambah
+    // Menampilkan form tambah produk
     public function create()
     {
         return view('admin.products.create');
     }
 
-    // Simpan Produk Baru
+    // Menyimpan produk baru ke database
     public function store(Request $request)
     {
         $request->validate([
-            'name' => 'required',
+            'name' => 'required|string|max:255',
             'price' => 'required|numeric',
-            'description' => 'required',
-            'image' => 'nullable|image'
+            'stock' => 'required|integer',
+            'description' => 'nullable|string',
+            'image' => 'required|image|mimes:jpeg,png,jpg|max:2048', // Validasi Gambar
         ]);
 
-        $path = null;
+        $data = $request->all();
+
+        // Proses Upload Gambar
         if ($request->hasFile('image')) {
             $path = $request->file('image')->store('products', 'public');
+            $data['image'] = $path;
         }
 
-        Product::create([
-            'name' => $request->name,
-            'price' => $request->price,
-            'description' => $request->description,
-            'image_path' => $path
-        ]);
+        Product::create($data);
 
-        return redirect()->route('products.index')->with('success', 'Produk berhasil ditambahkan!');
+        return redirect()->route('admin.products.index')->with('success', 'Produk berhasil ditambahkan!');
     }
 
-    // Hapus Produk
-    public function destroy(Product $product)
+    // Menghapus produk
+    public function destroy($id)
     {
+        $product = Product::findOrFail($id);
+
+        // Hapus gambar dari storage jika ada
+        if ($product->image) {
+            Storage::disk('public')->delete($product->image);
+        }
+
         $product->delete();
-        return back()->with('success', 'Produk dihapus.');
+
+        return redirect()->route('admin.products.index')->with('success', 'Produk berhasil dihapus!');
     }
 }

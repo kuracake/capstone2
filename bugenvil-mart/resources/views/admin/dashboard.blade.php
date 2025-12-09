@@ -1,160 +1,123 @@
 <x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Admin Dashboard - Bugenvil Mart') }}
-        </h2>
-    </x-slot>
-
-<div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 mt-8">
-    <h3 class="text-xl font-bold mb-4 text-gray-800">Pesanan Masuk (Perlu Proses)</h3>
-    <div class="overflow-x-auto">
-        <table class="w-full text-left text-sm border-collapse">
-            <thead class="bg-gray-100 text-gray-700 font-bold border-b">
-                <tr>
-                    <th class="p-3">Pelanggan</th>
-                    <th class="p-3">Total</th>
-                    <th class="p-3 w-1/3">Alamat</th>
-                    <th class="p-3">Status Saat Ini</th>
-                    <th class="p-3">Aksi (Update Status)</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach(\App\Models\Order::where('status', '!=', 'completed')->latest()->get() as $order)
-                <tr class="border-b hover:bg-gray-50">
-                    <td class="p-3">
-                        <div class="font-bold text-gray-800">{{ $order->user->name }}</div>
-                        <div class="text-xs text-gray-500">{{ $order->tracking_number }}</div>
-                    </td>
-                    <td class="p-3 text-fuchsia-600 font-bold">
-                        Rp {{ number_format($order->total_price) }}
-                    </td>
-                    <td class="p-3 text-xs text-gray-600 leading-relaxed">
-                        {{ $order->shipping_address }}
-                    </td>
-                    <td class="p-3">
-                        <span class="px-2 py-1 rounded text-xs font-bold uppercase
-                            {{ $order->status == 'pending' ? 'bg-gray-200 text-gray-700' : '' }}
-                            {{ $order->status == 'packing' ? 'bg-yellow-100 text-yellow-700' : '' }}
-                            {{ $order->status == 'shipping' ? 'bg-blue-100 text-blue-700' : '' }}">
-                            {{ $order->status }}
-                        </span>
-                    </td>
-                    <td class="p-3">
-                        @if($order->status == 'pending')
-                            <form action="{{ route('admin.orders.update', $order->id) }}" method="POST">
-                                @csrf @method('PATCH')
-                                <input type="hidden" name="status" value="packing">
-                                <button class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-2 rounded-lg text-xs font-bold shadow flex items-center gap-1 transition w-full justify-center">
-                                    📦 Kemas
-                                </button>
-                            </form>
-
-                        @elseif($order->status == 'packing')
-                            <form action="{{ route('admin.orders.update', $order->id) }}" method="POST">
-                                @csrf @method('PATCH')
-                                <input type="hidden" name="status" value="shipping">
-                                <button class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg text-xs font-bold shadow flex items-center gap-1 transition w-full justify-center">
-                                    🚚 Kirim
-                                </button>
-                            </form>
-
-                        @elseif($order->status == 'shipping')
-                            <form action="{{ route('admin.orders.update', $order->id) }}" method="POST">
-                                @csrf @method('PATCH')
-                                <input type="hidden" name="status" value="completed">
-                                <button class="bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-lg text-xs font-bold shadow flex items-center gap-1 transition w-full justify-center">
-                                    ✅ Selesai
-                                </button>
-                            </form>
-                        @endif
-                    </td>
-                </tr>
-                @endforeach
-            </tbody>
-        </table>
-    </div>
-</div>
-
-<div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 mt-8">
-    <h3 class="text-xl font-bold mb-4">Update Video Tutorial</h3>
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        @foreach(\App\Models\VideoTutorial::all() as $video)
-        <form action="{{ route('admin.videos.update', $video->id) }}" method="POST" class="bg-gray-50 p-4 rounded-xl">
-            @csrf @method('PUT')
-            <div class="mb-2">
-                <label class="text-xs font-bold text-gray-500">Judul</label>
-                <input type="text" name="title" value="{{ $video->title }}" class="w-full text-sm border-gray-300 rounded">
-            </div>
-            <div class="mb-2">
-                <label class="text-xs font-bold text-gray-500">Link Youtube</label>
-                <input type="text" name="video_url" value="{{ $video->video_url }}" class="w-full text-sm border-gray-300 rounded">
-            </div>
-            <button class="w-full bg-fuchsia-600 text-white text-xs py-2 rounded font-bold">Simpan</button>
-        </form>
-        @endforeach
-    </div>
-</div>
-
-
-    <div class="py-12">
+    <div class="py-12 bg-gray-50 min-h-screen">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             
+            <div class="flex flex-col md:flex-row justify-between items-center mb-8">
+                <div>
+                    <h2 class="text-3xl font-bold text-gray-800">Dashboard Admin</h2>
+                    <p class="text-gray-600 mt-1">Selamat datang, <span class="text-pink-600 font-semibold">{{ Auth::user()->name }}</span>!</p>
+                </div>
+                
+                <div class="flex gap-3 mt-4 md:mt-0">
+                    <a href="{{ route('products.create') }}" class="flex items-center gap-2 bg-pink-600 hover:bg-pink-700 text-white font-semibold py-2 px-4 rounded-lg shadow transition">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+                        </svg>
+                        Tambah Produk
+                    </a>
+                    <a href="{{ route('tutorials.create') }}" class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg shadow transition">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M2 6a2 2 0 012-2h6a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6zM14.553 7.106A1 1 0 0014 8v4a1 1 0 00.553.894l2 1A1 1 0 0018 13V7a1 1 0 00-1.447-.894l-2 1z" />
+                        </svg>
+                        Tambah Video
+                    </a>
+                </div>
+            </div>
+
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6 border-l-4 border-pink-500">
-                    <div class="text-gray-500">Total Bunga Dijual</div>
-                    <div class="text-3xl font-bold">{{ $totalProducts }}</div>
-                    <a href="{{ route('products.index') }}" class="text-pink-600 hover:underline text-sm mt-2 block">Kelola Produk &rarr;</a>
+                
+                <div class="bg-white rounded-xl shadow-sm p-6 border-l-4 border-pink-500 hover:shadow-md transition">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-gray-500 text-sm font-medium uppercase tracking-wide">Total Produk</p>
+                            <h3 class="text-3xl font-bold text-gray-800 mt-2">{{ \App\Models\Product::count() }}</h3>
+                        </div>
+                        <div class="p-3 bg-pink-100 rounded-full text-pink-600">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <a href="#" class="text-sm text-pink-600 hover:text-pink-800 font-medium flex items-center">
+                            Lihat semua produk &rarr;
+                        </a>
+                    </div>
                 </div>
 
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6 border-l-4 border-red-500">
-                    <div class="text-gray-500">Komplain Pending</div>
-                    <div class="text-3xl font-bold">{{ $totalReports }}</div>
-                    <a href="{{ route('admin.reports') }}" class="text-red-600 hover:underline text-sm mt-2 block">Lihat Laporan &rarr;</a>
+                <div class="bg-white rounded-xl shadow-sm p-6 border-l-4 border-yellow-500 hover:shadow-md transition">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-gray-500 text-sm font-medium uppercase tracking-wide">Pesanan Baru</p>
+                            <h3 class="text-3xl font-bold text-gray-800 mt-2">0</h3> </div>
+                        <div class="p-3 bg-yellow-100 rounded-full text-yellow-600">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <a href="#" class="text-sm text-yellow-600 hover:text-yellow-800 font-medium flex items-center">
+                            Kelola Pesanan &rarr;
+                        </a>
+                    </div>
                 </div>
 
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6 border-l-4 border-blue-500">
-                    <div class="text-gray-500">Video Tutorial</div>
-                    <div class="text-3xl font-bold">3</div>
-                    <a href="{{ route('admin.videos.index') }}" class="text-blue-600 hover:underline text-sm mt-2 block">Update Video &rarr;</a>
+                <div class="bg-white rounded-xl shadow-sm p-6 border-l-4 border-blue-500 hover:shadow-md transition">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-gray-500 text-sm font-medium uppercase tracking-wide">Video Tutorial</p>
+                            <h3 class="text-3xl font-bold text-gray-800 mt-2">{{ \App\Models\VideoTutorial::count() }}</h3>
+                        </div>
+                        <div class="p-3 bg-blue-100 rounded-full text-blue-600">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <a href="{{ route('tutorials.index') }}" class="text-sm text-blue-600 hover:text-blue-800 font-medium flex items-center">
+                            Kelola & Update Video &rarr;
+                        </a>
+                    </div>
                 </div>
+
             </div>
 
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-8">
-                <div class="p-6 bg-white border-b border-gray-200">
-                    <h3 class="text-lg font-bold mb-4">Komplain Terbaru Masuk</h3>
-                    @if($recentReports->isEmpty())
-                        <p class="text-gray-500">Belum ada komplain baru.</p>
-                    @else
-                        <table class="w-full text-left">
-                            <thead>
-                                <tr class="bg-gray-100">
-                                    <th class="p-3">User</th>
-                                    <th class="p-3">Masalah</th>
-                                    <th class="p-3">Status</th>
-                                    <th class="p-3">Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach($recentReports as $report)
-                                <tr class="border-b">
-                                    <td class="p-3">{{ $report->user->name }}</td>
-                                    <td class="p-3">{{ $report->subject }}</td>
-                                    <td class="p-3">
-                                        <span class="px-2 py-1 text-xs rounded {{ $report->status == 'pending' ? 'bg-red-200 text-red-800' : 'bg-green-200 text-green-800' }}">
-                                            {{ ucfirst($report->status) }}
-                                        </span>
-                                    </td>
-                                    <td class="p-3">
-                                        <a href="{{ route('admin.reports') }}" class="text-blue-600 text-sm hover:underline">Detail</a>
-                                    </td>
-                                </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    @endif
+            <div class="bg-white overflow-hidden shadow-sm sm:rounded-xl border border-gray-100">
+                <div class="px-6 py-5 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+                    <h3 class="text-lg font-bold text-gray-800">Pesanan Masuk (Perlu Diproses)</h3>
+                    <span class="bg-pink-100 text-pink-700 text-xs font-bold px-3 py-1 rounded-full">Terbaru</span>
+                </div>
+                
+                <div class="overflow-x-auto">
+                    <table class="min-w-full leading-normal">
+                        <thead>
+                            <tr class="bg-gray-50 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                <th class="px-6 py-3">ID Pesanan</th>
+                                <th class="px-6 py-3">Pelanggan</th>
+                                <th class="px-6 py-3">Total Pembayaran</th>
+                                <th class="px-6 py-3">Status Saat Ini</th>
+                                <th class="px-6 py-3">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200">
+                            <tr class="hover:bg-gray-50 transition">
+                                <td colspan="5" class="px-6 py-8 text-center text-gray-500">
+                                    <div class="flex flex-col items-center justify-center">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-gray-300 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                                        </svg>
+                                        <p>Belum ada pesanan masuk saat ini.</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
-
+            
         </div>
     </div>
 </x-app-layout>
