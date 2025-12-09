@@ -9,13 +9,16 @@
                 </div>
                 
                 <div class="flex gap-3 mt-4 md:mt-0">
-                    <a href="{{ route('products.create') }}" class="flex items-center gap-2 bg-pink-600 hover:bg-pink-700 text-white font-semibold py-2 px-4 rounded-lg shadow transition">
+                    {{-- PERBAIKAN: Menggunakan admin.products.create --}}
+                    <a href="{{ route('admin.products.create') }}" class="flex items-center gap-2 bg-pink-600 hover:bg-pink-700 text-white font-semibold py-2 px-4 rounded-lg shadow transition">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                             <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
                         </svg>
                         Tambah Produk
                     </a>
-                    <a href="{{ route('tutorials.create') }}" class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg shadow transition">
+                    
+                    {{-- PERBAIKAN: Menggunakan admin.videos.create --}}
+                    <a href="{{ route('admin.videos.create') }}" class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg shadow transition">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                             <path d="M2 6a2 2 0 012-2h6a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6zM14.553 7.106A1 1 0 0014 8v4a1 1 0 00.553.894l2 1A1 1 0 0018 13V7a1 1 0 00-1.447-.894l-2 1z" />
                         </svg>
@@ -39,7 +42,8 @@
                         </div>
                     </div>
                     <div class="mt-4">
-                        <a href="#" class="text-sm text-pink-600 hover:text-pink-800 font-medium flex items-center">
+                        {{-- PERBAIKAN: Menggunakan admin.products.index --}}
+                        <a href="{{ route('admin.products.index') }}" class="text-sm text-pink-600 hover:text-pink-800 font-medium flex items-center">
                             Lihat semua produk &rarr;
                         </a>
                     </div>
@@ -77,7 +81,8 @@
                         </div>
                     </div>
                     <div class="mt-4">
-                        <a href="{{ route('tutorials.index') }}" class="text-sm text-blue-600 hover:text-blue-800 font-medium flex items-center">
+                        {{-- PERBAIKAN: Menggunakan admin.videos.index --}}
+                        <a href="{{ route('admin.videos.index') }}" class="text-sm text-blue-600 hover:text-blue-800 font-medium flex items-center">
                             Kelola & Update Video &rarr;
                         </a>
                     </div>
