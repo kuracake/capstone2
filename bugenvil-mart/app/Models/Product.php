@@ -9,14 +9,21 @@ class Product extends Model
 {
     use HasFactory;
 
-    // KITA IZINKAN SEMUA KOLOM INI DISIMPAN
     protected $fillable = [
         'name',
         'price',
         'description',
         'image',
-        'stock',          // Wajib
-        'weight',         // Wajib untuk ongkir
-        'discount_price', // Opsional
+        'stock',  // Pastikan kolom ini ada di database
+        'weight', // Pastikan kolom ini ada di database
     ];
+
+    /**
+     * Relasi ke Review
+     * Satu produk memiliki banyak review
+     */
+    public function reviews()
+    {
+        return $this->hasMany(Review::class);
+    }
 }

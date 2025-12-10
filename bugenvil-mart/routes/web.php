@@ -11,6 +11,7 @@ use App\Http\Controllers\CartController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\OngkirController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\ReviewController; // Pastikan ini ada
 
 // --- ADMIN CONTROLLERS ---
 use App\Http\Controllers\AdminController;
@@ -40,6 +41,7 @@ Route::delete('/remove-from-cart', [CartController::class, 'remove'])->name('car
 |--------------------------------------------------------------------------
 */
 Route::middleware(['auth', 'verified'])->group(function () {
+    
     // Dashboard User
     Route::get('/dashboard', function () {
         $user = Auth::user();
@@ -49,28 +51,35 @@ Route::middleware(['auth', 'verified'])->group(function () {
             return redirect()->route('admin.dashboard');
         }
 
-        // Ambil data pesanan user ini (Pastikan Model Order sudah di-import di paling atas file)
-        // Jika belum ada Model Order, kita kirim array kosong dulu agar tidak eror
+        // Ambil data pesanan user ini
         $myOrders = \App\Models\Order::where('user_id', $user->id)->latest()->limit(5)->get();
 
         return view('dashboard', compact('myOrders'));
     })->name('dashboard');
 
+    // Profile
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
+    // Transaksi & Checkout
     Route::get('/checkout', [OrderController::class, 'index'])->name('checkout');
     Route::post('/checkout', [OrderController::class, 'store'])->name('checkout.store');
 
+    // API Ongkir
     Route::get('/api/provinces', [OngkirController::class, 'getProvinces']);
     Route::get('/api/cities/{province_id}', [OngkirController::class, 'getCities']);
     Route::get('/api/districts', [OngkirController::class, 'getDistricts']);
     Route::get('/api/subdistricts', [OngkirController::class, 'getSubdistricts']);
     Route::post('/api/cost', [OngkirController::class, 'checkOngkir']);
 
+    // Laporan Kerusakan
     Route::get('/lapor-kerusakan', [ReportController::class, 'create'])->name('reports.create');
     Route::post('/lapor-kerusakan', [ReportController::class, 'store'])->name('reports.store');
+
+    // --- TAMBAHAN PENTING: ROUTE REVIEW PRODUK ---
+    // Ini yang kemarin belum ada. Tanpa ini, form penilaian akan error 404.
+    Route::post('/produk/{id}/review', [ReviewController::class, 'store'])->name('reviews.store');
 });
 
 

@@ -8,51 +8,63 @@ use App\Models\VideoTutorial;
 
 class PageController extends Controller
 {
-    // Halaman Semua Produk dengan Filter dan Pencarian
+    // Halaman Semua Produk (Katalog)
     public function products(Request $request)
     {
-        // 1. Inisialisasi Query Builder
         $query = Product::query();
 
-        // 2. Logika Pencarian (Search)
+        // 1. Logika Pencarian
         if ($request->filled('search')) {
             $query->where('name', 'like', '%' . $request->search . '%');
         }
 
-        // 3. Logika Filter (Sortir)
+        // 2. Logika Filter / Urutan
         if ($request->filled('filter')) {
             switch ($request->filter) {
                 case 'terbaru':
-                    $query->latest(); // Urutkan dari yang paling baru
+                    $query->latest();
                     break;
                 case 'terlaris':
-                    $query->orderBy('price', 'desc'); // Simulasi: Harga tertinggi
+                    // Karena belum ada kolom 'sold', kita simulasikan dengan harga tertinggi dulu
+                    $query->orderBy('price', 'desc'); 
                     break;
-                case 'terpopuler':
-                    $query->inRandomOrder(); // Acak
+                case 'termurah':
+                    $query->orderBy('price', 'asc');
                     break;
                 default:
-                    $query->latest(); 
+                    $query->latest();
                     break;
             }
         } else {
-            // Default jika tidak ada filter: Tampilkan yang terbaru
             $query->latest();
         }
 
-        // 4. Eksekusi Query (Gunakan paginate agar rapi, maksimal 12 produk per halaman)
-        $products = $query->paginate(12);
-        
-        // Agar parameter pencarian tidak hilang saat pindah halaman (pagination)
-        $products->appends($request->all());
+        // 3. Pagination 12 item per halaman
+        $products = $query->paginate(12)->withQueryString();
 
         return view('pages.products', compact('products'));
     }
 
-    // Halaman Semua Tutorial
+    // Halaman Detail Produk
+   public function detail($id)
+    {
+        // Ambil produk beserta relasi reviews dan usernya (Eager Loading biar cepat)
+        // withAvg menghitung rata-rata kolom 'rating' di relasi 'reviews' otomatis
+        // withCount menghitung jumlah review
+        $product = Product::with(['reviews.user'])
+                    ->withAvg('reviews', 'rating')
+                    ->withCount('reviews')
+                    ->findOrFail($id);
+        
+        $relatedProducts = Product::where('id', '!=', $id)->inRandomOrder()->take(4)->get();
+
+        return view('pages.detail', compact('product', 'relatedProducts'));
+    }
+
+    // Halaman Tutorial
     public function tutorials()
     {
-        $videos = VideoTutorial::all();
+        $videos = VideoTutorial::latest()->get();
         return view('pages.tutorials', compact('videos'));
     }
 
@@ -60,17 +72,5 @@ class PageController extends Controller
     public function contact()
     {
         return view('pages.contact');
-    }
-
-    // Halaman Detail Produk (Single)
-    public function detail($id)
-    {
-        $product = Product::findOrFail($id);
-        
-        // Ambil produk lain untuk rekomendasi "Produk Serupa"
-        // Mengambil 4 produk acak selain produk yang sedang dilihat
-        $relatedProducts = Product::where('id', '!=', $id)->inRandomOrder()->take(4)->get();
-
-        return view('pages.detail', compact('product', 'relatedProducts'));
     }
 }
