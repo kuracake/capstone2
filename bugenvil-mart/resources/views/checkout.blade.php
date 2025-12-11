@@ -1,12 +1,22 @@
 <x-app-layout>
+    {{-- Load jQuery dari CDN (Wajib untuk fitur ini) --}}
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
     <div class="bg-pink-50 min-h-screen py-12">
         <div class="container mx-auto px-6">
             
             <h1 class="text-3xl font-bold serif text-gray-800 mb-8">Pengiriman & Pembayaran</h1>
 
+            @if(session('error'))
+                <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded-lg">
+                    {{ session('error') }}
+                </div>
+            @endif
+
             <form action="{{ route('checkout.store') }}" method="POST" class="flex flex-col md:flex-row gap-8">
                 @csrf
                 
+                {{-- KOLOM KIRI: Form Data --}}
                 <div class="md:w-2/3 space-y-6">
                     <div class="bg-white p-8 rounded-2xl shadow-sm border border-purple-100">
                         <h2 class="text-xl font-bold mb-6 flex items-center gap-2 text-gray-800">
@@ -20,27 +30,44 @@
                                 <input type="text" class="w-full border-gray-300 rounded-xl p-3 bg-gray-50 text-gray-500" value="{{ Auth::user()->name }}" readonly>
                             </div>
 
-                            <div class="grid grid-cols-2 gap-4">
+                            {{-- Grid Wilayah (Provinsi & Kota) --}}
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
                                     <label class="block text-sm font-bold text-gray-700 mb-2">Provinsi</label>
-                                    <select name="province" id="province" class="w-full border-gray-300 rounded-xl p-3 focus:ring-fuchsia-500 focus:border-fuchsia-500" required>
+                                    <select name="province_id" id="province_id" class="w-full border-gray-300 rounded-xl p-3 focus:ring-fuchsia-500 focus:border-fuchsia-500" required>
                                         <option value="">-- Pilih Provinsi --</option>
                                     </select>
                                     <input type="hidden" name="province_name" id="province_name">
                                 </div>
                                 <div>
                                     <label class="block text-sm font-bold text-gray-700 mb-2">Kota / Kabupaten</label>
-                                    <select name="city" id="city" class="w-full border-gray-300 rounded-xl p-3 bg-gray-100" disabled required>
+                                    <select name="city_id" id="city_id" class="w-full border-gray-300 rounded-xl p-3 bg-gray-100" disabled required>
                                         <option value="">-- Pilih Provinsi Dulu --</option>
                                     </select>
                                     <input type="hidden" name="city_name" id="city_name">
                                 </div>
                             </div>
 
+                            {{-- Grid Wilayah (Kecamatan & Desa) --}}
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-bold text-gray-700 mb-2">Kecamatan</label>
+                                    <select name="district_id" id="district_id" class="w-full border-gray-300 rounded-xl p-3 bg-gray-100" disabled required>
+                                        <option value="">-- Pilih Kota Dulu --</option>
+                                    </select>
+                                    <input type="hidden" name="district_name" id="district_name">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-bold text-gray-700 mb-2">Desa / Kelurahan</label>
+                                    <input type="text" name="village_name" class="w-full border-gray-300 rounded-xl p-3 focus:ring-fuchsia-500" placeholder="Contoh: Ds. Sukamaju" required>
+                                </div>
+                            </div>
+
+                            {{-- Detail Jalan --}}
                             <div class="grid grid-cols-3 gap-4">
                                 <div class="col-span-2">
-                                    <label class="block text-sm font-bold text-gray-700 mb-2">Jalan Lengkap</label>
-                                    <input type="text" name="address_detail" class="w-full border-gray-300 rounded-xl p-3 focus:ring-fuchsia-500" placeholder="Jl. Mawar No. 10, RT 01/02" required>
+                                    <label class="block text-sm font-bold text-gray-700 mb-2">Jalan / RT / RW</label>
+                                    <input type="text" name="address_detail" class="w-full border-gray-300 rounded-xl p-3 focus:ring-fuchsia-500" placeholder="Jl. Mawar No. 10" required>
                                 </div>
                                 <div>
                                     <label class="block text-sm font-bold text-gray-700 mb-2">Kode Pos</label>
@@ -48,18 +75,21 @@
                                 </div>
                             </div>
 
+                            {{-- Kurir --}}
                             <div>
                                 <label class="block text-sm font-bold text-gray-700 mb-2">Pilih Kurir</label>
                                 <select name="courier" id="courier" class="w-full border-gray-300 rounded-xl p-3 bg-gray-100" disabled required>
-                                    <option value="">-- Pilih Kurir --</option>
+                                    <option value="">-- Pilih Kecamatan Dulu --</option>
                                     <option value="jne">JNE</option>
-                                    <option value="pos">POS Indonesia</option>
-                                    <option value="tiki">TIKI</option>
+                                    <option value="sicepat">SiCepat</option>
+                                    <option value="jnt">J&T</option>
+                                    <option value="idexpress">ID Express</option>
                                 </select>
                             </div>
                         </div>
                     </div>
 
+                    {{-- Metode Pembayaran --}}
                     <div class="bg-white p-8 rounded-2xl shadow-sm border border-purple-100">
                         <h2 class="text-xl font-bold mb-4 text-gray-800">Transfer Bank</h2>
                         <div class="space-y-3">
@@ -77,21 +107,22 @@
                     </div>
                 </div>
 
+                {{-- KOLOM KANAN: Ringkasan --}}
                 <div class="md:w-1/3">
                     <div class="bg-white p-6 rounded-2xl shadow-lg border border-gray-100 sticky top-24">
                         <h2 class="text-lg font-bold mb-4 text-gray-800 border-b pb-2">Ringkasan Belanja</h2>
                         
-                        <div class="space-y-3 mb-6 max-h-60 overflow-y-auto pr-2">
+                        <div class="space-y-3 mb-6 max-h-60 overflow-y-auto pr-2 custom-scrollbar">
                             @php $subtotal = 0; @endphp
                             @if(session('cart'))
-                                @foreach(session('cart') as $id => $details)
+                                @foreach(session('cart') as $details)
                                     @php $subtotal += $details['price'] * $details['quantity'] @endphp
                                     <div class="flex justify-between items-center text-sm">
                                         <div class="flex items-center gap-2">
                                             <span class="bg-gray-100 px-2 py-1 rounded text-xs font-bold text-gray-600">{{ $details['quantity'] }}x</span>
                                             <span class="text-gray-600">{{ Str::limit($details['name'], 15) }}</span>
                                         </div>
-                                        <span class="font-bold text-gray-800">Rp {{ number_format($details['price'] * $details['quantity']) }}</span>
+                                        <span class="font-bold text-gray-800">Rp {{ number_format($details['price'] * $details['quantity'], 0, ',', '.') }}</span>
                                     </div>
                                 @endforeach
                             @endif
@@ -101,7 +132,7 @@
 
                         <div class="space-y-2 text-sm">
                             <div class="flex justify-between text-gray-600">
-                                <span>Total Harga</span>
+                                <span>Total Harga Barang</span>
                                 <span>Rp {{ number_format($subtotal, 0, ',', '.') }}</span>
                             </div>
                             <div class="flex justify-between text-gray-600">
@@ -119,8 +150,7 @@
                         </div>
 
                         <input type="hidden" name="shipping_cost" id="shipping_cost_input" value="0">
-                        <input type="hidden" name="total_payment" id="total_payment_input" value="{{ $subtotal }}">
-
+                        
                         <button type="submit" id="btn-pay" class="w-full bg-gray-400 text-white font-bold py-4 rounded-xl shadow-lg transition cursor-not-allowed" disabled>
                             Bayar Sekarang
                         </button>
@@ -130,140 +160,147 @@
         </div>
     </div>
 
+    {{-- SCRIPT jQuery (Logic SantriKoding) --}}
     <script>
-        const subtotal = {{ $subtotal ?? 0 }};
-        const elProv = document.getElementById('province');
-        const elCity = document.getElementById('city');
-        const elCourier = document.getElementById('courier');
-        const elZip = document.getElementById('postal_code');
-        const displayShip = document.getElementById('shipping_display');
-        const displayService = document.getElementById('service_detail');
-        const displayGrand = document.getElementById('grand_total_display');
-        const inputShip = document.getElementById('shipping_cost_input');
-        const inputTotal = document.getElementById('total_payment_input');
-        const btnPay = document.getElementById('btn-pay');
+        $(document).ready(function() {
+            let subtotal = {{ $subtotal }};
+            
+            // Format Rupiah
+            const rupiah = (number) => {
+                return new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", minimumFractionDigits: 0 }).format(number);
+            }
 
-        // 1. Load Provinsi saat Buka
-        fetch('/api/provinces')
-            .then(res => res.json())
-            .then(data => {
-                data.forEach(prov => {
-                    let opt = document.createElement('option');
-                    opt.value = prov.id;
-                    opt.text = prov.name;
-                    elProv.add(opt);
-                });
+            // 1. Load Provinsi (Saat Halaman Siap)
+            $.ajax({
+                url: "{{ route('api.provinces') }}",
+                type: "GET",
+                dataType: "json",
+                success: function(data) {
+                    $('#province_id').empty().append('<option value="">-- Pilih Provinsi --</option>');
+                    $.each(data, function(key, value) {
+                        $('#province_id').append(`<option value="${value.id}">${value.name}</option>`);
+                    });
+                }
             });
 
-        // 2. Saat Provinsi Dipilih -> Load Kota
-        elProv.addEventListener('change', function() {
-            // Reset Kota & Kurir
-            elCity.innerHTML = '<option value="">-- Loading... --</option>';
-            elCity.disabled = true;
-            elCourier.value = "";
-            elCourier.disabled = true;
-            elCourier.classList.add('bg-gray-100');
-            resetOngkir();
+            // 2. Pilih Provinsi -> Load Kota
+            $('#province_id').on('change', function() {
+                let provinceId = $(this).val();
+                let provinceName = $("#province_id option:selected").text();
+                $('#province_name').val(provinceName); // Simpan nama
 
-            // Simpan Nama Provinsi untuk DB
-            document.getElementById('province_name').value = elProv.options[elProv.selectedIndex].text;
-
-            if(this.value) {
-                fetch(`/api/cities/${this.value}`)
-                    .then(res => res.json())
-                    .then(data => {
-                        elCity.innerHTML = '<option value="">-- Pilih Kota --</option>';
-                        data.forEach(city => {
-                            let opt = document.createElement('option');
-                            opt.value = city.id;
-                            opt.text = city.name;
-                            opt.setAttribute('data-zip', city.zip_code);
-                            elCity.add(opt);
-                        });
-                        elCity.disabled = false;
-                        elCity.classList.remove('bg-gray-100');
+                if(provinceId) {
+                    $.ajax({
+                        url: "/api/cities/" + provinceId,
+                        type: "GET",
+                        dataType: "json",
+                        beforeSend: function() {
+                            $('#city_id').html('<option value="">-- Loading... --</option>');
+                        },
+                        success: function(data) {
+                            $('#city_id').empty().append('<option value="">-- Pilih Kota --</option>');
+                            $('#city_id').prop('disabled', false).removeClass('bg-gray-100');
+                            
+                            // Reset bawahnya
+                            $('#district_id').empty().append('<option value="">-- Pilih Kota Dulu --</option>').prop('disabled', true);
+                            $('#courier').prop('disabled', true);
+                            
+                            $.each(data, function(key, value) {
+                                $('#city_id').append(`<option value="${value.id}" data-zip="${value.zip_code}">${value.name}</option>`);
+                            });
+                        }
                     });
-            }
-        });
+                }
+            });
 
-        // 3. Saat Kota Dipilih -> Buka Pilihan Kurir & Isi Kodepos
-        elCity.addEventListener('change', function() {
-            let selectedOpt = elCity.options[elCity.selectedIndex];
-            elZip.value = selectedOpt.getAttribute('data-zip');
-            
-            // Simpan Nama Kota untuk DB
-            document.getElementById('city_name').value = selectedOpt.text;
-
-            if(this.value) {
-                elCourier.disabled = false;
-                elCourier.classList.remove('bg-gray-100');
-            } else {
-                elCourier.disabled = true;
-            }
-            resetOngkir();
-        });
-
-        // 4. Saat Kurir Dipilih -> Cek Ongkir ke Server
-        elCourier.addEventListener('change', function() {
-            let cityId = elCity.value;
-            let courierCode = this.value;
-
-            if(cityId && courierCode) {
-                displayShip.innerText = "Menghitung...";
+            // 3. Pilih Kota -> Load Kecamatan
+            $('#city_id').on('change', function() {
+                let cityId = $(this).val();
+                let cityName = $("#city_id option:selected").text();
+                let zipCode = $("#city_id option:selected").data('zip');
                 
-                fetch('/api/cost', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                    },
-                    body: JSON.stringify({ city_id: cityId, courier: courierCode })
-                })
-                .then(res => res.json())
-                .then(data => {
-                    // Ambil layanan pertama (biasanya termurah/reguler)
-                    let results = data[0].costs;
-                    if(results.length > 0) {
-                        let service = results[0]; // Ambil index 0 (Contoh: JNE OKE/REG)
-                        let cost = service.cost[0].value;
-                        let etd = service.cost[0].etd; // Estimasi hari
-                        let serviceName = service.service;
+                $('#city_name').val(cityName);
+                $('#postal_code').val(zipCode);
 
-                        // Update Tampilan
-                        displayShip.innerText = "Rp " + new Intl.NumberFormat('id-ID').format(cost);
-                        displayShip.classList.remove('text-orange-500');
-                        displayShip.classList.add('text-green-600');
-                        displayService.innerText = `${courierCode.toUpperCase()} ${serviceName} (${etd} Hari)`;
+                if(cityId) {
+                    $.ajax({
+                        url: "/api/districts/" + cityId,
+                        type: "GET",
+                        dataType: "json",
+                        beforeSend: function() {
+                            $('#district_id').html('<option value="">-- Loading... --</option>');
+                        },
+                        success: function(data) {
+                            $('#district_id').empty().append('<option value="">-- Pilih Kecamatan --</option>');
+                            $('#district_id').prop('disabled', false).removeClass('bg-gray-100');
+                            $('#courier').prop('disabled', true);
 
-                        // Update Data
-                        inputShip.value = cost;
-                        let total = subtotal + cost;
-                        displayGrand.innerText = "Rp " + new Intl.NumberFormat('id-ID').format(total);
-                        inputTotal.value = total;
+                            $.each(data, function(key, value) {
+                                $('#district_id').append(`<option value="${value.id}">${value.name}</option>`);
+                            });
+                        }
+                    });
+                }
+            });
 
-                        // Aktifkan Tombol
-                        btnPay.disabled = false;
-                        btnPay.classList.remove('bg-gray-400', 'cursor-not-allowed');
-                        btnPay.classList.add('bg-fuchsia-600', 'hover:bg-fuchsia-700');
-                    } else {
-                        displayShip.innerText = "Tidak tersedia";
-                    }
-                });
-            } else {
-                resetOngkir();
-            }
+            // 4. Pilih Kecamatan -> Buka Kurir
+            $('#district_id').on('change', function() {
+                let districtName = $("#district_id option:selected").text();
+                $('#district_name').val(districtName);
+                
+                if($(this).val()) {
+                    $('#courier').prop('disabled', false).removeClass('bg-gray-100');
+                } else {
+                    $('#courier').prop('disabled', true);
+                }
+            });
+
+            // 5. Cek Ongkir (Saat Kurir Dipilih)
+            $('#courier').on('change', function() {
+                let courier = $(this).val();
+                let districtId = $('#district_id').val();
+
+                if(districtId && courier) {
+                    $('#shipping_display').text('Menghitung...').addClass('text-orange-500');
+                    
+                    $.ajax({
+                        url: "{{ route('api.cost') }}",
+                        type: "POST",
+                        data: {
+                            _token: "{{ csrf_token() }}",
+                            district_id: districtId,
+                            courier: courier,
+                            weight: 1000 // Default 1kg
+                        },
+                        dataType: "json",
+                        success: function(response) {
+                            if(response.length > 0 && response[0].costs.length > 0) {
+                                let service = response[0].costs[0]; // Ambil layanan pertama
+                                let cost = service.cost[0].value;
+                                let etd = service.cost[0].etd;
+                                let serviceName = service.service;
+
+                                // Update Tampilan
+                                $('#shipping_display').text(rupiah(cost)).removeClass('text-orange-500').addClass('text-green-600');
+                                $('#service_detail').text(`${courier.toUpperCase()} ${serviceName} (${etd} Hari)`);
+                                
+                                // Update Total
+                                $('#shipping_cost_input').val(cost);
+                                $('#grand_total_display').text(rupiah(subtotal + cost));
+                                
+                                // Aktifkan Tombol
+                                $('#btn-pay').prop('disabled', false).removeClass('bg-gray-400 cursor-not-allowed').addClass('bg-fuchsia-600 hover:bg-fuchsia-700');
+                            } else {
+                                $('#shipping_display').text('Tidak Tersedia');
+                                alert("Kurir tidak mendukung rute ini.");
+                            }
+                        },
+                        error: function() {
+                            $('#shipping_display').text('Error API');
+                        }
+                    });
+                }
+            });
         });
-
-        function resetOngkir() {
-            displayShip.innerText = "Pilih Kurir...";
-            displayShip.classList.add('text-orange-500');
-            displayShip.classList.remove('text-green-600');
-            displayService.innerText = "";
-            inputShip.value = 0;
-            displayGrand.innerText = "Rp " + new Intl.NumberFormat('id-ID').format(subtotal);
-            btnPay.disabled = true;
-            btnPay.classList.add('bg-gray-400', 'cursor-not-allowed');
-            btnPay.classList.remove('bg-fuchsia-600');
-        }
     </script>
 </x-app-layout>
