@@ -86,6 +86,14 @@
                                     <option value="idexpress">ID Express</option>
                                 </select>
                             </div>
+
+                            {{-- Type --}}
+                            <div>
+                                <label class="block text-sm font-bold text-gray-700 mb-2">Pilih Type</label>
+                                <select name="type" id="type" class="w-full border-gray-300 rounded-xl p-3 bg-gray-100" disabled required>
+                                    <option value="">-- Pilih Kurir Dulu --</option>
+                                </select>
+                            </div>
                         </div>
                     </div>
 
@@ -274,7 +282,14 @@
                         },
                         dataType: "json",
                         success: function(response) {
+                            console.log(response)
+                            $('#type').prop('disabled', false).removeClass('bg-gray-100');
+                            $.each(response, function(key, value) {
+                                $('#type').append(`<option value="${value.code}" data-cost="${value.cost}">${value.name} <span class="text-xs">(${value.description})</span> Rp ${value.cost.toLocaleString()}</option>`);
+                            });
                             if(response.length > 0 && response[0].costs.length > 0) {
+                                console.log(response)
+                                
                                 let service = response[0].costs[0]; // Ambil layanan pertama
                                 let cost = service.cost[0].value;
                                 let etd = service.cost[0].etd;
@@ -295,12 +310,22 @@
                                 alert("Kurir tidak mendukung rute ini.");
                             }
                         },
-                        error: function() {
+                        error: function(error) {
+                            console.log(error)
                             $('#shipping_display').text('Error API');
                         }
                     });
                 }
             });
+
+            $('#type').on('change', function () {
+                const selectedOption = $(this).find(':selected');
+                const cost = selectedOption.data('cost');
+                 $('#shipping_display').text(rupiah(cost)).removeClass('text-orange-500').addClass('text-green-600');
+
+                $('#shipping_cost_input').val(cost);
+                $('#grand_total_display').text(rupiah(subtotal + cost));
+            })
         });
     </script>
 </x-app-layout>

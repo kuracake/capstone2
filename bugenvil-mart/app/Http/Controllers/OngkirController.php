@@ -29,9 +29,7 @@ class OngkirController extends Controller
     public function getCities($id)
     {
         $response = Http::withHeaders(['key' => $this->apiKey])
-            ->get($this->baseUrl . '/destination/city', [
-                'province_id' => $id
-            ]);
+            ->get($this->baseUrl . '/destination/city/' . $id);
 
         return response()->json($response->json()['data'] ?? []);
     }
@@ -40,9 +38,7 @@ class OngkirController extends Controller
     public function getDistricts($id)
     {
         $response = Http::withHeaders(['key' => $this->apiKey])
-            ->get($this->baseUrl . '/destination/sub-district', [
-                'city_id' => $id
-            ]);
+            ->get($this->baseUrl . '/destination/district/' . $id);
 
         return response()->json($response->json()['data'] ?? []);
     }
@@ -50,14 +46,19 @@ class OngkirController extends Controller
     // 4. Cek Ongkir (Kecamatan ke Kecamatan)
     public function checkOngkir(Request $request)
     {
-        $response = Http::withHeaders(['key' => $this->apiKey])
-            ->post($this->baseUrl . '/calculate/district/domestic-cost', [
-                'origin_district_id'      => env('RAJAONGKIR_ORIGIN'), // ID Kecamatan Toko (Sumbergempol)
-                'destination_district_id' => $request->district_id,    // ID Kecamatan Tujuan
-                'weight'                  => 1000, 
-                'courier'                 => $request->courier
-            ]);
-
-        return response()->json($response->json()['data'] ?? []);
+        $response = Http::withHeaders(headers: [
+            'Accept' => 'application/json',
+            'key' => $this->apiKey
+        ])->withOptions(options: [
+            'query' => [
+                'origin' => env('RAJAONGKIR_ORIGIN'),
+                'destination' => $request->input('district_id'),
+                'weight'                  => 1000,
+                'courier'                 => $request->input('courier')
+            ]
+        ])->post($this->baseUrl . '/calculate/district/domestic-cost');
+        // if ($response->successful()) {
+            return $response->json()['data'] ?? [];
+        // }
     }
 }
