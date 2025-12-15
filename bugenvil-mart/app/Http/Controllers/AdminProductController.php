@@ -8,8 +8,6 @@ use Illuminate\Support\Facades\Storage;
 
 class AdminProductController extends Controller
 {
-    // ... method index, create, store yang sudah ada sebelumnya ...
-
     public function index()
     {
         $products = Product::latest()->paginate(10);
@@ -23,9 +21,12 @@ class AdminProductController extends Controller
 
     public function store(Request $request)
     {
+        // 1. Validasi Input (Tambahkan stock & weight)
         $request->validate([
             'name' => 'required|string|max:255',
             'price' => 'required|numeric',
+            'stock' => 'required|integer|min:0',      // <-- PENTING
+            'weight' => 'required|integer|min:100',   // <-- PENTING
             'description' => 'nullable|string',
             'image' => 'required|image|mimes:jpeg,png,jpg|max:2048',
         ]);
@@ -35,9 +36,12 @@ class AdminProductController extends Controller
             $imagePath = $request->file('image')->store('products', 'public');
         }
 
+        // 2. Simpan Data (Masukkan stock & weight ke database)
         Product::create([
             'name' => $request->name,
             'price' => $request->price,
+            'stock' => $request->stock,    // <-- SEBELUMNYA HILANG
+            'weight' => $request->weight,  // <-- SEBELUMNYA HILANG
             'description' => $request->description,
             'image' => $imagePath,
         ]);
@@ -45,42 +49,38 @@ class AdminProductController extends Controller
         return redirect()->route('admin.products.index')->with('success', 'Produk berhasil ditambahkan!');
     }
 
-    // --- TAMBAHAN BARU: FITUR EDIT ---
-
-    // 1. Tampilkan Form Edit
     public function edit($id)
     {
         $product = Product::findOrFail($id);
         return view('admin.products.edit', compact('product'));
     }
 
-    // 2. Proses Update Data
     public function update(Request $request, $id)
     {
         $product = Product::findOrFail($id);
 
-        // Validasi (Image jadi nullable karena user mungkin tidak ganti gambar)
+        // 3. Validasi Update
         $request->validate([
             'name' => 'required|string|max:255',
             'price' => 'required|numeric',
+            'stock' => 'required|integer|min:0',      // <-- PENTING
+            'weight' => 'required|integer|min:100',   // <-- PENTING
             'description' => 'nullable|string',
             'image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ]);
 
-        // Update Text Info
+        // 4. Update Data (Jangan lupa update stok & berat juga)
         $product->name = $request->name;
         $product->price = $request->price;
+        $product->stock = $request->stock;    // <-- SEBELUMNYA HILANG
+        $product->weight = $request->weight;  // <-- SEBELUMNYA HILANG
         $product->description = $request->description;
 
-        // Cek jika ada gambar baru diupload
         if ($request->hasFile('image')) {
-            // Hapus gambar lama agar hemat storage
             if ($product->image) {
                 Storage::disk('public')->delete($product->image);
             }
-            // Simpan gambar baru
-            $imagePath = $request->file('image')->store('products', 'public');
-            $product->image = $imagePath;
+            $product->image = $request->file('image')->store('products', 'public');
         }
 
         $product->save();

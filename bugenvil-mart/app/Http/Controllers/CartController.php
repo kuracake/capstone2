@@ -7,22 +7,26 @@ use App\Models\Product;
 
 class CartController extends Controller
 {
-    // 1. Tambah ke Keranjang (Tanpa Login)
+    // 1. Tambah ke Keranjang
     public function addToCart($id)
     {
         $product = Product::findOrFail($id);
         $cart = session()->get('cart', []);
 
-        // Jika produk sudah ada di cart, tambah jumlahnya
+        // Validasi Stok Sederhana di Awal
+        if($product->stock <= 0) {
+            return redirect()->back()->with('error', 'Stok produk ini habis!');
+        }
+
         if(isset($cart[$id])) {
             $cart[$id]['quantity']++;
         } else {
-            // Jika belum ada, masukkan data baru
             $cart[$id] = [
                 "name" => $product->name,
                 "quantity" => 1,
                 "price" => $product->price,
-                "image" => $product->image_path
+                "image" => $product->image, // Pastikan nama kolom di DB 'image' bukan 'image_path' (sesuai model Product)
+                "weight" => $product->weight // <--- TAMBAHAN PENTING
             ];
         }
 
@@ -30,13 +34,11 @@ class CartController extends Controller
         return redirect()->back()->with('success', 'Produk masuk keranjang!');
     }
 
-    // 2. Lihat Halaman Keranjang
     public function viewCart()
     {
         return view('cart.index');
     }
 
-    // 3. Hapus Item dari Keranjang
     public function remove(Request $request)
     {
         if($request->id) {

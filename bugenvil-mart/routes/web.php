@@ -51,6 +51,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Checkout & Transaksi
     Route::get('/checkout', [OrderController::class, 'index'])->name('checkout');
     Route::post('/checkout', [OrderController::class, 'store'])->name('checkout.store');
+    Route::get('/orders/{iSd}', [OrderController::class, 'show'])->name('orders.show');
 
     // --- API RAJAONGKIR (Sesuai SantriKoding) ---
     Route::get('/api/provinces', [OngkirController::class, 'getProvinces'])->name('api.provinces');

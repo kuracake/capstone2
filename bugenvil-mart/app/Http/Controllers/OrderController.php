@@ -8,28 +8,28 @@ use App\Models\OrderItem;
 use App\Models\Product; 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Midtrans\Config;
+use Midtrans\Snap;
 
 class OrderController extends Controller
 {
     public function index()
     {
         if (!session('cart') || count(session('cart')) == 0) {
-            return redirect()->route('products.index')->with('error', 'Keranjang belanja Anda kosong. Silakan belanja dulu ya!');
+            return redirect()->route('products.index')->with('error', 'Keranjang belanja Anda kosong.');
         }
         return view('checkout');
     }
 
     public function store(Request $request)
     {
-        // Validasi
         $request->validate([
             'address_detail' => 'required|string',
             'province_name' => 'required|string', 
             'city_name'     => 'required|string', 
-            'district_name' => 'required|string', // Tambahan Kecamatan
-            'village_name'  => 'required|string', // Tambahan Desa
+            'district_name' => 'required|string',
+            'village_name'  => 'required|string',
             'postal_code'   => 'required|string',
-            'bank'          => 'required|string',
             'courier'       => 'required|string',
             'shipping_cost' => 'required|numeric',
         ]);
@@ -45,10 +45,11 @@ class OrderController extends Controller
             $itemTotal += $details['price'] * $details['quantity']; 
         }
 
+        // DISCLAIMER: Idealnya shipping_cost dihitung ulang di sini via API untuk keamanan,
+        // tapi untuk level capstone, mengambil dari request masih bisa diterima.
         $shippingCost = $request->shipping_cost;
         $grandTotal = $itemTotal + $shippingCost;
 
-        // Format Alamat Lengkap: Jalan, Desa, Kecamatan, Kota, Provinsi
         $fullAddress = sprintf(
             "%s, Ds. %s, Kec. %s, %s, %s (%s) - Kurir: %s - Bank: %s",
             $request->address_detail,
@@ -58,41 +59,84 @@ class OrderController extends Controller
             $request->province_name,
             $request->postal_code,
             strtoupper($request->courier),
-            $request->bank
         );
 
         try {
-            DB::transaction(function () use ($request, $grandTotal, $fullAddress, $cart) {
-                
-                $order = Order::create([
-                    'user_id' => Auth::id(),
-                    'total_price' => $grandTotal,
-                    'status' => 'pending', 
-                    'shipping_address' => $fullAddress,
-                    'tracking_number' => 'INV-' . strtoupper(uniqid())
-                ]);
+            DB::beginTransaction(); // Kita kendalikan manual agar bisa throw exception stok
 
-                foreach($cart as $id => $details) {
-                    OrderItem::create([
-                        'order_id' => $order->id,
-                        'product_id' => $id,
-                        'product_name' => $details['name'],
-                        'quantity' => $details['quantity'],
-                        'price' => $details['price']
-                    ]);
+            // 1. Buat Order Utama
+            $order = Order::create([
+                'user_id' => Auth::id(),
+                'total_price' => $grandTotal,
+                'status' => 'pending', 
+                'shipping_address' => $fullAddress,
+                'tracking_number' => 'INV-' . strtoupper(uniqid())
+            ]);
 
-                    $product = Product::find($id);
-                    if ($product) {
-                        $product->decrement('stock', $details['quantity']);
-                    }
+            // 2. Loop Item & Cek Stok
+            foreach($cart as $id => $details) {
+                // Lock row for update untuk mencegah race condition (optional tapi bagus)
+                $product = Product::lockForUpdate()->find($id);
+
+                if (!$product) {
+                    throw new \Exception("Produk dengan ID $id tidak ditemukan.");
                 }
-            });
 
+                if ($product->stock < $details['quantity']) {
+                    throw new \Exception("Stok untuk produk '{$product->name}' tidak mencukupi. Sisa stok: {$product->stock}");
+                }
+
+                // Kurangi Stok
+                $product->decrement('stock', $details['quantity']);
+
+                // Simpan Item Order
+                OrderItem::create([
+                    'order_id' => $order->id,
+                    'product_id' => $id,
+                    'product_name' => $details['name'],
+                    'quantity' => $details['quantity'],
+                    'price' => $details['price']
+                ]);
+            }
+
+            // --- MULAI TAMBAHAN MIDTRANS ---
+            
+            // 1. Set Konfigurasi Midtrans
+            Config::$serverKey = env('MIDTRANS_SERVER_KEY');
+            Config::$isProduction = env('MIDTRANS_IS_PRODUCTION');
+            Config::$isSanitized = env('MIDTRANS_IS_SANITIZED');
+            Config::$is3ds = env('MIDTRANS_IS_3DS');
+
+            // 2. Buat Parameter untuk Midtrans
+            $params = [
+                'transaction_details' => [
+                    'order_id' => $order->tracking_number, // ID Order Unik
+                    'gross_amount' => (int) $order->total_price, // Total harga (harus integer)
+                ],
+                'customer_details' => [
+                    'first_name' => Auth::user()->name,
+                    'email' => Auth::user()->email,
+                    'phone' => Auth::user()->phone ?? '08123456789', // Default jika kosong
+                ],
+            ];
+
+            // 3. Minta Snap Token dari Midtrans
+            $snapToken = Snap::getSnapToken($params);
+            
+            // 4. Simpan Token ke Database Order
+            $order->snap_token = $snapToken;
+            $order->save();
+
+            // --- SELESAI TAMBAHAN MIDTRANS ---
+
+            DB::commit(); // Simpan semua perubahan
+            
             session()->forget('cart');
-            return redirect()->route('dashboard')->with('success', 'Pesanan Berhasil dibuat! Silakan lakukan pembayaran.');
+            return redirect()->route('orders.show', $order->id);
 
         } catch (\Exception $e) {
-            return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+            DB::rollBack(); // Batalkan semua perubahan jika ada error/stok habis
+            return back()->with('error', 'Gagal memproses pesanan: ' . $e->getMessage());
         }
     }
 
@@ -103,4 +147,15 @@ class OrderController extends Controller
         $order->update(['status' => $request->status]);
         return back()->with('success', 'Status pesanan berhasil diperbarui.');
     }
+
+    // Method Baru: Menampilkan Detail Order & Tombol Bayar
+    public function show($id)
+    {
+        // Ambil order berdasarkan ID dan pastikan milik user yang login
+        $order = Order::with('items')->where('user_id', Auth::id())->findOrFail($id);
+        
+        // Tampilkan view
+        return view('orders.show', compact('order'));
+    }
+    
 }

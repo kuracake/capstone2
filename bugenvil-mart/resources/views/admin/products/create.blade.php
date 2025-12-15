@@ -1,87 +1,77 @@
 <x-app-layout>
-    <div class="py-12">
+    <div class="py-12 bg-gray-50 min-h-screen">
         <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-8 text-gray-900">
+            <div class="bg-white overflow-hidden shadow-sm sm:rounded-xl">
+                <div class="p-8 border-b border-gray-100">
                     
-                    <div class="flex justify-between items-center mb-8">
+                    {{-- Header --}}
+                    <div class="flex justify-between items-center mb-6">
                         <h2 class="text-2xl font-bold text-gray-800">Tambah Produk Baru</h2>
-                        <a href="{{ route('admin.products.index') }}" class="text-gray-500 hover:text-gray-700">
+                        <a href="{{ route('admin.products.index') }}" class="text-gray-500 hover:text-gray-700 font-medium transition">
                             &larr; Kembali
                         </a>
                     </div>
 
-                    @if ($errors->any())
-                        <div class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
-                            <ul class="list-disc list-inside">
-                                @foreach ($errors->all() as $error)
-                                    <li>{{ $error }}</li>
-                                @endforeach
-                            </ul>
-                        </div>
-                    @endif
-
+                    {{-- Form --}}
                     <form action="{{ route('admin.products.store') }}" method="POST" enctype="multipart/form-data" class="space-y-6">
                         @csrf
 
+                        {{-- Nama Produk --}}
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Nama Produk</label>
-                            <input type="text" name="name" value="{{ old('name') }}" class="w-full rounded-lg border-gray-300 focus:border-fuchsia-500 focus:ring-fuchsia-500 shadow-sm" required placeholder="Contoh: Bugenvil Merah Rimbun">
+                            <x-input-label for="name" :value="__('Nama Produk')" />
+                            <x-text-input id="name" class="block mt-1 w-full" type="text" name="name" :value="old('name')" required autofocus placeholder="Contoh: Bugenvil Merah Rimbun" />
+                            <x-input-error :messages="$errors->get('name')" class="mt-2" />
                         </div>
 
+                        {{-- Deskripsi --}}
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Informasi Penjualan / Deskripsi</label>
-                            <textarea name="description" rows="4" class="w-full rounded-lg border-gray-300 focus:border-fuchsia-500 focus:ring-fuchsia-500 shadow-sm" placeholder="Jelaskan kondisi tanaman...">{{ old('description') }}</textarea>
+                            <x-input-label for="description" :value="__('Deskripsi Produk')" />
+                            <textarea id="description" name="description" rows="4" class="block mt-1 w-full border-gray-300 focus:border-pink-500 focus:ring-pink-500 rounded-md shadow-sm" placeholder="Jelaskan kondisi tanaman...">{{ old('description') }}</textarea>
+                            <x-input-error :messages="$errors->get('description')" class="mt-2" />
                         </div>
 
+                        {{-- Grid Harga --}}
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Harga Asli (Rp)</label>
-                                <input type="number" name="price" value="{{ old('price') }}" class="w-full rounded-lg border-gray-300 focus:border-fuchsia-500 focus:ring-fuchsia-500 shadow-sm" required placeholder="50000">
+                                <x-input-label for="price" :value="__('Harga Asli (Rp)')" />
+                                <x-text-input id="price" class="block mt-1 w-full" type="number" name="price" :value="old('price')" required placeholder="50000" />
+                                <x-input-error :messages="$errors->get('price')" class="mt-2" />
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Harga Diskon (Opsional)</label>
-                                <input type="number" name="discount_price" value="{{ old('discount_price') }}" class="w-full rounded-lg border-gray-300 focus:border-fuchsia-500 focus:ring-fuchsia-500 shadow-sm" placeholder="Contoh: 45000">
-                                <p class="text-xs text-gray-500 mt-1">*Harga ini yang akan tampil sebagai harga jual.</p>
+                                <x-input-label for="discount_price" :value="__('Harga Diskon (Opsional)')" />
+                                <x-text-input id="discount_price" class="block mt-1 w-full" type="number" name="discount_price" :value="old('discount_price')" placeholder="45000" />
+                                <p class="text-xs text-gray-500 mt-1">*Harga ini yang akan dipakai checkout.</p>
                             </div>
                         </div>
 
+                        {{-- Grid Stok & Berat (PENTING: Jangan sampai hilang) --}}
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Stok Barang</label>
-                                <input type="number" name="stock" value="{{ old('stock', 10) }}" class="w-full rounded-lg border-gray-300 focus:border-fuchsia-500 focus:ring-fuchsia-500 shadow-sm" required>
+                                <x-input-label for="stock" :value="__('Stok Barang')" />
+                                <x-text-input id="stock" class="block mt-1 w-full" type="number" name="stock" :value="old('stock', 10)" required />
+                                <x-input-error :messages="$errors->get('stock')" class="mt-2" />
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Berat Produk (Gram)</label>
-                                <input type="number" name="weight" value="{{ old('weight', 1000) }}" class="w-full rounded-lg border-gray-300 focus:border-fuchsia-500 focus:ring-fuchsia-500 shadow-sm" required>
-                                <p class="text-xs text-gray-500 mt-1">*Penting untuk ongkir (1000 gram = 1kg).</p>
+                                <x-input-label for="weight" :value="__('Berat (Gram)')" />
+                                <x-text-input id="weight" class="block mt-1 w-full" type="number" name="weight" :value="old('weight', 1000)" required />
+                                <p class="text-xs text-gray-500 mt-1">*Wajib untuk hitung ongkir (1000 = 1kg).</p>
+                                <x-input-error :messages="$errors->get('weight')" class="mt-2" />
                             </div>
                         </div>
 
+                        {{-- Gambar --}}
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Foto Produk</label>
-                            <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-lg hover:bg-gray-50 transition relative">
-                                <div class="space-y-1 text-center">
-                                    <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
-                                        <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                                    </svg>
-                                    <div class="flex text-sm text-gray-600 justify-center">
-                                        <span class="relative cursor-pointer bg-white rounded-md font-medium text-fuchsia-600 hover:text-fuchsia-500 focus-within:outline-none">
-                                            <span>Upload file</span>
-                                            <input id="file-upload" name="image" type="file" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
-                                        </span>
-                                    </div>
-                                    <p class="text-xs text-gray-500">Klik area ini untuk memilih gambar</p>
-                                </div>
-                            </div>
+                            <x-input-label for="image" :value="__('Foto Produk')" />
+                            <input id="image" name="image" type="file" class="block w-full mt-1 text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none" accept="image/*" required>
+                            <x-input-error :messages="$errors->get('image')" class="mt-2" />
                         </div>
 
+                        {{-- Tombol --}}
                         <div class="flex justify-end pt-4">
-                            <button type="submit" class="bg-fuchsia-600 text-white font-bold py-3 px-8 rounded-full shadow-lg hover:bg-fuchsia-700 transition transform hover:scale-105">
-                                Simpan Produk
-                            </button>
+                            <x-primary-button class="bg-pink-600 hover:bg-pink-700 py-3 px-6 text-base">
+                                {{ __('Simpan Produk') }}
+                            </x-primary-button>
                         </div>
-
                     </form>
                 </div>
             </div>

@@ -97,24 +97,6 @@
                         </div>
                     </div>
 
-                    {{-- Metode Pembayaran --}}
-                    <div class="bg-white p-8 rounded-2xl shadow-sm border border-purple-100">
-                        <h2 class="text-xl font-bold mb-4 text-gray-800">Transfer Bank</h2>
-                        <div class="space-y-3">
-                            <label class="flex items-center gap-4 p-4 border border-gray-200 rounded-xl cursor-pointer hover:border-fuchsia-500 hover:bg-fuchsia-50 transition">
-                                <input type="radio" name="bank" value="BCA" class="text-fuchsia-600 focus:ring-fuchsia-500" checked>
-                                <span class="font-bold text-gray-800">Bank BCA</span>
-                                <span class="ml-auto text-xs text-gray-500 font-mono">123-456-789</span>
-                            </label>
-                            <label class="flex items-center gap-4 p-4 border border-gray-200 rounded-xl cursor-pointer hover:border-fuchsia-500 hover:bg-fuchsia-50 transition">
-                                <input type="radio" name="bank" value="Mandiri" class="text-fuchsia-600 focus:ring-fuchsia-500">
-                                <span class="font-bold text-gray-800">Bank Mandiri</span>
-                                <span class="ml-auto text-xs text-gray-500 font-mono">987-654-321</span>
-                            </label>
-                        </div>
-                    </div>
-                </div>
-
                 {{-- KOLOM KANAN: Ringkasan --}}
                 <div class="md:w-1/3">
                     <div class="bg-white p-6 rounded-2xl shadow-lg border border-gray-100 sticky top-24">

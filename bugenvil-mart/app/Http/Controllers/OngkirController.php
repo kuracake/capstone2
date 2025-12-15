@@ -46,6 +46,21 @@ class OngkirController extends Controller
     // 4. Cek Ongkir (Kecamatan ke Kecamatan)
     public function checkOngkir(Request $request)
     {
+        // --- LOGIKA HITUNG BERAT (Baru Ditambahkan) ---
+        $cart = session('cart');
+        $totalWeight = 0;
+        
+        if ($cart) {
+            foreach ($cart as $item) {
+                // Ambil berat per item (default 1000gr jika kosong)
+                $weight = $item['weight'] ?? 1000; 
+                $totalWeight += ($weight * $item['quantity']);
+            }
+        }
+
+        // Berat minimal 1000gr (1kg) agar API tidak error
+        if ($totalWeight <= 0) $totalWeight = 1000;
+        
         $response = Http::withHeaders(headers: [
             'Accept' => 'application/json',
             'key' => $this->apiKey
@@ -53,7 +68,7 @@ class OngkirController extends Controller
             'query' => [
                 'origin' => env('RAJAONGKIR_ORIGIN'),
                 'destination' => $request->input('district_id'),
-                'weight'                  => 1000,
+                'weight'                  => $totalWeight,
                 'courier'                 => $request->input('courier')
             ]
         ])->post($this->baseUrl . '/calculate/district/domestic-cost');
