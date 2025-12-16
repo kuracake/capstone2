@@ -19,6 +19,7 @@
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {{-- KARTU 1: KERANJANG (Sudah Benar) --}}
                 <a href="{{ route('cart.index') }}" class="block p-6 bg-white rounded-lg border border-gray-200 shadow-md hover:bg-gray-50 transition">
                     <div class="flex items-center gap-4">
                         <div class="p-3 bg-blue-100 text-blue-600 rounded-full">
@@ -33,7 +34,8 @@
                     </div>
                 </a>
 
-                <a href="{{ route('checkout') }}" class="block p-6 bg-white rounded-lg border border-gray-200 shadow-md hover:bg-gray-50 transition">
+                {{-- KARTU 2: STATUS PESANAN (PERBAIKAN: Link ke Anchor Tabel di bawah) --}}
+                <a href="#riwayat-pesanan" class="block p-6 bg-white rounded-lg border border-gray-200 shadow-md hover:bg-gray-50 transition">
                     <div class="flex items-center gap-4">
                         <div class="p-3 bg-green-100 text-green-600 rounded-full">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -47,6 +49,7 @@
                     </div>
                 </a>
 
+                {{-- KARTU 3: AKUN (Sudah Benar) --}}
                 <a href="{{ route('profile.edit') }}" class="block p-6 bg-white rounded-lg border border-gray-200 shadow-md hover:bg-gray-50 transition">
                     <div class="flex items-center gap-4">
                         <div class="p-3 bg-purple-100 text-purple-600 rounded-full">
@@ -62,7 +65,8 @@
                 </a>
             </div>
 
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+            {{-- PERBAIKAN: Menambahkan ID 'riwayat-pesanan' agar link di atas bekerja --}}
+            <div id="riwayat-pesanan" class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900">
                     <h3 class="font-bold text-lg mb-4">Riwayat Pesanan Terakhir</h3>
                     
@@ -72,6 +76,7 @@
                                 <thead class="text-xs text-gray-700 uppercase bg-gray-50">
                                     <tr>
                                         <th class="px-6 py-3">Tanggal</th>
+                                        <th class="px-6 py-3">Tracking ID</th>
                                         <th class="px-6 py-3">Total Harga</th>
                                         <th class="px-6 py-3">Status</th>
                                         <th class="px-6 py-3">Aksi</th>
@@ -81,14 +86,27 @@
                                     @foreach($myOrders as $order)
                                     <tr class="bg-white border-b hover:bg-gray-50">
                                         <td class="px-6 py-4">{{ $order->created_at->format('d M Y') }}</td>
+                                        <td class="px-6 py-4 font-mono text-xs">{{ $order->tracking_number }}</td>
                                         <td class="px-6 py-4">Rp {{ number_format($order->total_price, 0, ',', '.') }}</td>
                                         <td class="px-6 py-4">
-                                            <span class="px-2 py-1 font-semibold leading-tight text-green-700 bg-green-100 rounded-full">
-                                                {{ $order->status ?? 'Menunggu' }}
+                                            {{-- Logika warna badge status --}}
+                                            @php
+                                                $statusColor = match($order->status) {
+                                                    'pending' => 'bg-yellow-100 text-yellow-800',
+                                                    'paid', 'completed' => 'bg-green-100 text-green-800',
+                                                    'cancelled' => 'bg-red-100 text-red-800',
+                                                    default => 'bg-gray-100 text-gray-800',
+                                                };
+                                            @endphp
+                                            <span class="px-2 py-1 font-semibold leading-tight rounded-full {{ $statusColor }}">
+                                                {{ ucfirst($order->status) }}
                                             </span>
                                         </td>
                                         <td class="px-6 py-4">
-                                            <a href="#" class="font-medium text-blue-600 hover:underline">Detail</a>
+                                            {{-- PERBAIKAN UTAMA: Mengarahkan ke route orders.show dengan ID order --}}
+                                            <a href="{{ route('orders.show', $order->id) }}" class="font-medium text-blue-600 hover:underline">
+                                                Detail
+                                            </a>
                                         </td>
                                     </tr>
                                     @endforeach

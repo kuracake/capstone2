@@ -96,7 +96,7 @@
                             </div>
                         </div>
                     </div>
-
+                    
                 {{-- KOLOM KANAN: Ringkasan --}}
                 <div class="md:w-1/3">
                     <div class="bg-white p-6 rounded-2xl shadow-lg border border-gray-100 sticky top-24">
