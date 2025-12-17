@@ -1,82 +1,50 @@
-<x-app-layout>
-    <div class="py-12 bg-gray-50 min-h-screen">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-2xl font-bold text-gray-800">Kelola Produk</h2>
-                <a href="{{ route('admin.products.create') }}" class="bg-pink-600 hover:bg-pink-700 text-white font-bold py-2 px-4 rounded-lg shadow transition">
-                    + Tambah Produk
-                </a>
-            </div>
+<x-admin-layout>
+    <div class="flex justify-between items-center mb-6">
+        <h2 class="text-xl font-bold text-gray-800">Kelola Produk</h2>
+        <a href="{{ route('admin.products.create') }}" class="px-4 py-2 bg-teal-500 hover:bg-teal-600 text-white rounded-xl font-semibold text-sm transition-colors shadow-lg shadow-teal-200 flex items-center">
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+            Tambah Produk
+        </a>
+    </div>
 
-            @if(session('success'))
-                <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-4" role="alert">
-                    <p>{{ session('success') }}</p>
-                </div>
-            @endif
-
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-xl">
-                <div class="overflow-x-auto">
-                    <table class="min-w-full leading-normal">
-                        <thead>
-                            <tr class="bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                                <th class="px-5 py-3 border-b-2 border-gray-200">Gambar</th>
-                                <th class="px-5 py-3 border-b-2 border-gray-200">Nama Produk</th>
-                                <th class="px-5 py-3 border-b-2 border-gray-200">Harga</th>
-                                <th class="px-5 py-3 border-b-2 border-gray-200 text-center">Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse($products as $product)
-                            <tr>
-                                <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                                    @if($product->image)
-                                        <img src="{{ asset('storage/' . $product->image) }}" alt="" class="w-16 h-16 object-cover rounded-md border">
-                                    @else
-                                        <span class="text-gray-400">No Image</span>
-                                    @endif
-                                </td>
-                                <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                                    <p class="text-gray-900 font-semibold">{{ $product->name }}</p>
-                                    <p class="text-gray-500 text-xs truncate w-48">{{ $product->description }}</p>
-                                </td>
-                                <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                                    Rp {{ number_format($product->price, 0, ',', '.') }}
-                                </td>
-                                <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm text-center">
-                                    <div class="flex justify-center gap-2">
-                                        {{-- TOMBOL EDIT --}}
-                                        <a href="{{ route('admin.products.edit', $product->id) }}" class="text-yellow-600 hover:text-yellow-900 font-bold">
-                                            Edit
-                                        </a>
-                                        
-                                        <span class="text-gray-300">|</span>
-                                        
-                                        {{-- TOMBOL DELETE --}}
-                                        <form action="{{ route('admin.products.destroy', $product->id) }}" method="POST" onsubmit="return confirm('Yakin hapus produk ini?');">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="text-red-600 hover:text-red-900 font-bold">
-                                                Hapus
-                                            </button>
-                                        </form>
-                                    </div>
-                                </td>
-                            </tr>
-                            @empty
-                            <tr>
-                                <td colspan="4" class="px-5 py-10 text-center text-gray-500">
-                                    Belum ada produk yang ditambahkan.
-                                </td>
-                            </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
-                <div class="p-4 bg-gray-50">
-                    {{ $products->links() }} 
-                </div>
-            </div>
+    <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm text-left text-gray-600">
+                <thead class="text-xs text-gray-400 uppercase bg-gray-50 font-bold border-b border-gray-100">
+                    <tr>
+                        <th class="px-6 py-4">Gambar</th>
+                        <th class="px-6 py-4">Nama Produk</th>
+                        <th class="px-6 py-4">Harga</th>
+                        <th class="px-6 py-4 text-center">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    @forelse($products as $product)
+                    <tr class="hover:bg-gray-50/50 transition-colors">
+                        <td class="px-6 py-4">
+                            @if($product->image)
+                                <img src="{{ asset('storage/' . $product->image) }}" class="w-12 h-12 rounded-lg object-cover border border-gray-200" alt="{{ $product->name }}">
+                            @else
+                                <div class="w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center text-gray-400 text-xs">No Img</div>
+                            @endif
+                        </td>
+                        <td class="px-6 py-4 font-medium text-gray-900">{{ $product->name }}</td>
+                        <td class="px-6 py-4 font-bold text-teal-600">Rp {{ number_format($product->price, 0, ',', '.') }}</td>
+                        <td class="px-6 py-4 flex justify-center gap-3">
+                            <a href="{{ route('admin.products.edit', $product->id) }}" class="text-blue-500 hover:text-blue-700 font-medium text-xs">Edit</a>
+                            <form action="{{ route('admin.products.destroy', $product->id) }}" method="POST" onsubmit="return confirm('Yakin hapus?')">
+                                @csrf @method('DELETE')
+                                <button type="submit" class="text-red-500 hover:text-red-700 font-medium text-xs">Hapus</button>
+                            </form>
+                        </td>
+                    </tr>
+                    @empty
+                    <tr>
+                        <td colspan="4" class="px-6 py-12 text-center text-gray-400">Belum ada produk.</td>
+                    </tr>
+                    @endforelse
+                </tbody>
+            </table>
         </div>
     </div>
-</x-app-layout>
+</x-admin-layout>

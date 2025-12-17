@@ -1,85 +1,57 @@
-<x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Daftar Laporan Masuk') }}
-        </h2>
-    </x-slot>
+<x-admin-layout>
+    <div class="mb-6">
+        <h2 class="text-xl font-bold text-gray-800">Daftar Laporan Masuk</h2>
+        <p class="text-gray-400 text-sm">Pantau kendala yang dilaporkan pelanggan.</p>
+    </div>
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
-                
-                <h3 class="text-lg font-bold mb-4">Semua Laporan Kendala</h3>
-
-                @if($reports->isEmpty())
-                    <p class="text-gray-500">Belum ada laporan masuk.</p>
-                @else
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left border-collapse">
-                            <thead>
-                                <tr class="bg-gray-100 border-b">
-                                    <th class="p-3">Pelapor</th>
-                                    <th class="p-3">Nomor Order</th>
-                                    <th class="p-3">Deskripsi Masalah</th>
-                                    <th class="p-3">Bukti Foto</th>
-                                    <th class="p-3">Status</th>
-                                    <th class="p-3">Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach($reports as $report)
-                                <tr class="border-b hover:bg-gray-50">
-                                    <td class="p-3 font-bold">{{ $report->user->name }}</td>
-                                    <td class="p-3">{{ $report->subject }}</td>
-                                    <td class="p-3 text-sm text-gray-600 w-1/3">{{ $report->description }}</td>
-                                    <td class="p-3">
-                                        @if($report->evidence_image_path)
-                                            <a href="{{ asset('storage/' . $report->evidence_image_path) }}" target="_blank" class="text-blue-600 underline text-sm">
-                                                Lihat Foto
-                                            </a>
-                                        @else
-                                            <span class="text-gray-400 text-xs">Tidak ada foto</span>
-                                        @endif
-                                    </td>
-                                    <td class="p-3">
-                                        <span class="px-2 py-1 rounded text-xs font-bold 
-                                            {{ $report->status == 'pending' ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800' }}">
-                                            {{ ucfirst($report->status) }}
-                                        </span>
-                                    </td>
-                                    <td class="p-3">
-                                        <form action="{{ route('admin.reports.update', $report->id) }}" method="POST">
-                                            @csrf 
-                                            @method('PATCH')
-                                            
-                                            <select name="status" onchange="this.form.submit()" 
-                                                class="text-xs border-gray-300 rounded shadow-sm focus:border-fuchsia-500 focus:ring focus:ring-fuchsia-200 focus:ring-opacity-50 cursor-pointer 
-                                                {{ $report->status == 'resolved' ? 'text-green-600 font-bold' : '' }}
-                                                {{ $report->status == 'rejected' ? 'text-red-600 font-bold' : '' }}">
-                                                
-                                                <option value="pending" {{ $report->status == 'pending' ? 'selected' : '' }}>
-                                                    ⏳ Pending
-                                                </option>
-                                                <option value="processing" {{ $report->status == 'processing' ? 'selected' : '' }}>
-                                                    ⚙️ Proses
-                                                </option>
-                                                <option value="resolved" {{ $report->status == 'resolved' ? 'selected' : '' }}>
-                                                    ✅ Selesai
-                                                </option>
-                                                <option value="rejected" {{ $report->status == 'rejected' ? 'selected' : '' }}>
-                                                    ❌ Tolak
-                                                </option>
-                                            </select>
-                                        </form>
-                                    </td>
-                                </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                @endif
-
-            </div>
+    <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm text-left text-gray-600">
+                <thead class="text-xs text-gray-400 uppercase bg-gray-50 font-bold border-b border-gray-100">
+                    <tr>
+                        <th class="px-6 py-4">Pelapor</th>
+                        <th class="px-6 py-4">Isi Laporan</th>
+                        <th class="px-6 py-4">Status</th>
+                        <th class="px-6 py-4">Tanggal</th>
+                        <th class="px-6 py-4 text-center">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    @forelse($reports as $report)
+                    <tr class="hover:bg-gray-50/50 transition-colors">
+                        <td class="px-6 py-4 font-medium text-gray-900">{{ $report->user->name ?? 'User Terhapus' }}</td>
+                        <td class="px-6 py-4 text-gray-500 truncate max-w-xs">{{ $report->description }}</td>
+                        <td class="px-6 py-4">
+                            @if($report->status == 'pending')
+                                <span class="px-3 py-1 bg-red-50 text-red-600 rounded-full text-xs font-bold">Pending</span>
+                            @else
+                                <span class="px-3 py-1 bg-green-50 text-green-600 rounded-full text-xs font-bold">Selesai</span>
+                            @endif
+                        </td>
+                        <td class="px-6 py-4 text-xs text-gray-400">{{ $report->created_at->format('d M Y') }}</td>
+                        <td class="px-6 py-4 text-center">
+                            <form action="{{ route('admin.reports.update', $report->id) }}" method="POST">
+                                @csrf @method('PATCH')
+                                <button type="submit" class="text-teal-600 hover:text-teal-800 font-medium text-xs border border-teal-200 hover:bg-teal-50 px-3 py-1 rounded-lg transition-colors">
+                                    Tandai Selesai
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    @empty
+                    <tr>
+                        <td colspan="5" class="px-6 py-12 text-center">
+                            <div class="flex flex-col items-center justify-center">
+                                <div class="bg-gray-50 p-4 rounded-full mb-3">
+                                    <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                </div>
+                                <span class="text-gray-500 font-medium">Belum ada laporan masuk.</span>
+                            </div>
+                        </td>
+                    </tr>
+                    @endforelse
+                </tbody>
+            </table>
         </div>
     </div>
-</x-app-layout>
+</x-admin-layout>

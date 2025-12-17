@@ -1,184 +1,142 @@
-<x-app-layout>
-    {{-- Kita override slot header bawaan agar kosong, karena kita buat header sendiri di dalam --}}
-    <x-slot name="header"></x-slot>
-
-    <div class="flex min-h-screen bg-gray-100">
+<x-admin-layout>
+    {{-- Section Atas: Welcome Banner & Stats --}}
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
         
-        {{-- === SIDEBAR NAVIGASI (KIRI) === --}}
-        <aside class="w-64 bg-white border-r border-gray-200 hidden md:block fixed h-full z-10">
-            <div class="p-6">
-                <h1 class="text-2xl font-bold text-pink-600 flex items-center gap-2">
-                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
-                    Bugenvil Admin
-                </h1>
+        {{-- Card 1: Total Pendapatan (Gradient Besar) --}}
+        <div class="lg:col-span-2 bg-gradient-to-br from-teal-500 to-emerald-600 rounded-[2rem] p-8 text-white shadow-xl shadow-teal-100 relative overflow-hidden">
+            <div class="absolute top-0 right-0 -mt-8 -mr-8 w-48 h-48 bg-white opacity-10 rounded-full blur-3xl"></div>
+            <div class="absolute bottom-0 left-0 -mb-8 -ml-8 w-40 h-40 bg-black opacity-5 rounded-full blur-3xl"></div>
+            
+            <div class="relative z-10 flex flex-col h-full justify-between min-h-[180px]">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-teal-100 text-sm font-medium tracking-wide uppercase mb-1">Total Pendapatan</p>
+                        <h3 class="text-4xl md:text-5xl font-bold tracking-tight">Rp {{ number_format($totalRevenue, 0, ',', '.') }}</h3>
+                    </div>
+                    <div class="p-3 bg-white/10 backdrop-blur-sm rounded-2xl">
+                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2 mt-4 text-teal-50 text-sm font-medium">
+                    <span class="px-2 py-1 bg-white/20 rounded-lg text-white">+12%</span>
+                    <span>dari bulan lalu</span>
+                </div>
+            </div>
+        </div>
+
+        {{-- Card 2: Total Pesanan --}}
+        <div class="bg-white rounded-[2rem] p-8 shadow-sm border border-gray-100 flex flex-col justify-between">
+            <div class="flex justify-between items-start">
+                <div>
+                    <h4 class="text-gray-500 text-sm font-bold uppercase tracking-wider">Pesanan</h4>
+                    <span class="text-4xl font-extrabold text-gray-800 mt-2 block">{{ $totalOrders }}</span>
+                </div>
+                <div class="p-3 bg-blue-50 text-blue-600 rounded-2xl">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
+                </div>
             </div>
             
-            <nav class="mt-2 px-4 space-y-2">
-                {{-- 1. Dashboard / Rekapan --}}
-                <a href="{{ route('admin.dashboard') }}" 
-                   class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors {{ request()->routeIs('admin.dashboard') ? 'bg-pink-50 text-pink-700 font-bold' : 'text-gray-600 hover:bg-gray-50' }}">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
-                    <span>Dashboard & Rekap</span>
-                </a>
-
-                {{-- 2. Manajemen Produk --}}
-                <a href="{{ route('admin.products.index') }}" 
-                   class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors {{ request()->routeIs('admin.products.*') ? 'bg-pink-50 text-pink-700 font-bold' : 'text-gray-600 hover:bg-gray-50' }}">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
-                    <span>Manajemen Produk</span>
-                </a>
-
-                {{-- 3. Manajemen Video --}}
-                <a href="{{ route('admin.videos.index') }}" 
-                   class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors {{ request()->routeIs('admin.videos.*') ? 'bg-pink-50 text-pink-700 font-bold' : 'text-gray-600 hover:bg-gray-50' }}">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
-                    <span>Video Tutorial</span>
-                </a>
-
-                {{-- 4. Laporan Pelanggan --}}
-                <a href="{{ route('admin.reports.index') }}" 
-                   class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors {{ request()->routeIs('admin.reports.*') ? 'bg-pink-50 text-pink-700 font-bold' : 'text-gray-600 hover:bg-gray-50' }}">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
-                    <span>Laporan Masalah</span>
-                </a>
-
-                 <div class="border-t border-gray-200 my-4"></div>
-
-                {{-- Link Kembali ke Home (Opsional) --}}
-                <a href="{{ route('home') }}" target="_blank" class="flex items-center gap-3 px-4 py-3 text-gray-500 hover:text-gray-800 transition-colors">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
-                    <span>Lihat Website</span>
-                </a>
-            </nav>
-        </aside>
-
-        {{-- === KONTEN UTAMA (KANAN) === --}}
-        <main class="flex-1 md:ml-64 p-8">
-            {{-- Header Konten --}}
-            <div class="flex justify-between items-center mb-8">
-                <div>
-                    <h2 class="text-3xl font-bold text-gray-800">Dashboard Overview</h2>
-                    <p class="text-gray-500">Rekapan aktivitas toko Bugenvil Mart.</p>
+            <div class="mt-6">
+                <div class="flex justify-between text-xs font-semibold text-gray-400 mb-2">
+                    <span>Progress Bulan Ini</span>
+                    <span>85%</span>
                 </div>
-                <div class="flex items-center gap-3">
-                    <span class="text-sm font-medium text-gray-600">Admin: {{ Auth::user()->name }}</span>
-                    {{-- Avatar sederhana --}}
-                    <div class="w-10 h-10 rounded-full bg-pink-100 flex items-center justify-center text-pink-600 font-bold">
-                        {{ substr(Auth::user()->name, 0, 1) }}
-                    </div>
+                <div class="w-full bg-gray-100 rounded-full h-2">
+                    <div class="bg-blue-500 h-2 rounded-full" style="width: 85%"></div>
                 </div>
             </div>
+        </div>
+    </div>
 
-            {{-- 1. KARTU STATISTIK (REKAPAN) --}}
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4">
-                    <div class="p-4 bg-green-100 text-green-600 rounded-lg">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                    </div>
-                    <div>
-                        <p class="text-sm text-gray-500">Total Pendapatan</p>
-                        <p class="text-xl font-bold text-gray-800">Rp {{ number_format($totalRevenue, 0, ',', '.') }}</p>
-                    </div>
-                </div>
-
-                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4">
-                     <div class="p-4 bg-blue-100 text-blue-600 rounded-lg">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
-                    </div>
-                    <div>
-                        <p class="text-sm text-gray-500">Total Pesanan</p>
-                        <p class="text-xl font-bold text-gray-800">{{ $totalOrders }}</p>
-                    </div>
-                </div>
-
-                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4">
-                     <div class="p-4 bg-pink-100 text-pink-600 rounded-lg">
+    {{-- Section Bawah: Statistik & Tabel --}}
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+        
+        {{-- Kolom Kanan: Statistik Kecil --}}
+        <div class="lg:col-span-1 flex flex-col gap-6">
+            {{-- Stat: Produk --}}
+            <div class="bg-white rounded-[2rem] p-6 shadow-sm border border-gray-100">
+                <div class="flex items-center gap-4">
+                    <div class="p-4 bg-purple-50 text-purple-600 rounded-2xl">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
                     </div>
                     <div>
-                        <p class="text-sm text-gray-500">Jumlah Produk</p>
-                        <p class="text-xl font-bold text-gray-800">{{ $totalProducts }}</p>
+                        <p class="text-xs font-bold text-gray-400 uppercase">Produk</p>
+                        <h3 class="text-2xl font-bold text-gray-900">{{ $totalProducts }}</h3>
                     </div>
                 </div>
+            </div>
 
-                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4">
-                     <div class="p-4 bg-yellow-100 text-yellow-600 rounded-lg">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+            {{-- Stat: Laporan --}}
+            <div class="bg-white rounded-[2rem] p-6 shadow-sm border border-gray-100">
+                <div class="flex items-center gap-4">
+                    <div class="p-4 bg-rose-50 text-rose-600 rounded-2xl">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
                     </div>
                     <div>
-                        <p class="text-sm text-gray-500">Pelanggan</p>
-                        <p class="text-xl font-bold text-gray-800">{{ $totalUsers }}</p>
+                        <p class="text-xs font-bold text-gray-400 uppercase">Laporan</p>
+                        <h3 class="text-2xl font-bold text-gray-900">{{ $pendingReports }}</h3>
                     </div>
                 </div>
             </div>
 
-            {{-- 2. TABEL TRANSAKSI TERBARU --}}
-            <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50">
-                    <h3 class="font-bold text-gray-800">Transaksi Terbaru Masuk</h3>
-                    {{-- Opsi filter bisa ditambahkan di sini --}}
+             {{-- Promo/Action Box --}}
+             <div class="bg-gray-900 rounded-[2rem] p-6 text-white text-center relative overflow-hidden">
+                <div class="relative z-10">
+                    <h4 class="font-bold text-lg mb-2">Butuh Bantuan?</h4>
+                    <p class="text-xs text-gray-400 mb-4">Hubungi tim developer untuk update fitur.</p>
+                    <button class="w-full py-2 bg-white/10 hover:bg-white/20 rounded-xl text-sm font-semibold transition-colors">Kontak Dev</button>
                 </div>
-                
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left text-sm text-gray-600">
-                        <thead class="bg-gray-50 text-gray-700 uppercase font-bold text-xs">
-                            <tr>
-                                <th class="px-6 py-4">ID Order</th>
-                                <th class="px-6 py-4">Pelanggan</th>
-                                <th class="px-6 py-4">Tanggal</th>
-                                <th class="px-6 py-4">Total</th>
-                                <th class="px-6 py-4">Status Pembayaran</th>
-                                <th class="px-6 py-4 text-center">Update Status</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-gray-100">
-                            @forelse($latestOrders as $order)
-                            <tr class="hover:bg-gray-50 transition">
-                                <td class="px-6 py-4 font-mono text-pink-600 font-bold">#{{ $order->tracking_number }}</td>
-                                <td class="px-6 py-4">
-                                    <div class="font-medium text-gray-900">{{ $order->user->name ?? 'Guest' }}</div>
-                                    <div class="text-xs text-gray-400">{{ $order->user->email ?? '-' }}</div>
-                                </td>
-                                <td class="px-6 py-4">{{ $order->created_at->format('d M Y, H:i') }}</td>
-                                <td class="px-6 py-4 font-bold text-gray-800">Rp {{ number_format($order->total_price, 0, ',', '.') }}</td>
-                                <td class="px-6 py-4">
-                                    @php
-                                        $badgeClass = match($order->status) {
-                                            'pending' => 'bg-yellow-100 text-yellow-700 border-yellow-200',
-                                            'paid', 'completed', 'settlement' => 'bg-green-100 text-green-700 border-green-200',
-                                            'cancelled', 'expire', 'deny' => 'bg-red-100 text-red-700 border-red-200',
-                                            'shipping' => 'bg-blue-100 text-blue-700 border-blue-200',
-                                            default => 'bg-gray-100 text-gray-700 border-gray-200'
-                                        };
-                                    @endphp
-                                    <span class="px-3 py-1 rounded-full text-xs font-bold border {{ $badgeClass }}">
-                                        {{ strtoupper($order->status) }}
-                                    </span>
-                                </td>
-                                <td class="px-6 py-4 text-center">
-                                    <form action="{{ route('admin.orders.update', $order->id) }}" method="POST">
-                                        @csrf @method('PATCH')
-                                        <select name="status" onchange="this.form.submit()" 
-                                            class="text-xs border-gray-200 rounded-lg py-1 px-2 focus:ring-pink-500 focus:border-pink-500 cursor-pointer hover:bg-white transition">
-                                            <option value="pending" {{ $order->status == 'pending' ? 'selected' : '' }}>⏳ Pending</option>
-                                            <option value="completed" {{ $order->status == 'completed' ? 'selected' : '' }}>✅ Selesai</option>
-                                            <option value="shipping" {{ $order->status == 'shipping' ? 'selected' : '' }}>🚚 Dikirim</option>
-                                            <option value="cancelled" {{ $order->status == 'cancelled' ? 'selected' : '' }}>❌ Batal</option>
-                                        </select>
-                                    </form>
-                                </td>
-                            </tr>
-                            @empty
-                            <tr>
-                                <td colspan="6" class="px-6 py-10 text-center text-gray-400">
-                                    Belum ada transaksi hari ini.
-                                </td>
-                            </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
+             </div>
+        </div>
+
+        {{-- Kolom Tengah: Tabel Transaksi --}}
+        <div class="lg:col-span-3 bg-white rounded-[2rem] shadow-sm border border-gray-100 overflow-hidden flex flex-col">
+            <div class="px-8 py-6 border-b border-gray-100 flex justify-between items-center">
+                <h3 class="font-bold text-lg text-gray-800">Transaksi Terbaru</h3>
+                <a href="#" class="text-sm font-semibold text-teal-600 hover:text-teal-700">Lihat Semua</a>
             </div>
-        </main>
+            <div class="overflow-x-auto flex-1">
+                <table class="w-full text-sm text-left text-gray-600">
+                    <thead class="text-xs text-gray-400 uppercase bg-gray-50/50 font-bold tracking-wider">
+                        <tr>
+                            <th class="px-8 py-4">ID</th>
+                            <th class="px-6 py-4">Pelanggan</th>
+                            <th class="px-6 py-4">Total</th>
+                            <th class="px-6 py-4">Status</th>
+                            <th class="px-6 py-4 pr-8">Tanggal</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100">
+                        @forelse($recentOrders as $order)
+                        <tr class="hover:bg-gray-50/80 transition-colors">
+                            <td class="px-8 py-4 font-bold text-gray-900">#{{ $order->id }}</td>
+                            <td class="px-6 py-4 flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-xs font-bold text-gray-500">
+                                    {{ substr($order->user->name ?? 'U', 0, 1) }}
+                                </div>
+                                <span class="font-medium text-gray-700">{{ $order->user->name ?? 'User Terhapus' }}</span>
+                            </td>
+                            <td class="px-6 py-4 font-bold text-gray-900">Rp {{ number_format($order->total_price, 0, ',', '.') }}</td>
+                            <td class="px-6 py-4">
+                                @if($order->status == 'pending')
+                                    <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold bg-yellow-50 text-yellow-700">Pending</span>
+                                @elseif($order->status == 'completed')
+                                    <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold bg-green-50 text-green-700">Selesai</span>
+                                @else
+                                    <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold bg-gray-100 text-gray-700">{{ ucfirst($order->status) }}</span>
+                                @endif
+                            </td>
+                            <td class="px-6 py-4 pr-8 text-gray-400 font-medium">{{ $order->created_at->format('d M, Y') }}</td>
+                        </tr>
+                        @empty
+                        <tr>
+                            <td colspan="5" class="px-8 py-12 text-center text-gray-400">Belum ada transaksi.</td>
+                        </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
     </div>
-</x-app-layout>
+</x-admin-layout>

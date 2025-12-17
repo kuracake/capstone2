@@ -3,31 +3,30 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\Product; // Pastikan Model ini ada
-use App\Models\Order;   // <--- TAMBAHKAN INI
-use App\Models\User;    // <--- TAMBAHKAN INI
+use App\Models\Product;
+use App\Models\Order;
+use App\Models\User;
+use App\Models\Report;
 
 class AdminController extends Controller
 {
     public function index()
     {
-        // 1. Hitung Statistik Ringkas
+        // Menghitung Statistik untuk Dashboard
         $totalProducts = Product::count();
         $totalOrders = Order::count();
-        $totalRevenue = Order::where('status', '!=', 'pending')->where('status', '!=', 'cancelled')->sum('total_price');
-        $totalUsers = User::where('is_admin', false)->count();
+        $totalRevenue = Order::where('status', 'completed')->sum('total_price'); // Hanya hitung yang selesai
+        $pendingReports = Report::where('status', 'pending')->count();
 
-        // 2. Ambil 10 Transaksi Terbaru (Supaya Admin bisa pantau)
-        // Kita pakai 'with' user agar nama pembeli muncul
-        $latestOrders = Order::with('user')->latest()->limit(10)->get();
+        // Ambil 5 pesanan terbaru
+        $recentOrders = Order::with('user')->latest()->take(5)->get();
 
-        // 3. Kirim semua data ke View
         return view('admin.dashboard', compact(
             'totalProducts', 
             'totalOrders', 
             'totalRevenue', 
-            'totalUsers',
-            'latestOrders' // <--- PENTING
+            'pendingReports',
+            'recentOrders'
         ));
     }
 }
