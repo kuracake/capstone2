@@ -3,78 +3,80 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\VideoTutorial; // Pastikan import Model
+use App\Models\VideoTutorial;
+use Illuminate\Support\Facades\Storage;
 
 class AdminVideoController extends Controller
 {
-    // 1. Tampilkan Daftar Video
     public function index()
     {
-        $videos = VideoTutorial::latest()->get();
+        $videos = VideoTutorial::latest()->paginate(10);
         return view('admin.videos.index', compact('videos'));
     }
 
-    // 2. Menampilkan Form Tambah Video
     public function create()
     {
         return view('admin.videos.create');
     }
 
-    // 3. Menyimpan Video
     public function store(Request $request)
     {
         $request->validate([
             'title' => 'required|string|max:255',
-            'video_file' => 'required|file|mimes:mp4,mov,ogg,qt|max:20000', // 20MB
+            'description' => 'required|string',
+            'video_file' => 'required|file|mimes:mp4,mov,ogg,qt|max:20000',
         ]);
 
-        $videoPath = null;
-        if ($request->hasFile('video_file')) {
-            $videoPath = $request->file('video_file')->store('videos', 'public');
-        }
+        $videoPath = $request->file('video_file')->store('videos', 'public');
 
         VideoTutorial::create([
             'title' => $request->title,
+            'description' => $request->description,
             'video_url' => $videoPath,
         ]);
 
-        return redirect()->route('admin.dashboard')->with('success', 'Video tutorial berhasil ditambahkan!');
+        return redirect()->route('admin.videos.index')->with('success', 'Tutorial berhasil ditambahkan!');
     }
 
-    // 4. Tampilkan Form Edit
     public function edit($id)
     {
         $video = VideoTutorial::findOrFail($id);
         return view('admin.videos.edit', compact('video'));
     }
 
-    // 5. Proses Update
     public function update(Request $request, $id)
     {
         $video = VideoTutorial::findOrFail($id);
 
         $request->validate([
             'title' => 'required|string|max:255',
+            'description' => 'required|string',
             'video_file' => 'nullable|file|mimes:mp4,mov,ogg,qt|max:20000',
         ]);
 
         $video->title = $request->title;
+        $video->description = $request->description;
 
         if ($request->hasFile('video_file')) {
-            $videoPath = $request->file('video_file')->store('videos', 'public');
-            $video->video_url = $videoPath;
+            // Hapus file lama jika ada
+            if ($video->video_url && Storage::disk('public')->exists($video->video_url)) {
+                Storage::disk('public')->delete($video->video_url);
+            }
+            $video->video_url = $request->file('video_file')->store('videos', 'public');
         }
 
         $video->save();
 
-        return redirect()->route('admin.videos.index')->with('success', 'Video berhasil diperbarui!');
+        return redirect()->route('admin.videos.index')->with('success', 'Tutorial berhasil diperbarui!');
     }
 
-    // 6. Proses Hapus
     public function destroy($id)
     {
         $video = VideoTutorial::findOrFail($id);
+        if ($video->video_url) {
+            Storage::disk('public')->delete($video->video_url);
+        }
         $video->delete();
-        return redirect()->route('admin.videos.index')->with('success', 'Video berhasil dihapus!');
+        return redirect()->route('admin.videos.index')->with('success', 'Tutorial berhasil dihapus!');
     }
 }

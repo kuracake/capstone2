@@ -21,27 +21,24 @@ class AdminProductController extends Controller
 
     public function store(Request $request)
     {
-        // 1. Validasi Input (Tambahkan stock & weight)
         $request->validate([
             'name' => 'required|string|max:255',
-            'price' => 'required|numeric',
-            'stock' => 'required|integer|min:0',      // <-- PENTING
-            'weight' => 'required|integer|min:100',   // <-- PENTING
+            'price' => 'required|numeric|min:0',
+            'discount_price' => 'nullable|numeric|min:0|lt:price',
+            'stock' => 'required|integer|min:0',
+            'weight' => 'required|integer|min:1',
             'description' => 'nullable|string',
             'image' => 'required|image|mimes:jpeg,png,jpg|max:2048',
         ]);
 
-        $imagePath = null;
-        if ($request->hasFile('image')) {
-            $imagePath = $request->file('image')->store('products', 'public');
-        }
+        $imagePath = $request->file('image')->store('products', 'public');
 
-        // 2. Simpan Data (Masukkan stock & weight ke database)
         Product::create([
             'name' => $request->name,
             'price' => $request->price,
-            'stock' => $request->stock,    // <-- SEBELUMNYA HILANG
-            'weight' => $request->weight,  // <-- SEBELUMNYA HILANG
+            'discount_price' => $request->discount_price,
+            'stock' => $request->stock,
+            'weight' => $request->weight,
             'description' => $request->description,
             'image' => $imagePath,
         ]);
@@ -59,31 +56,33 @@ class AdminProductController extends Controller
     {
         $product = Product::findOrFail($id);
 
-        // 3. Validasi Update
         $request->validate([
             'name' => 'required|string|max:255',
-            'price' => 'required|numeric',
-            'stock' => 'required|integer|min:0',      // <-- PENTING
-            'weight' => 'required|integer|min:100',   // <-- PENTING
+            'price' => 'required|numeric|min:0',
+            'discount_price' => 'nullable|numeric|min:0|lt:price',
+            'stock' => 'required|integer|min:0',
+            'weight' => 'required|integer|min:1',
             'description' => 'nullable|string',
             'image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ]);
 
-        // 4. Update Data (Jangan lupa update stok & berat juga)
-        $product->name = $request->name;
-        $product->price = $request->price;
-        $product->stock = $request->stock;    // <-- SEBELUMNYA HILANG
-        $product->weight = $request->weight;  // <-- SEBELUMNYA HILANG
-        $product->description = $request->description;
+        $data = [
+            'name' => $request->name,
+            'price' => $request->price,
+            'discount_price' => $request->discount_price,
+            'stock' => $request->stock,
+            'weight' => $request->weight,
+            'description' => $request->description,
+        ];
 
         if ($request->hasFile('image')) {
             if ($product->image) {
                 Storage::disk('public')->delete($product->image);
             }
-            $product->image = $request->file('image')->store('products', 'public');
+            $data['image'] = $request->file('image')->store('products', 'public');
         }
 
-        $product->save();
+        $product->update($data);
 
         return redirect()->route('admin.products.index')->with('success', 'Produk berhasil diperbarui!');
     }

@@ -2,63 +2,64 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Report;
 use Illuminate\Http\Request;
+use App\Models\Report;
+use App\Models\Order;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 
 class ReportController extends Controller
 {
-    // 1. Tampilkan Form Laporan (Untuk User)
-    public function create() {
-        return view('welcome'); // Formnya ada di homepage (welcome)
+    // SISI PENGGUNA: Menampilkan Form Laporan
+    public function create()
+    {
+        $orders = Order::where('user_id', Auth::id())->where('status', 'completed')->get();
+        return view('reports.create', compact('orders'));
     }
 
-    // 2. Proses Simpan Laporan (Dari Form)
-    public function store(Request $request) {
-        // Validasi Input
-        $request->validate([
-            'subject' => 'required|string|max:255',
-            'description' => 'required|string',
-            'evidence' => 'required|image|mimes:jpeg,png,jpg|max:10240', // Maks 10MB
-        ]);
+    // SISI PENGGUNA: Menyimpan Laporan
+   public function store(Request $request)
+{
+    $request->validate([
+        'order_id'          => 'required|exists:orders,id', 
+        'issue_description' => 'required|string',
+        'image'             => 'required|image|mimes:jpeg,png,jpg|max:2048',
+    ]);
 
-        // Proses Upload Gambar
-        $path = null;
-        if ($request->hasFile('evidence')) {
-            // Simpan gambar ke folder 'public/reports'
-            $path = $request->file('evidence')->store('reports', 'public');
-        }
+    // Simpan ke disk 'public' agar bisa diakses browser via storage:link
+    $imagePath = $request->file('image')->store('reports', 'public');
 
-        // Simpan Data ke Database
-        Report::create([
-            'user_id' => auth()->id(),
-            'subject' => $request->subject,
-            'description' => $request->description,
-            'evidence_image_path' => $path,
-            'status' => 'pending'
-        ]);
+    Report::create([
+        'user_id'           => Auth::id(),
+        'order_id'          => $request->order_id, 
+        'issue_description' => $request->issue_description,
+        'image'             => $imagePath,
+        'status'            => 'pending',
+    ]);
 
-        // Redirect kembali ke Dashboard dengan pesan Sukses
-        return redirect()->route('dashboard')->with('success', 'Laporan Anda berhasil dikirim! Tim kami akan segera memeriksanya.');
-    }
+    return redirect()->route('dashboard')->with('success', 'Laporan berhasil dikirim.');
+}
+    // SISI ADMIN: Daftar Semua Laporan
+    public function indexAdmin()
+{
+    // Mengambil data report beserta data user yang melaporkan
+    $reports = Report::with('user')->latest()->paginate(10);
+    return view('admin.reports', compact('reports'));
+}
 
-    // 3. Tampilkan Daftar Laporan (Khusus Admin)
-    public function indexAdmin() {
-        $reports = Report::with('user')->latest()->get();
-        // Pastikan nama view sesuai dengan nama file yang baru dibuat: admin.reports
-        return view('admin.reports', compact('reports')); 
-    }
+public function updateStatus(Request $request, $id)
+{
+    $report = Report::findOrFail($id);
+    
+    // Validasi agar status yang masuk sesuai ketentuan
+    $request->validate([
+        'status' => 'required|in:pending,process,resolved,rejected'
+    ]);
+    
+    $report->update([
+        'status' => $request->status
+    ]);
 
-    // 4. Update Status Laporan (Khusus Admin)
-    public function updateStatus(Request $request, $id) {
-        $report = Report::findOrFail($id);
-        
-        $request->validate([
-            'status' => 'required|in:pending,processing,resolved,rejected'
-        ]);
-
-        $report->update(['status' => $request->status]);
-
-        return back()->with('success', 'Status laporan berhasil diperbarui.');
-    }
+    return back()->with('success', 'Status laporan berhasil diperbarui.');
+}
 }

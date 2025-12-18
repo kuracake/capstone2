@@ -1,45 +1,79 @@
 <x-admin-layout>
-    <div class="flex justify-between items-center mb-6">
-        <h2 class="text-xl font-bold text-gray-800">Kelola Video Tutorial</h2>
-        <a href="{{ route('admin.videos.create') }}" class="px-4 py-2 bg-teal-500 hover:bg-teal-600 text-white rounded-xl font-semibold text-sm transition-colors shadow-lg shadow-teal-200 flex items-center">
-            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-            Tambah Video
-        </a>
-    </div>
+    <div class="py-4 md:py-8 bg-gray-50 min-h-screen">
+        <div class="max-w-7xl mx-auto px-4">
+            
+            {{-- Header Section --}}
+            <div class="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
+                <div>
+                    <h2 class="text-2xl md:text-3xl font-extrabold text-gray-900 tracking-tight">Katalog Tutorial</h2>
+                    <p class="text-sm text-gray-500 mt-1">Kelola daftar panduan dan tutorial untuk pelanggan.</p>
+                </div>
+                <a href="{{ route('admin.videos.create') }}" class="inline-flex items-center justify-center px-5 py-3 bg-teal-600 text-white rounded-xl font-bold text-sm shadow-md hover:bg-teal-700 transition-all">
+                    + Tambah Tutorial
+                </a>
+            </div>
 
-    <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
-        <table class="w-full text-sm text-left text-gray-600">
-            <thead class="text-xs text-gray-400 uppercase bg-gray-50 font-bold border-b border-gray-100">
-                <tr>
-                    <th class="px-6 py-4">Judul Video</th>
-                    <th class="px-6 py-4">Preview</th>
-                    <th class="px-6 py-4 text-center">Aksi</th>
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-100">
+            {{-- Desktop View (Tabel) --}}
+            <div class="hidden md:block bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                <table class="w-full text-sm text-left">
+                    <thead class="bg-gray-50 border-b border-gray-100 text-gray-400 uppercase text-[11px] font-bold">
+                        <tr>
+                            <th class="px-6 py-4">Judul Tutorial</th>
+                            <th class="px-6 py-4">Deskripsi Singkat</th>
+                            <th class="px-6 py-4 text-right">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-50 text-gray-700">
+                        @foreach($videos as $video)
+                        <tr class="hover:bg-gray-50/50 transition-colors">
+                            <td class="px-6 py-4">
+                                <span class="font-bold text-gray-900">{{ $video->title }}</span>
+                            </td>
+                            <td class="px-6 py-4">
+                                <p class="text-gray-500 line-clamp-1">{{ $video->description }}</p>
+                            </td>
+                            <td class="px-6 py-4 text-right">
+                                <div class="flex justify-end gap-2">
+                                    <a href="{{ route('admin.videos.edit', $video->id) }}" class="text-blue-500 p-2 hover:bg-blue-50 rounded-lg transition-colors font-bold">Edit</a>
+                                    <form action="{{ route('admin.videos.destroy', $video->id) }}" method="POST" onsubmit="return confirm('Hapus tutorial ini?')">
+                                        @csrf @method('DELETE')
+                                        <button class="text-red-400 p-2 hover:bg-red-50 rounded-lg font-bold">Hapus</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+
+            {{-- Mobile View (Card List) --}}
+            <div class="md:hidden space-y-3">
                 @forelse($videos as $video)
-                <tr class="hover:bg-gray-50/50 transition-colors">
-                    <td class="px-6 py-4 font-medium text-gray-900">{{ $video->title }}</td>
-                    <td class="px-6 py-4">
-                        <a href="{{ $video->url }}" target="_blank" class="text-teal-500 hover:text-teal-700 underline text-xs font-semibold flex items-center">
-                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                            Lihat Video
-                        </a>
-                    </td>
-                    <td class="px-6 py-4 flex justify-center gap-3">
-                        <a href="{{ route('admin.videos.edit', $video->id) }}" class="text-blue-500 hover:text-blue-700 font-medium text-xs">Edit</a>
-                        <form action="{{ route('admin.videos.destroy', $video->id) }}" method="POST" onsubmit="return confirm('Yakin hapus?')">
+                <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm">
+                    <div class="mb-3">
+                        <span class="bg-teal-50 text-teal-600 text-[10px] font-black px-2 py-1 rounded-md uppercase">Konten Tutorial</span>
+                        <h4 class="font-bold text-gray-900 leading-tight mt-2">{{ $video->title }}</h4>
+                    </div>
+                    <p class="text-xs text-gray-500 mb-4 line-clamp-3">{{ $video->description }}</p>
+                    <div class="flex items-center justify-end pt-4 border-t border-gray-50 gap-4">
+                        <a href="{{ route('admin.videos.edit', $video->id) }}" class="text-blue-500 text-xs font-bold uppercase tracking-wider">Edit</a>
+                        <form action="{{ route('admin.videos.destroy', $video->id) }}" method="POST">
                             @csrf @method('DELETE')
-                            <button type="submit" class="text-red-500 hover:text-red-700 font-medium text-xs">Hapus</button>
+                            <button class="text-red-400 text-xs font-bold uppercase tracking-wider">Hapus</button>
                         </form>
-                    </td>
-                </tr>
+                    </div>
+                </div>
                 @empty
-                <tr>
-                    <td colspan="3" class="px-6 py-12 text-center text-gray-400">Belum ada video tutorial.</td>
-                </tr>
+                <div class="bg-white p-10 rounded-3xl border border-dashed border-gray-200 text-center">
+                    <p class="text-gray-400 text-sm italic">Belum ada tutorial yang ditambahkan.</p>
+                </div>
                 @endforelse
-            </tbody>
-        </table>
+            </div>
+
+            <div class="mt-6">
+                {{ $videos->links() }}
+            </div>
+        </div>
     </div>
 </x-admin-layout>

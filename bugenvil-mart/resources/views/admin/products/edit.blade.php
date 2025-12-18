@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-admin-layout>
     <div class="py-12 bg-gray-50 min-h-screen">
         <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-xl">
@@ -43,20 +43,19 @@
                             </div>
                         </div>
 
-                         {{-- Grid Stok & Berat (WAJIB ADA) --}}
-                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
-                                <x-input-label for="stock" :value="__('Stok Barang')" />
-                                <x-text-input id="stock" class="block mt-1 w-full" type="number" name="stock" :value="old('stock', $product->stock)" required />
-                                <x-input-error :messages="$errors->get('stock')" class="mt-2" />
-                            </div>
-                            <div>
-                                <x-input-label for="weight" :value="__('Berat (Gram)')" />
-                                <x-text-input id="weight" class="block mt-1 w-full" type="number" name="weight" :value="old('weight', $product->weight)" required />
-                                <p class="text-xs text-gray-500 mt-1">*Berat per item.</p>
-                                <x-input-error :messages="$errors->get('weight')" class="mt-2" />
-                            </div>
-                        </div>
+                         {{-- Grid Stok & Berat --}}
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-gray-50 p-4 rounded-xl border border-gray-100">
+    <div>
+        <x-input-label for="stock" :value="__('Jumlah Stok')" class="text-teal-700 font-bold" />
+        <x-text-input id="stock" class="block mt-1 w-full border-teal-200 focus:ring-teal-500" type="number" name="stock" :value="old('stock', $product->stock ?? 0)" required min="0" />
+        <p class="text-[10px] text-gray-500 mt-1">Stok akan berkurang otomatis saat checkout.</p>
+    </div>
+    <div>
+        <x-input-label for="weight" :value="__('Berat Satuan (Gram)')" class="text-teal-700 font-bold" />
+        <x-text-input id="weight" class="block mt-1 w-full border-teal-200 focus:ring-teal-500" type="number" name="weight" :value="old('weight', $product->weight ?? 1000)" required min="1" />
+        <p class="text-[10px] text-gray-500 mt-1">Digunakan untuk hitung ongkir otomatis.</p>
+    </div>
+</div>
 
                         {{-- Gambar --}}
                         <div>
@@ -85,4 +84,4 @@
             </div>
         </div>
     </div>
-</x-app-layout>
+</x-admin-layout>
