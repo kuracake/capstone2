@@ -10,45 +10,50 @@ use Illuminate\Support\Facades\Auth;
 class CartController extends Controller
 {
     // 1. Tambah ke Keranjang (Versi Database)
-    public function addToCart($id)
-    {
-        // Paksa Login agar cart tersimpan di akun
-        if (!Auth::check()) {
-            return redirect()->route('login')->with('error', 'Silakan login untuk mulai berbelanja.');
-        }
+    public function addToCart(Request $request, $id)
+{
+    // 1. Validasi User Login (Wajib Login untuk masuk Database)
+    if (!Auth::check()) {
+        return redirect()->route('login')->with('error', 'Silakan login untuk belanja.');
+    }
 
-        $product = Product::findOrFail($id);
-        $userId = Auth::id();
+    $product = Product::findOrFail($id);
+    $user_id = Auth::id();
 
-        // Validasi Stok
-        if($product->stock <= 0) {
-            return redirect()->back()->with('error', 'Stok produk ini habis!');
-        }
+    // 2. Validasi Stok
+    if ($product->stock < 1) {
+        return back()->with('error', 'Maaf, stok produk habis.');
+    }
 
-        // Cek apakah produk sudah ada di cart user ini?
-        $cartItem = CartItem::where('user_id', $userId)
-                            ->where('product_id', $id)
+    // 3. Cek apakah barang sudah ada di keranjang user ini?
+    $existingCart = CartItem::where('user_id', $user_id)
+                            ->where('product_id', $product->id)
                             ->first();
 
-        if ($cartItem) {
-            // Jika ada, tambahkan quantity
-            // Opsional: Cek apakah quantity baru melebihi stok
-            if (($cartItem->quantity + 1) > $product->stock) {
-                return redirect()->back()->with('error', 'Stok tidak mencukupi untuk penambahan jumlah.');
-            }
-            
-            $cartItem->increment('quantity');
-        } else {
-            // Jika belum ada, buat baru
-            CartItem::create([
-                'user_id' => $userId,
-                'product_id' => $id,
-                'quantity' => 1
-            ]);
+    if ($existingCart) {
+        // Jika ada, update quantity saja (Stok tidak boleh minus)
+        if (($existingCart->quantity + 1) > $product->stock) {
+            return back()->with('error', 'Stok tidak mencukupi untuk penambahan.');
         }
-
-        return redirect()->back()->with('success', 'Produk masuk keranjang!');
+        
+        $existingCart->increment('quantity');
+        
+        // Update harga terbaru jika harga produk berubah
+        $existingCart->update(['price' => $product->price]); 
+        
+    } else {
+        // 4. Jika belum ada, BUAT BARU dengan HARGA YANG BENAR
+        // PENTING: Kita ambil 'price' dari $product->price
+        CartItem::create([
+            'user_id'    => $user_id,
+            'product_id' => $product->id,
+            'quantity'   => 1, // Default 1
+            'price'      => $product->price // <--- INI KUNCI AGAR HARGA TIDAK 0
+        ]);
     }
+
+    return redirect()->route('cart.index')->with('success', 'Produk berhasil masuk keranjang!');
+}
 
     // 2. Lihat Keranjang
     public function viewCart()
