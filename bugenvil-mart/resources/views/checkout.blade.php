@@ -104,18 +104,16 @@
                         
                         <div class="space-y-3 mb-6 max-h-60 overflow-y-auto pr-2 custom-scrollbar">
                             @php $subtotal = 0; @endphp
-                            @if(session('cart'))
-                                @foreach(session('cart') as $details)
-                                    @php $subtotal += $details['price'] * $details['quantity'] @endphp
-                                    <div class="flex justify-between items-center text-sm">
-                                        <div class="flex items-center gap-2">
-                                            <span class="bg-gray-100 px-2 py-1 rounded text-xs font-bold text-gray-600">{{ $details['quantity'] }}x</span>
-                                            <span class="text-gray-600">{{ Str::limit($details['name'], 15) }}</span>
-                                        </div>
-                                        <span class="font-bold text-gray-800">Rp {{ number_format($details['price'] * $details['quantity'], 0, ',', '.') }}</span>
+                            @foreach($cartItems as $item)
+                                @php $subtotal += $item['product']['price'] * $item['quantity'] @endphp
+                                <div class="flex justify-between items-center text-sm">
+                                    <div class="flex items-center gap-2">
+                                        <span class="bg-gray-100 px-2 py-1 rounded text-xs font-bold text-gray-600">{{ $item['quantity'] }}x</span>
+                                        <span class="text-gray-600">{{ Str::limit($item['product']['name'], 15) }}</span>
                                     </div>
-                                @endforeach
-                            @endif
+                                    <span class="font-bold text-gray-800">Rp {{ number_format($item['product']['price'] * $item['quantity'], 0, ',', '.') }}</span>
+                                </div>
+                            @endforeach
                         </div>
 
                         <div class="border-t border-dashed border-gray-300 my-4"></div>
@@ -141,7 +139,7 @@
 
                         <input type="hidden" name="shipping_cost" id="shipping_cost_input" value="0">
                         
-                        <button type="submit" id="btn-pay" class="w-full bg-gray-400 text-white font-bold py-4 rounded-xl shadow-lg transition cursor-not-allowed" disabled>
+                        <button type="submit" id="btn_pay" class="w-full bg-gray-400 text-white font-bold py-4 rounded-xl shadow-lg transition cursor-not-allowed" disabled>
                             Bayar Sekarang
                         </button>
                     </div>
@@ -264,29 +262,34 @@
                         },
                         dataType: "json",
                         success: function(response) {
-                            console.log(response)
+                            console.log(response, response.length)
                             $('#type').prop('disabled', false).removeClass('bg-gray-100');
                             $.each(response, function(key, value) {
                                 $('#type').append(`<option value="${value.code}" data-cost="${value.cost}">${value.name} <span class="text-xs">(${value.description})</span> Rp ${value.cost.toLocaleString()}</option>`);
                             });
-                            if(response.length > 0 && response[0].costs.length > 0) {
+                            if(response.length > 0) {
                                 console.log(response)
                                 
-                                let service = response[0].costs[0]; // Ambil layanan pertama
-                                let cost = service.cost[0].value;
-                                let etd = service.cost[0].etd;
-                                let serviceName = service.service;
+                                // let service = response[0].cost; // Ambil layanan pertama
+                                // let cost = service.cost[0].value;
+                                // let etd = service.cost[0].etd;
+                                // let serviceName = service.service;
+
+                                const cost = response[0].cost
+                                const service = response[0].service
+                                const etd = response[0].etd
 
                                 // Update Tampilan
                                 $('#shipping_display').text(rupiah(cost)).removeClass('text-orange-500').addClass('text-green-600');
-                                $('#service_detail').text(`${courier.toUpperCase()} ${serviceName} (${etd} Hari)`);
+                                // $('#service_detail').text(`${courier.toUpperCase()} ${service} (${etd} Hari)`);
+                                $('#service_detail').text(`${courier.toUpperCase()} ${service} (${etd})`);
                                 
                                 // Update Total
                                 $('#shipping_cost_input').val(cost);
                                 $('#grand_total_display').text(rupiah(subtotal + cost));
                                 
                                 // Aktifkan Tombol
-                                $('#btn-pay').prop('disabled', false).removeClass('bg-gray-400 cursor-not-allowed').addClass('bg-fuchsia-600 hover:bg-fuchsia-700');
+                                $('#btn_pay').prop('disabled', false).removeClass('bg-gray-400 cursor-not-allowed').addClass('bg-fuchsia-600 hover:bg-fuchsia-700');
                             } else {
                                 $('#shipping_display').text('Tidak Tersedia');
                                 alert("Kurir tidak mendukung rute ini.");
