@@ -28,11 +28,11 @@
                                     </span>
                                 </td>
                                 <td class="px-6 py-4 italic">
-                                    "{{ $report->issue_description }}"
+                                    "{{ $report->description }}"
                                 </td>
                                 <td class="px-6 py-4 text-center">
-                                    @if($report->image)
-                                        <a href="{{ asset('storage/' . $report->image) }}" target="_blank" class="text-teal-600 font-bold underline text-xs">
+                                    @if($report->evidence_image_path)
+                                        <a href="{{ asset('storage/' . $report->evidence_image_path) }}" target="_blank" class="text-teal-600 font-bold underline text-xs">
                                             Buka Foto
                                         </a>
                                     @else

@@ -75,6 +75,7 @@
                             <table class="min-w-full text-sm text-left text-gray-500">
                                 <thead class="text-xs text-gray-700 uppercase bg-gray-50">
                                     <tr>
+                                        <th class="px-6 py-3">Order ID</th>
                                         <th class="px-6 py-3">Tanggal</th>
                                         <th class="px-6 py-3">Tracking ID</th>
                                         <th class="px-6 py-3">Total Harga</th>
@@ -85,6 +86,7 @@
                                 <tbody>
                                     @foreach($myOrders as $order)
                                     <tr class="bg-white border-b hover:bg-gray-50">
+                                        <td class="px-6 py-4">{{ $order->id }}</td>
                                         <td class="px-6 py-4">{{ $order->created_at->format('d M Y') }}</td>
                                         <td class="px-6 py-4 font-mono text-xs">{{ $order->tracking_number }}</td>
                                         <td class="px-6 py-4">Rp {{ number_format($order->total_price, 0, ',', '.') }}</td>

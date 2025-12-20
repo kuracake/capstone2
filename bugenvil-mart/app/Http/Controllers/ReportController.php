@@ -23,7 +23,7 @@ class ReportController extends Controller
     $request->validate([
         'order_id'          => 'required|exists:orders,id', 
         'issue_description' => 'required|string',
-        'image'             => 'required|image|mimes:jpeg,png,jpg|max:2048',
+        'image'             => 'required|file|mimes:jpeg,png,jpg|max:2048',
     ]);
 
     // Simpan ke disk 'public' agar bisa diakses browser via storage:link
@@ -31,9 +31,10 @@ class ReportController extends Controller
 
     Report::create([
         'user_id'           => Auth::id(),
-        'order_id'          => $request->order_id, 
-        'issue_description' => $request->issue_description,
-        'image'             => $imagePath,
+        'order_id' => $request->order_id,
+        'subject'          => 'Keluhan pesanan', 
+        'description' => $request->issue_description,
+        'evidence_image_path'             => $imagePath,
         'status'            => 'pending',
     ]);
 

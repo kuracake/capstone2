@@ -200,12 +200,22 @@
 
                         <div>
                             <label class="block text-gray-700 font-bold mb-2 text-xs uppercase tracking-wide">Nomor Pesanan</label>
-                            <input type="text" name="subject" class="w-full border border-gray-200 rounded-lg p-3 text-sm focus:ring-fuchsia-500 focus:border-fuchsia-500 placeholder-gray-400" placeholder="Contoh: ORD-2024-001" required>
+                            <input type="text" name="order_id" class="w-full border border-gray-200 rounded-lg p-3 text-sm focus:ring-fuchsia-500 focus:border-fuchsia-500 placeholder-gray-400" placeholder="Contoh: ORD-2024-001" required>
+                            @error('order_id')
+                                <span class="text-sm text-red-500">
+                                    {{ $message }}
+                                </span>
+                            @enderror
                         </div>
 
                         <div>
                             <label class="block text-gray-700 font-bold mb-2 text-xs uppercase tracking-wide">Detail Kendala</label>
-                            <textarea name="description" rows="3" class="w-full border border-gray-200 rounded-lg p-3 text-sm focus:ring-fuchsia-500 focus:border-fuchsia-500 placeholder-gray-400 resize-none" placeholder="Jelaskan kondisi bunga..." required></textarea>
+                            <textarea name="issue_description" rows="3" class="w-full border border-gray-200 rounded-lg p-3 text-sm focus:ring-fuchsia-500 focus:border-fuchsia-500 placeholder-gray-400 resize-none" placeholder="Jelaskan kondisi bunga..." required></textarea>
+                            @error('issue_description')
+                                <span class="text-sm text-red-500">
+                                    {{ $message }}
+                                </span>
+                            @enderror
                         </div>
 
                         {{-- BAGIAN PILIHAN UPLOAD FOTO (MODIFIED) --}}
@@ -213,7 +223,7 @@
                             <label class="block text-gray-700 font-bold mb-3 text-xs uppercase tracking-wide">Unggah Foto Bukti</label>
                             
                             {{-- Input Tersembunyi --}}
-                            <input type="file" id="evidenceInput" name="evidence" class="hidden" accept="image/*" onchange="previewFile()">
+                            <input type="file" id="evidenceInput" name="image" class="hidden" accept="image/*" onchange="previewFile()">
 
                             {{-- Area Pilihan Tombol --}}
                             <div class="grid grid-cols-2 gap-4 mb-3" id="uploadButtons">
@@ -235,8 +245,14 @@
                                 </button>
                             </div>
 
+                            @error('image')
+                                <span class="text-sm text-red-500">
+                                    {{ $message }}
+                                </span>
+                            @enderror
+
                             {{-- Area Preview File --}}
-                            <div id="filePreview" class="hidden bg-fuchsia-50 border border-fuchsia-200 rounded-lg p-3 flex items-center justify-between">
+                            <div id="filePreview" class="hidden bg-fuchsia-50 border border-fuchsia-200 rounded-lg p-3 items-center justify-between">
                                 <div class="flex items-center gap-3">
                                     <div class="bg-fuchsia-100 p-2 rounded-lg text-fuchsia-600">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -281,6 +297,7 @@
             if (input.files && input.files[0]) {
                 fileName.textContent = input.files[0].name;
                 preview.classList.remove('hidden');
+                preview.classList.add('flex');
                 // Opsional: Sembunyikan tombol biar rapi
                 // buttons.classList.add('hidden'); 
             }

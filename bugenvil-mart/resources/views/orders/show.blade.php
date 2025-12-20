@@ -34,15 +34,24 @@
                 </div>
 
                 {{-- Tombol Bayar --}}
-                @if($order->status == 'pending')
-                    <button id="pay-button" class="w-full bg-fuchsia-600 hover:bg-fuchsia-700 text-white font-bold py-4 rounded-xl shadow-lg transition transform hover:scale-105">
-                        BAYAR SEKARANG
-                    </button>
-                @else
-                    <div class="text-center p-4 bg-green-50 text-green-700 rounded-lg font-bold">
-                        Pembayaran Lunas
-                    </div>
-                @endif
+    <div class="mt-6 border-t pt-4">
+    <h3 class="text-xl font-bold">Total: Rp {{ number_format($order->total_price, 0, ',', '.') }}</h3>
+    
+    @if($order->status == 'pending')
+        <button id="pay-button" class="mt-4 w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition">
+            Bayar Sekarang
+        </button>
+    @else
+        <div class="mt-4 p-4 rounded bg-green-100 text-green-800 text-center font-bold">
+            Status Pesanan: 
+            @if($order->status == 'packing') Sedang Dikemas
+            @elseif($order->status == 'shipping') Dalam Pengiriman
+            @elseif($order->status == 'completed') Selesai
+            @else {{ ucfirst($order->status) }}
+            @endif
+        </div>
+    @endif
+    </div>
 
                 <div class="mt-6 text-center">
                     <a href="{{ route('dashboard') }}" class="text-sm text-gray-500 hover:underline">Kembali ke Dashboard</a>

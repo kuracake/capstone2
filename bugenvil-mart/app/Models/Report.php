@@ -11,10 +11,11 @@ class Report extends Model
 
     protected $fillable = [
         'user_id',
+        'subject',
         'order_id',          // Harus ada agar No. Pesanan tersimpan
         'product_id',
-        'issue_description', // Harus ada agar Detail Kendala tersimpan
-        'image',             // Harus ada agar Foto tersimpan
+        'description', // Harus ada agar Detail Kendala tersimpan
+        'evidence_image_path',             // Harus ada agar Foto tersimpan
         'status',            // Default: 'pending'
     ];
 

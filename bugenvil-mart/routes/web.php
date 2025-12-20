@@ -13,6 +13,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AdminProductController;
 use App\Http\Controllers\AdminVideoController;
+use App\Http\Controllers\PaymentCallbackController;
 
 /*
 |--------------------------------------------------------------------------
@@ -70,6 +71,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 | 3. HALAMAN ADMIN
 |--------------------------------------------------------------------------
 */
+Route::post('payments/midtrans-notification', [PaymentCallbackController::class, 'receive']);
+
 Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [AdminController::class, 'index'])->name('dashboard');
     Route::resource('products', AdminProductController::class);
@@ -77,6 +80,7 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
     Route::get('/laporan', [ReportController::class, 'indexAdmin'])->name('reports.index');
     Route::patch('/laporan/{id}', [ReportController::class, 'updateStatus'])->name('reports.update');
     Route::patch('/orders/{id}/status', [OrderController::class, 'updateStatus'])->name('orders.update');
+    Route::resource('orders', \App\Http\Controllers\AdminOrderController::class)->only(['index', 'show']);
 });
 
 require __DIR__ . '/auth.php';
