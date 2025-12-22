@@ -9,22 +9,21 @@ class Report extends Model
 {
     use HasFactory;
 
+    // Sesuai dengan database Anda
     protected $fillable = [
         'user_id',
-        'subject',
-        'order_id',          // Harus ada agar No. Pesanan tersimpan
-        'product_id',
-        'description', // Harus ada agar Detail Kendala tersimpan
-        'evidence_image_path',             // Harus ada agar Foto tersimpan
-        'status',            // Default: 'pending'
+        'order_id',           
+        'product_id',         
+        'subject',            // Kolom subject Anda
+        'description',        // Kolom description Anda
+        'evidence_image_path', // Kolom foto Anda
+        'status',             
     ];
 
-    // Relasi untuk mengambil nama pelapor
     public function user() {
         return $this->belongsTo(User::class);
     }
 
-    // Relasi untuk mengambil data Pesanan
     public function order() {
         return $this->belongsTo(Order::class);
     }

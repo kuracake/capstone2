@@ -117,7 +117,7 @@
                 <div>
                     <h4 class="font-bold mb-4 text-lg">Layanan Pelanggan</h4>
                     <ul class="space-y-2 text-slate-400 text-sm">
-                        <li><a href="{{ route('reports.create') }}" class="hover:text-fuchsia-400">Lapor Masalah</a></li>
+                        <li><a href="{{ route('dashboard') }}" class="hover:text-fuchsia-400">Lapor Masalah (via Dashboard)</a></li>
                     </ul>
                 </div>
 

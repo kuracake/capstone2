@@ -110,170 +110,65 @@
     </div>
 
     {{-- VIDEO TUTORIAL --}}
-    <section id="tutorials" class="py-24 bg-slate-50">
-        <div class="max-w-7xl mx-auto px-6 lg:px-8">
+    <section id="tutorials" class="bg-slate-50 py-24">
+        <div class="container mx-auto px-6">
+            {{-- Header Section (Sama seperti Produk) --}}
             <div class="text-center mb-16">
-                <span class="text-fuchsia-600 font-bold tracking-wider uppercase text-sm">Edukasi Pelanggan</span>
-                <h2 class="mt-2 text-4xl font-extrabold text-gray-900 serif">Video Tutorial & Panduan</h2>
-                <p class="mt-4 text-lg text-gray-600 max-w-2xl mx-auto">
-                    Pelajari cara merawat tanaman dan tips budidaya terbaik langsung dari ahli kami.
-                </p>
+                <h2 class="text-4xl font-bold text-fuchsia-600 serif mb-4">Video Tutorial</h2>
+                <p class="text-gray-600 text-lg">Pelajari cara merawat tanaman dan tips budidaya terbaik</p>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {{-- Grid Section (Sama seperti Produk: 4 Kolom) --}}
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-10">
                 @foreach($videos as $video)
-                    <div x-data="{ playing: false }" class="group bg-white rounded-[2rem] shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100 flex flex-col h-full p-3">
-                        <div class="relative h-60 rounded-[1.5rem] overflow-hidden bg-black">
-                            <video
-                                class="w-full h-full object-contain"
-                                controls
-                                preload="metadata"
-                                poster="https://source.unsplash.com/random/800x450?garden,plant&sig={{ $video->id }}"
-                                @play="playing = true"
-                                @pause="playing = false"
-                                @ended="playing = false"
-                            >
-                                <source src="{{ asset('storage/' . $video->video_url) }}" type="video/mp4">
-                                Browser Anda tidak mendukung pemutar video.
-                            </video>
-                            <div x-show="!playing" class="absolute inset-0 flex items-center justify-center pointer-events-none bg-black/30 group-hover:bg-black/20 transition-colors">
-                                <div class="w-16 h-16 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-8 h-8 text-fuchsia-600 pl-1">
-                                        <path fill-rule="evenodd" d="M4.5 5.653c0-1.426 1.529-2.33 2.779-1.643l11.54 6.348c1.295.712 1.295 2.573 0 3.285L7.28 19.991c-1.25.687-2.779-.217-2.779-1.643V5.653z" clip-rule="evenodd" />
-                                    </svg>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="px-4 pt-5 pb-4 flex-1 flex flex-col">
-                            <div class="mb-3">
-                                <span class="inline-block bg-fuchsia-100 text-fuchsia-600 text-xs font-extrabold px-3 py-1.5 rounded-full tracking-wider uppercase">Tutorial</span>
-                            </div>
-                            <h3 class="text-xl font-bold text-gray-900 leading-tight mb-2 line-clamp-2 group-hover:text-fuchsia-600 transition-colors">{{ $video->title }}</h3>
-                            @if($video->description)
-                                <p class="text-gray-500 text-sm line-clamp-3">{{ $video->description }}</p>
-                            @endif
-                        </div>
+                <div class="bg-white rounded-3xl shadow-lg hover:shadow-xl transition overflow-hidden group border border-purple-50 flex flex-col h-full">
+                    
+                    {{-- Bagian Video (Menggantikan Gambar Produk) --}}
+                    <div class="relative h-64 bg-black flex-shrink-0">
+                        <video 
+                            class="w-full h-full object-cover" 
+                            controls 
+                            preload="metadata"
+                        >
+                            <source src="{{ asset('storage/' . $video->video_url) }}" type="video/mp4">
+                            Browser Anda tidak mendukung pemutar video.
+                        </video>
                     </div>
+
+                    {{-- Bagian Konten Teks --}}
+                    <div class="p-6 flex flex-col flex-grow">
+                        {{-- Judul (Style sama dengan Produk) --}}
+                        <h3 class="font-bold text-lg text-gray-800 mb-2 serif line-clamp-2" title="{{ $video->title }}">
+                            {{ $video->title }}
+                        </h3>
+                        
+                        {{-- Deskripsi --}}
+                        <p class="text-gray-500 text-sm line-clamp-3 leading-relaxed">
+                            {{ $video->description ?? 'Tidak ada deskripsi tersedia.' }}
+                        </p>
+                    </div>
+                </div>
                 @endforeach
             </div>
 
+            {{-- Pesan Jika Kosong --}}
             @if($videos->isEmpty())
-                <div class="text-center py-16 bg-white rounded-[2rem] shadow-sm border-2 border-dashed border-gray-200 mx-auto max-w-2xl">
-                    <h3 class="text-xl font-bold text-gray-900 mb-2">Belum ada video tutorial</h3>
-                    <p class="text-gray-500 max-w-md mx-auto">Kami sedang menyiapkan konten video menarik untuk Anda.</p>
+                <div class="text-center py-10">
+                    <p class="text-gray-400 italic">Belum ada video tutorial yang diunggah.</p>
                 </div>
             @endif
+
+            {{-- Tombol Navigasi (Sama seperti Produk) --}}
+            <div class="text-center mt-16">
+                 <a href="{{ route('tutorials.all') }}" class="bg-fuchsia-500 hover:bg-fuchsia-600 text-white font-bold py-3 px-10 rounded-full shadow-lg transition transform hover:scale-105">
+                    Lihat Semua Video
+                 </a>
+            </div>
         </div>
     </section>
 
     {{-- LAYANAN PENGADUAN & UPLOAD BUKTI --}}
-    <div id="report-issue" class="bg-pink-50 pb-24 pt-10">
-        <div class="container mx-auto px-6 flex justify-center">
-
-            <div class="bg-white rounded-[2rem] shadow-2xl overflow-hidden max-w-5xl w-full flex flex-col md:flex-row">
-
-                {{-- Kolom Kiri: Info --}}
-                <div class="bg-[#d946ef] md:w-2/5 p-12 text-white flex flex-col justify-center relative overflow-hidden">
-                    <div class="absolute -top-10 -left-10 w-40 h-40 bg-white/20 rounded-full blur-2xl"></div>
-                    <div class="absolute bottom-10 right-10 w-32 h-32 bg-purple-600/20 rounded-full blur-xl"></div>
-                    <div class="relative z-10">
-                        <div class="bg-white/20 w-14 h-14 rounded-2xl flex items-center justify-center mb-6 backdrop-blur-sm shadow-inner">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                            </svg>
-                        </div>
-                        <h2 class="text-3xl font-bold serif mb-4">Layanan Pengaduan</h2>
-                        <p class="text-fuchsia-50 mb-8 leading-relaxed text-sm">
-                            Sampaikan keluhan Anda beserta bukti foto agar kami dapat segera menanganinya.
-                        </p>
-                        <ul class="space-y-4 text-sm font-medium">
-                            <li class="flex items-center gap-3"><div class="bg-white/20 p-1 rounded-full"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg></div> Respon cepat 1x24 jam</li>
-                            <li class="flex items-center gap-3"><div class="bg-white/20 p-1 rounded-full"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg></div> Garansi ganti baru</li>
-                        </ul>
-                    </div>
-                </div>
-
-                {{-- Kolom Kanan: Form --}}
-                <div class="bg-white md:w-3/5 p-12">
-                    <form action="{{ route('reports.store') }}" method="POST" enctype="multipart/form-data" class="space-y-6">
-                        @csrf
-
-                        <div>
-                            <label class="block text-gray-700 font-bold mb-2 text-xs uppercase tracking-wide">Nomor Pesanan</label>
-                            <input type="text" name="order_id" class="w-full border border-gray-200 rounded-lg p-3 text-sm focus:ring-fuchsia-500 focus:border-fuchsia-500 placeholder-gray-400" placeholder="Contoh: ORD-2024-001" required>
-                            @error('order_id')
-                                <span class="text-sm text-red-500">
-                                    {{ $message }}
-                                </span>
-                            @enderror
-                        </div>
-
-                        <div>
-                            <label class="block text-gray-700 font-bold mb-2 text-xs uppercase tracking-wide">Detail Kendala</label>
-                            <textarea name="issue_description" rows="3" class="w-full border border-gray-200 rounded-lg p-3 text-sm focus:ring-fuchsia-500 focus:border-fuchsia-500 placeholder-gray-400 resize-none" placeholder="Jelaskan kondisi bunga..." required></textarea>
-                            @error('issue_description')
-                                <span class="text-sm text-red-500">
-                                    {{ $message }}
-                                </span>
-                            @enderror
-                        </div>
-
-                        {{-- BAGIAN PILIHAN UPLOAD FOTO (MODIFIED) --}}
-                        <div>
-                            <label class="block text-gray-700 font-bold mb-3 text-xs uppercase tracking-wide">Unggah Foto Bukti</label>
-                            
-                            {{-- Input Tersembunyi --}}
-                            <input type="file" id="evidenceInput" name="image" class="hidden" accept="image/*" onchange="previewFile()">
-
-                            {{-- Area Pilihan Tombol --}}
-                            <div class="grid grid-cols-2 gap-4 mb-3" id="uploadButtons">
-                                {{-- Tombol 1: Galeri (Default) --}}
-                                <button type="button" onclick="openGallery()" class="flex flex-col items-center justify-center p-6 border-2 border-dashed border-gray-300 rounded-xl hover:bg-fuchsia-50 hover:border-fuchsia-500 transition group">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-gray-400 group-hover:text-fuchsia-600 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                    </svg>
-                                    <span class="text-sm font-bold text-gray-600 group-hover:text-fuchsia-600">Pilih dari Galeri</span>
-                                </button>
-
-                                {{-- Tombol 2: Kamera Langsung (Capture) --}}
-                                <button type="button" onclick="openCamera()" class="flex flex-col items-center justify-center p-6 border-2 border-dashed border-gray-300 rounded-xl hover:bg-fuchsia-50 hover:border-fuchsia-500 transition group">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-gray-400 group-hover:text-fuchsia-600 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
-                                    </svg>
-                                    <span class="text-sm font-bold text-gray-600 group-hover:text-fuchsia-600">Ambil Foto (Kamera)</span>
-                                </button>
-                            </div>
-
-                            @error('image')
-                                <span class="text-sm text-red-500">
-                                    {{ $message }}
-                                </span>
-                            @enderror
-
-                            {{-- Area Preview File --}}
-                            <div id="filePreview" class="hidden bg-fuchsia-50 border border-fuchsia-200 rounded-lg p-3 items-center justify-between">
-                                <div class="flex items-center gap-3">
-                                    <div class="bg-fuchsia-100 p-2 rounded-lg text-fuchsia-600">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                        </svg>
-                                    </div>
-                                    <span id="fileName" class="text-sm text-gray-700 font-medium truncate max-w-[200px]">File Terpilih</span>
-                                </div>
-                                <button type="button" onclick="resetFile()" class="text-xs text-red-500 hover:text-red-700 font-bold hover:underline">Hapus</button>
-                            </div>
-                        </div>
-
-                        <button type="submit" class="w-full bg-[#d946ef] text-white font-bold py-3.5 rounded-lg shadow-lg hover:bg-fuchsia-600 transition transform active:scale-95">
-                            Kirim Laporan
-                        </button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-
+    
     {{-- Script untuk Logika Kamera vs Galeri --}}
     <script>
         function openGallery() {

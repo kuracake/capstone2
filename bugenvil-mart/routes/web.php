@@ -41,7 +41,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', function () {
         $user = Auth::user();
         if ($user->is_admin) return redirect()->route('admin.dashboard');
-        $myOrders = \App\Models\Order::where('user_id', $user->id)->latest()->limit(5)->get();
+        
+        // PERUBAHAN: Tambahkan ->with('report') agar data laporan ikut terambil
+        $myOrders = \App\Models\Order::with('report') 
+                        ->where('user_id', $user->id)
+                        ->latest()
+                        ->limit(10) // Tampilkan 10 terakhir agar lebih lengkap
+                        ->get();
+                        
         return view('dashboard', compact('myOrders'));
     })->name('dashboard');
 
@@ -61,8 +68,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/api/cost', [OngkirController::class, 'checkOngkir'])->name('api.cost');
 
     // Fitur Lain
-    Route::get('/lapor-kerusakan', [ReportController::class, 'create'])->name('reports.create');
-    Route::post('/lapor-kerusakan', [ReportController::class, 'store'])->name('reports.store');
+    Route::get('/orders/{order}/lapor', [ReportController::class, 'create'])->name('reports.create');
+    Route::post('/orders/{order}/lapor', [ReportController::class, 'store'])->name('reports.store');
     Route::post('/produk/{id}/review', [ReviewController::class, 'store'])->name('reviews.store');
 });
 
