@@ -8,6 +8,7 @@ return new class extends Migration {
         Schema::create('reports', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->foreignId('order_id')->constrained()->onDelete('cascade');
             $table->string('subject');
             $table->text('description');
             $table->string('evidence_image_path'); // Foto bukti
