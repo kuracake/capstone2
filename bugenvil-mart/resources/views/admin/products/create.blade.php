@@ -52,15 +52,29 @@
                     {{-- Media & Submit --}}
                     <div class="space-y-4">
                         <div class="bg-white p-5 md:p-6 rounded-2xl shadow-sm border border-gray-100">
-                            <h3 class="text-lg font-bold text-gray-800 mb-4">Foto Produk</h3>
-                            <label class="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-gray-200 rounded-2xl cursor-pointer hover:bg-gray-50 transition-all overflow-hidden">
-                                <img id="preview" class="hidden w-full h-full object-cover">
-                                <div id="icon" class="flex flex-col items-center text-gray-400 text-center p-4">
+                            <h3 class="text-lg font-bold text-gray-800 mb-4">Foto Produk (Maks 10)</h3>
+                            
+                            {{-- Area Upload --}}
+                            <label class="flex flex-col items-center justify-center w-full min-h-[12rem] border-2 border-dashed border-gray-200 rounded-2xl cursor-pointer hover:bg-gray-50 transition-all p-4">
+                                
+                                {{-- Icon Default (Akan hilang saat ada foto) --}}
+                                <div id="icon" class="flex flex-col items-center text-gray-400 text-center">
                                     <svg class="w-8 h-8 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4" stroke-width="2" stroke-linecap="round"/></svg>
-                                    <span class="text-xs font-medium">Unggah Foto</span>
+                                    <span class="text-xs font-medium">Klik untuk Pilih Banyak Foto</span>
                                 </div>
-                                <input type="file" name="image" class="hidden" accept="image/*" onchange="showPreview(event)" required>
+
+                                {{-- Container Preview Grid --}}
+                                <div id="preview-container" class="hidden grid grid-cols-3 gap-2 w-full">
+                                    {{-- Gambar preview akan muncul di sini via JS --}}
+                                </div>
+
+                                {{-- INPUT UTAMA: name="images[]" dan multiple --}}
+                                <input type="file" name="images[]" multiple class="hidden" accept="image/*" onchange="showPreview(event)" required>
                             </label>
+
+                            {{-- Pesan Error Validasi --}}
+                            @error('images') <p class="text-red-500 text-xs mt-2">{{ $message }}</p> @enderror
+                            @error('images.*') <p class="text-red-500 text-xs mt-2">{{ $message }}</p> @enderror
                         </div>
 
                         <button type="submit" class="w-full py-4 bg-teal-600 text-white rounded-2xl font-bold text-lg shadow-lg shadow-teal-100 hover:bg-teal-700 active:scale-95 transition-all">
@@ -72,15 +86,35 @@
         </div>
     </div>
 
+    {{-- Script Baru untuk Preview Banyak Gambar --}}
     <script>
         function showPreview(event){
-            if(event.target.files.length > 0){
-                let src = URL.createObjectURL(event.target.files[0]);
-                let preview = document.getElementById("preview");
-                let icon = document.getElementById("icon");
-                preview.src = src;
-                preview.classList.remove("hidden");
+            const files = event.target.files;
+            const previewContainer = document.getElementById("preview-container");
+            const icon = document.getElementById("icon");
+            
+            // Reset preview
+            previewContainer.innerHTML = '';
+
+            if(files.length > 0){
                 icon.classList.add("hidden");
+                previewContainer.classList.remove("hidden");
+
+                // Loop setiap file yang dipilih
+                Array.from(files).forEach(file => {
+                    let src = URL.createObjectURL(file);
+                    
+                    // Buat elemen gambar
+                    let img = document.createElement('img');
+                    img.src = src;
+                    img.className = "w-full h-20 object-cover rounded-lg border border-gray-200";
+                    
+                    // Masukkan ke container
+                    previewContainer.appendChild(img);
+                });
+            } else {
+                icon.classList.remove("hidden");
+                previewContainer.classList.add("hidden");
             }
         }
     </script>

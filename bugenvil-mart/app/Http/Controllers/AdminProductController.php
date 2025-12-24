@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Product;
+use App\Models\ProductImage; // Pastikan Model ini di-import
 use Illuminate\Support\Facades\Storage;
 
 class AdminProductController extends Controller
@@ -19,29 +20,55 @@ class AdminProductController extends Controller
         return view('admin.products.create');
     }
 
+    // --- FUNGSI STORE YANG SUDAH DIPERBAIKI ---
     public function store(Request $request)
     {
+        // 1. Validasi Input
         $request->validate([
             'name' => 'required|string|max:255',
-            'price' => 'required|numeric|min:0',
-            'discount_price' => 'nullable|numeric|min:0|lt:price',
-            'stock' => 'required|integer|min:0',
-            'weight' => 'required|integer|min:1',
-            'description' => 'nullable|string',
-            'image' => 'required|image|mimes:jpeg,png,jpg|max:2048',
+            'description' => 'required',
+            'price' => 'required|numeric',
+            'stock' => 'required|numeric',
+            'weight' => 'required|numeric',
+            // Validasi Array Gambar (Wajib ada minimal 1)
+            'images' => 'required|array|min:1', 
+            'images.*' => 'image|mimes:jpeg,png,jpg,webp|max:2048'
         ]);
 
-        $imagePath = $request->file('image')->store('products', 'public');
-
-        Product::create([
+        // 2. Buat Data Produk Dasar
+        $product = Product::create([
             'name' => $request->name,
+            'description' => $request->description,
             'price' => $request->price,
-            'discount_price' => $request->discount_price,
             'stock' => $request->stock,
             'weight' => $request->weight,
-            'description' => $request->description,
-            'image' => $imagePath,
+            // Kolom image akan diisi di bawah
+            'image' => null, 
         ]);
+
+        // 3. Proses Upload Gambar
+        if ($request->hasFile('images')) {
+            $files = $request->file('images');
+
+            // A. Simpan Gambar PERTAMA sebagai Thumbnail Utama (kolom image)
+            if (isset($files[0])) {
+                $thumbnailPath = $files[0]->store('products', 'public');
+                // Update kolom image di tabel products
+                $product->update(['image' => $thumbnailPath]);
+            }
+
+            // B. Simpan SEMUA gambar ke tabel 'product_images' (Galeri)
+            foreach ($files as $file) {
+                // Simpan fisik file ke folder gallery
+                $galleryPath = $file->store('product_gallery', 'public');
+                
+                // Simpan path ke database relasi
+                ProductImage::create([
+                    'product_id' => $product->id,
+                    'image_path' => $galleryPath
+                ]);
+            }
+        }
 
         return redirect()->route('admin.products.index')->with('success', 'Produk berhasil ditambahkan!');
     }
@@ -55,45 +82,74 @@ class AdminProductController extends Controller
     public function update(Request $request, $id)
     {
         $product = Product::findOrFail($id);
-
+        
         $request->validate([
-            'name' => 'required|string|max:255',
-            'price' => 'required|numeric|min:0',
-            'discount_price' => 'nullable|numeric|min:0|lt:price',
-            'stock' => 'required|integer|min:0',
-            'weight' => 'required|integer|min:1',
-            'description' => 'nullable|string',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'name' => 'required',
+            'price' => 'required|numeric',
+            // images nullable saat edit (jika user tidak ingin ubah foto)
+            'images' => 'nullable|array|max:10', 
+            'images.*' => 'image|mimes:jpeg,png,jpg,webp|max:2048',
         ]);
 
-        $data = [
+        // Update data text
+        $product->update([
             'name' => $request->name,
+            'description' => $request->description,
             'price' => $request->price,
-            'discount_price' => $request->discount_price,
             'stock' => $request->stock,
             'weight' => $request->weight,
-            'description' => $request->description,
-        ];
+        ]);
 
-        if ($request->hasFile('image')) {
-            if ($product->image) {
-                Storage::disk('public')->delete($product->image);
+        // Cek apakah user upload foto baru?
+        if ($request->hasFile('images')) {
+            
+            // Cek batas maksimal 10 foto
+            if (($product->images->count() + count($request->images)) > 10) {
+                 return back()->with('error', 'Maksimal total 10 foto!');
             }
-            $data['image'] = $request->file('image')->store('products', 'public');
+
+            foreach ($request->file('images') as $file) {
+                $path = $file->store('product_gallery', 'public');
+                ProductImage::create([
+                    'product_id' => $product->id,
+                    'image_path' => $path
+                ]);
+            }
         }
 
-        $product->update($data);
-
-        return redirect()->route('admin.products.index')->with('success', 'Produk berhasil diperbarui!');
+        return redirect()->route('admin.products.index')->with('success', 'Produk diperbarui!');
     }
 
     public function destroy($id)
     {
         $product = Product::findOrFail($id);
+        
+        // Hapus file thumbnail utama
         if ($product->image) {
             Storage::disk('public')->delete($product->image);
         }
+
+        // Hapus semua file di galeri (looping)
+        foreach($product->images as $gallery) {
+             Storage::disk('public')->delete($gallery->image_path);
+        }
+        
+        // Hapus data di database (Cascade akan menghapus product_images otomatis jika di set di migrasi)
+        // Tapi manual delete record untuk memastikan
+        $product->images()->delete(); 
         $product->delete();
+
         return redirect()->route('admin.products.index')->with('success', 'Produk berhasil dihapus!');
+    }
+
+    public function deleteImage($id)
+    {
+        $image = ProductImage::findOrFail($id);
+        // Hapus file fisik
+        Storage::disk('public')->delete($image->image_path);
+        // Hapus record db
+        $image->delete();
+        
+        return back()->with('success', 'Foto galeri berhasil dihapus');
     }
 }

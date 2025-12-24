@@ -14,16 +14,35 @@ class Product extends Model
         'price',
         'description',
         'image',
-        'stock',  // Pastikan kolom ini ada di database
-        'weight', // Pastikan kolom ini ada di database
+        'stock',
+        'weight',
     ];
 
     /**
      * Relasi ke Review
-     * Satu produk memiliki banyak review
      */
     public function reviews()
     {
         return $this->hasMany(Review::class);
+    }
+
+    /**
+     * Relasi ke ProductImage (Galeri Foto)
+     * PERBAIKAN: Menggunakan $this, bukan $table
+     */
+    public function images()
+    {
+        return $this->hasMany(ProductImage::class);
+    }
+
+    // Helper untuk mengambil foto utama (foto pertama)
+    public function getThumbnailAttribute()
+    {
+        // Prioritas: Ambil dari kolom 'image', jika kosong baru cari di galeri
+        if ($this->image) {
+            return $this->image;
+        }
+        
+        return $this->images->first() ? $this->images->first()->image_path : null;
     }
 }
