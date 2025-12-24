@@ -54,23 +54,27 @@
                         <div class="bg-white p-5 md:p-6 rounded-2xl shadow-sm border border-gray-100">
                             <h3 class="text-lg font-bold text-gray-800 mb-4">Foto Produk (Maks 10)</h3>
                             
-                            {{-- Area Upload --}}
-                            <label class="flex flex-col items-center justify-center w-full min-h-[12rem] border-2 border-dashed border-gray-200 rounded-2xl cursor-pointer hover:bg-gray-50 transition-all p-4">
+                            {{-- 1. INPUT ASLI (Disembunyikan, ini yang dikirim ke Server) --}}
+                            <input type="file" name="images[]" id="real-input" multiple class="hidden" required>
+
+                            {{-- 2. INPUT PEMICU (Disembunyikan, cuma buat buka window file) --}}
+                            <input type="file" id="trigger-input" multiple class="hidden" accept="image/*" onchange="addFiles(this)">
+
+                            {{-- 3. AREA TOMBOL UPLOAD (Klik ini akan memicu trigger-input) --}}
+                            <div onclick="document.getElementById('trigger-input').click()" 
+                                 class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-teal-300 rounded-2xl cursor-pointer hover:bg-teal-50 hover:border-teal-500 transition-all group p-4 mb-4">
                                 
-                                {{-- Icon Default (Akan hilang saat ada foto) --}}
-                                <div id="icon" class="flex flex-col items-center text-gray-400 text-center">
+                                <div class="flex flex-col items-center text-teal-500 group-hover:text-teal-700 transition">
                                     <svg class="w-8 h-8 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4" stroke-width="2" stroke-linecap="round"/></svg>
-                                    <span class="text-xs font-medium">Klik untuk Pilih Banyak Foto</span>
+                                    <span class="text-sm font-bold">Klik untuk Tambah Foto</span>
+                                    <span class="text-xs text-gray-400 mt-1">(Bisa pilih satu per satu berulang kali)</span>
                                 </div>
+                            </div>
 
-                                {{-- Container Preview Grid --}}
-                                <div id="preview-container" class="hidden grid grid-cols-3 gap-2 w-full">
-                                    {{-- Gambar preview akan muncul di sini via JS --}}
-                                </div>
-
-                                {{-- INPUT UTAMA: name="images[]" dan multiple --}}
-                                <input type="file" name="images[]" multiple class="hidden" accept="image/*" onchange="showPreview(event)" required>
-                            </label>
+                            {{-- 4. CONTAINER PREVIEW (Menampilkan foto yang sudah ditampung) --}}
+                            <div id="preview-container" class="grid grid-cols-3 gap-3 w-full">
+                                {{-- Gambar akan muncul di sini via JS --}}
+                            </div>
 
                             {{-- Pesan Error Validasi --}}
                             @error('images') <p class="text-red-500 text-xs mt-2">{{ $message }}</p> @enderror
@@ -86,36 +90,78 @@
         </div>
     </div>
 
-    {{-- Script Baru untuk Preview Banyak Gambar --}}
+    {{-- SCRIPT BARU UNTUK FITUR 'SATU PER SATU' --}}
     <script>
-        function showPreview(event){
-            const files = event.target.files;
+        // Membuat "Keranjang File" sementara
+        const dt = new DataTransfer(); 
+
+        function addFiles(input) {
+            const files = input.files;
             const previewContainer = document.getElementById("preview-container");
-            const icon = document.getElementById("icon");
             
-            // Reset preview
-            previewContainer.innerHTML = '';
+            // Loop setiap file yang baru dipilih
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                
+                // Tambahkan file ke keranjang "dt"
+                dt.items.add(file);
 
-            if(files.length > 0){
-                icon.classList.add("hidden");
-                previewContainer.classList.remove("hidden");
+                // --- Buat Elemen Preview ---
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = function(e) {
+                    const div = document.createElement('div');
+                    div.className = "relative group w-full h-24 border border-gray-200 rounded-lg overflow-hidden";
+                    
+                    // Gambar
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    img.className = "w-full h-full object-cover";
+                    
+                    // Tombol Hapus (X)
+                    const btn = document.createElement('button');
+                    btn.innerHTML = '&times;';
+                    btn.className = "absolute top-1 right-1 bg-red-500 text-white w-6 h-6 rounded-full flex items-center justify-center text-sm hover:bg-red-600 opacity-0 group-hover:opacity-100 transition shadow-md";
+                    btn.type = "button"; // Penting agar tidak submit form
+                    
+                    // Logic Hapus File Tertentu
+                    btn.onclick = function() {
+                        // Hapus elemen visual
+                        div.remove();
+                        // Hapus file dari keranjang dt
+                        removeFileFromFileList(file.name);
+                    };
 
-                // Loop setiap file yang dipilih
-                Array.from(files).forEach(file => {
-                    let src = URL.createObjectURL(file);
-                    
-                    // Buat elemen gambar
-                    let img = document.createElement('img');
-                    img.src = src;
-                    img.className = "w-full h-20 object-cover rounded-lg border border-gray-200";
-                    
-                    // Masukkan ke container
-                    previewContainer.appendChild(img);
-                });
-            } else {
-                icon.classList.remove("hidden");
-                previewContainer.classList.add("hidden");
+                    div.appendChild(img);
+                    div.appendChild(btn);
+                    previewContainer.appendChild(div);
+                };
             }
+
+            // Update Input Asli dengan isi keranjang terbaru
+            document.getElementById('real-input').files = dt.files;
+
+            // Reset input pemicu agar bisa memilih file yang sama lagi jika perlu
+            input.value = ''; 
+        }
+
+        function removeFileFromFileList(fileName) {
+            const newDt = new DataTransfer();
+            const currentFiles = dt.files;
+
+            // Masukkan kembali semua file KECUALI yang mau dihapus
+            for (let i = 0; i < currentFiles.length; i++) {
+                if (currentFiles[i].name !== fileName) {
+                    newDt.items.add(currentFiles[i]);
+                }
+            }
+
+            // Update keranjang utama & input asli
+            dt.items.clear();
+            for (let i = 0; i < newDt.files.length; i++) {
+                dt.items.add(newDt.files[i]);
+            }
+            document.getElementById('real-input').files = dt.files;
         }
     </script>
 </x-admin-layout>

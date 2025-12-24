@@ -84,14 +84,17 @@ class AdminProductController extends Controller
         $product = Product::findOrFail($id);
         
         $request->validate([
-            'name' => 'required',
+            'name' => 'required|string|max:255',
+            'description' => 'required',
             'price' => 'required|numeric',
-            // images nullable saat edit (jika user tidak ingin ubah foto)
+            'stock' => 'required|numeric',
+            'weight' => 'required|numeric',
+            // Gambar tidak wajib saat edit (nullable), tapi kalau ada isinya harus valid
             'images' => 'nullable|array|max:10', 
             'images.*' => 'image|mimes:jpeg,png,jpg,webp|max:2048',
         ]);
 
-        // Update data text
+        // 1. Update Informasi Dasar
         $product->update([
             'name' => $request->name,
             'description' => $request->description,
@@ -100,24 +103,34 @@ class AdminProductController extends Controller
             'weight' => $request->weight,
         ]);
 
-        // Cek apakah user upload foto baru?
+        // 2. Jika Admin Upload Foto BARU
         if ($request->hasFile('images')) {
             
-            // Cek batas maksimal 10 foto
-            if (($product->images->count() + count($request->images)) > 10) {
-                 return back()->with('error', 'Maksimal total 10 foto!');
+            // Cek apakah total foto nanti melebihi 10?
+            $totalImages = $product->images->count() + count($request->images);
+            if ($totalImages > 10) {
+                 return back()->with('error', 'Maksimal total 10 foto per produk! Hapus foto lama dulu.');
             }
 
-            foreach ($request->file('images') as $file) {
+            // Loop upload foto baru
+            foreach ($request->file('images') as $index => $file) {
                 $path = $file->store('product_gallery', 'public');
+                
+                // Simpan ke tabel product_images
                 ProductImage::create([
                     'product_id' => $product->id,
                     'image_path' => $path
                 ]);
+
+                // Jika produk ini BELUM punya thumbnail utama (kolom image NULL),
+                // maka foto baru yang pertama diupload otomatis jadi thumbnail
+                if ($index === 0 && !$product->image) {
+                    $product->update(['image' => $path]);
+                }
             }
         }
 
-        return redirect()->route('admin.products.index')->with('success', 'Produk diperbarui!');
+        return redirect()->route('admin.products.index')->with('success', 'Produk berhasil diperbarui!');
     }
 
     public function destroy($id)
@@ -145,11 +158,21 @@ class AdminProductController extends Controller
     public function deleteImage($id)
     {
         $image = ProductImage::findOrFail($id);
-        // Hapus file fisik
+        
+        // 1. Hapus file fisik
         Storage::disk('public')->delete($image->image_path);
-        // Hapus record db
+        
+        // 2. Cek apakah ini thumbnail utama?
+        // Jika ya, kita harus kosongkan kolom 'image' di tabel product juga
+        $product = Product::find($image->product_id);
+        if ($product && $product->image == $image->image_path) {
+            $product->update(['image' => null]); 
+            // Opsional: set gambar lain sbg thumbnail baru secara otomatis jika mau
+        }
+
+        // 3. Hapus record di database
         $image->delete();
         
-        return back()->with('success', 'Foto galeri berhasil dihapus');
+        return back()->with('success', 'Foto berhasil dihapus.');
     }
 }

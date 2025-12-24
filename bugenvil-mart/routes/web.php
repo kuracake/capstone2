@@ -71,6 +71,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/orders/{order}/lapor', [ReportController::class, 'create'])->name('reports.create');
     Route::post('/orders/{order}/lapor', [ReportController::class, 'store'])->name('reports.store');
     Route::post('/produk/{id}/review', [ReviewController::class, 'store'])->name('reviews.store');
+    
 });
 
 /*
@@ -88,6 +89,7 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
     Route::patch('/laporan/{id}', [ReportController::class, 'updateStatus'])->name('reports.update');
     Route::patch('/orders/{id}/status', [OrderController::class, 'updateStatus'])->name('orders.update');
     Route::resource('orders', \App\Http\Controllers\AdminOrderController::class)->only(['index', 'show']);
+    Route::delete('/product-image/{id}/delete', [AdminProductController::class, 'deleteImage'])->name('product.image.delete');
 });
 
 require __DIR__ . '/auth.php';
