@@ -22,7 +22,7 @@
             <form action="{{ route('checkout.store') }}" method="POST" class="flex flex-col lg:flex-row gap-8 lg:gap-12 items-start">
                 @csrf
                 
-                {{-- === KOLOM KIRI: FORM PENGIRIMAN === --}}
+                {{-- === KOLOM KIRI: FORM ALAMAT === --}}
                 <div class="w-full lg:w-2/3 space-y-6">
                     
                     {{-- Card: Alamat --}}
@@ -93,17 +93,20 @@
                                     </div>
                                 </div>
                                 <div>
-    <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Kode Pos</label>
-    {{-- Hapus 'readonly' dan 'bg-gray-50', ubah jadi input biasa --}}
-    <input type="text" name="postal_code" id="postal_code" class="w-full border-gray-300 rounded-xl p-3.5 focus:ring-2 focus:ring-fuchsia-200 focus:border-fuchsia-500 transition shadow-sm text-center font-bold text-gray-700 tracking-widest" placeholder="Contoh: 61256">
-</div>
+                                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Kode Pos</label>
+                                    <input type="text" name="postal_code" id="postal_code" class="w-full border-gray-300 rounded-xl p-3.5 focus:ring-2 focus:ring-fuchsia-200 focus:border-fuchsia-500 transition shadow-sm text-center font-bold text-gray-700 tracking-widest" placeholder="Contoh: 61256">
+                                </div>
                             </div>
                         </div>
                     </div>
-
-                    {{-- Card: Ekspedisi --}}
+                </div>
+                
+                {{-- === KOLOM KANAN: PENGIRIMAN & RINGKASAN (STICKY) === --}}
+                <div class="w-full lg:w-1/3 space-y-6 lg:sticky lg:top-24">
+                    
+                    {{-- Card: Ekspedisi (Pindahan dari Kolom Kiri) --}}
                     <div class="bg-white p-6 md:p-8 rounded-3xl shadow-lg shadow-gray-100 border border-gray-100">
-                        <h2 class="text-xl font-bold mb-6 flex items-center gap-3 text-gray-800 border-b border-gray-100 pb-4">
+                        <h2 class="text-lg font-bold mb-6 flex items-center gap-3 text-gray-800 border-b border-gray-100 pb-4">
                             <span class="bg-purple-100 text-purple-600 w-10 h-10 flex items-center justify-center rounded-full">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
                             </span>
@@ -123,12 +126,12 @@
                                         <option value="idexpress">ID Express</option>
                                     </select>
                                     <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-gray-500">
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                                        
                                     </div>
                                 </div>
                             </div>
 
-                            {{-- Type Layanan (Hidden by Default) --}}
+                            {{-- Type Layanan --}}
                             <div id="service_container" class="hidden animate-fade-in-down">
                                 <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Layanan Pengiriman</label>
                                 <select name="type" id="type" class="w-full border-fuchsia-300 rounded-xl p-3.5 focus:ring-2 focus:ring-fuchsia-200 focus:border-fuchsia-500 shadow-md text-gray-800 font-medium" required>
@@ -137,21 +140,18 @@
                             </div>
                         </div>
                     </div>
-                </div>
-                
-                {{-- === KOLOM KANAN: RINGKASAN (STICKY) === --}}
-                <div class="w-full lg:w-1/3">
-                    <div class="bg-white p-6 md:p-8 rounded-3xl shadow-xl shadow-fuchsia-50/50 border border-fuchsia-100 sticky top-24">
+
+                    {{-- Card: Ringkasan Pesanan --}}
+                    <div class="bg-white p-6 md:p-8 rounded-3xl shadow-xl shadow-fuchsia-50/50 border border-fuchsia-100">
                         <h2 class="text-lg font-bold mb-6 text-gray-800 flex items-center justify-between">
                             Ringkasan Pesanan
                             <span class="text-xs bg-gray-100 text-gray-500 py-1 px-2 rounded-lg font-normal">{{ $cartItems->sum('quantity') }} Item</span>
                         </h2>
                         
                         {{-- List Item --}}
-                        <div class="space-y-4 mb-6 max-h-[350px] overflow-y-auto pr-2 custom-scrollbar">
+                        <div class="space-y-4 mb-6 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
                             @foreach($cartItems as $item)
                                 <div class="flex gap-4 group">
-                                    {{-- Gambar --}}
                                     <div class="w-16 h-16 flex-shrink-0 bg-gray-50 rounded-xl overflow-hidden border border-gray-100 shadow-sm group-hover:shadow-md transition">
                                         @if($item->product->image)
                                             <img src="{{ asset('storage/'.$item->product->image) }}" class="w-full h-full object-cover">
@@ -162,7 +162,6 @@
                                         @endif
                                     </div>
 
-                                    {{-- Info --}}
                                     <div class="flex-grow flex flex-col justify-center">
                                         <h4 class="text-sm font-bold text-gray-800 line-clamp-1 mb-1">{{ $item->product->name }}</h4>
                                         <div class="flex justify-between items-center">
@@ -174,10 +173,8 @@
                             @endforeach
                         </div>
 
-                        {{-- Divider Putus-putus --}}
                         <div class="border-t-2 border-dashed border-gray-100 my-6"></div>
 
-                        {{-- Rincian Biaya --}}
                         <div class="space-y-3">
                             <div class="flex justify-between text-sm text-gray-600">
                                 <span>Subtotal Produk</span>
@@ -187,14 +184,11 @@
                                 <span class="text-gray-600">Ongkos Kirim</span>
                                 <span id="shipping_display" class="text-xs font-bold text-orange-500 bg-orange-50 px-2 py-1 rounded-md">Pilih Kurir...</span>
                             </div>
-                            {{-- Container detail servis --}}
                             <div id="service_detail" class="text-right text-xs text-gray-400 italic h-4"></div>
                         </div>
 
-                        {{-- Divider Solid --}}
                         <div class="border-t border-gray-200 my-6"></div>
 
-                        {{-- Total Bayar --}}
                         <div class="flex justify-between items-end mb-8">
                             <span class="text-gray-500 font-medium">Total Bayar</span>
                             <span id="grand_total_display" class="font-bold text-fuchsia-600 text-3xl tracking-tight">Rp {{ number_format($subtotal, 0, ',', '.') }}</span>
@@ -202,7 +196,6 @@
 
                         <input type="hidden" name="shipping_cost" id="shipping_cost_input" value="0">
                         
-                        {{-- Tombol Bayar --}}
                         <button type="submit" id="btn_pay" class="w-full bg-gray-200 text-gray-400 font-bold py-4 rounded-2xl shadow-none transition-all duration-300 cursor-not-allowed flex items-center justify-center gap-2 group" disabled>
                             <span>Lengkapi Alamat</span>
                             <svg class="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
@@ -234,7 +227,7 @@
         }
     </style>
 
-    {{-- SCRIPT FIXED (Versi Bulletproof / Anti-Eror) --}}
+    {{-- SCRIPT TETAP SAMA --}}
     <script>
         $(document).ready(function() {
             let subtotal = {{ $subtotal }};
@@ -264,14 +257,9 @@
                             $('#courier').prop('disabled', true).addClass('bg-gray-100 cursor-not-allowed');
                             
                             $.each(data, function(key, value) {
-                                // PERBAIKAN: Pastikan nilai zip benar-benar bersih
                                 let rawZip = value.zip_code;
                                 let cleanZip = "";
-                                if (rawZip && rawZip !== "undefined" && rawZip !== "null") {
-                                    cleanZip = rawZip;
-                                }
-                                
-                                // Kita taruh di attribute data-zip
+                                if (rawZip && rawZip !== "undefined" && rawZip !== "null") { cleanZip = rawZip; }
                                 $('#city_id').append(`<option value="${value.id}" data-zip="${cleanZip}">${value.name}</option>`); 
                             });
                         }
@@ -283,15 +271,12 @@
             $('#city_id').on('change', function() {
                 let cityId = $(this).val();
                 $('#city_name').val($("#city_id option:selected").text());
-                
-                // PERBAIKAN UTAMA: Menggunakan .attr() agar membaca data mentah HTML
                 let zipCode = $("#city_id option:selected").attr('data-zip');
                 
-                // Cek Validasi Akhir
                 if (zipCode && zipCode !== "undefined" && zipCode !== "null" && zipCode.trim() !== "") {
                     $('#postal_code').val(zipCode);
                 } else {
-                    $('#postal_code').val(''); // Pastikan benar-benar kosong
+                    $('#postal_code').val('');
                 }
 
                 if(cityId) {
@@ -327,7 +312,6 @@
                         success: function(response) {
                             $('#service_container').removeClass('hidden');
                             $('#type').empty().append('<option value="">-- Pilih Layanan --</option>');
-                            
                             $.each(response, function(key, value) {
                                 $('#type').append(`<option value="${value.code}" data-cost="${value.cost}" data-desc="${value.description}">${value.name} - ${rupiah(value.cost)} (${value.description})</option>`);
                             });

@@ -49,14 +49,13 @@ class CartController extends Controller
             ]);
         }
 
-        // --- BAGIAN INI YANG KITA UBAH ---
-        
-        // 1. Jika tombolnya 'Beli Sekarang', langsung ke Checkout
+        // 1. Jika tombolnya 'Beli Sekarang' (redirect_checkout), langsung ke Keranjang/Checkout
+        // Kita arahkan ke cart.index dulu agar user melihat ringkasan sebelum checkout
         if ($request->has('redirect_checkout')) {
-            return redirect()->route('checkout');
+            return redirect()->route('cart.index')->with('success', 'Produk ditambahkan! Silakan periksa pesanan Anda.');
         }
 
-        // 2. Jika tombol Keranjang biasa, TETAP DI HALAMAN ITU (Back) + Pesan Sukses
+        // 2. Jika tombol Keranjang biasa, tetap di halaman produk
         return redirect()->back()->with('success', "Berhasil menambahkan <b>{$product->name}</b> ke keranjang!");
     }
 
@@ -67,11 +66,12 @@ class CartController extends Controller
             return redirect()->route('login');
         }
 
+        // Mengambil data keranjang milik user
         $cartItems = CartItem::with('product')->where('user_id', Auth::id())->get();
         
+        // Hitung Grand Total
         $grandTotal = 0;
         foreach($cartItems as $item) {
-            // Cek preventif jika produk terhapus
             if($item->product) {
                 $grandTotal += $item->product->price * $item->quantity;
             }
@@ -80,17 +80,49 @@ class CartController extends Controller
         return view('cart.index', compact('cartItems', 'grandTotal'));
     }
 
-    // 3. Hapus Item
-    public function remove(Request $request)
+    // 3. Update Jumlah (Tambah/Kurang) - BARU DITAMBAHKAN
+    public function update(Request $request, $id)
+    {
+        // Cari item keranjang
+        $item = CartItem::where('user_id', Auth::id())->where('id', $id)->firstOrFail();
+
+        // Logika Tombol Tambah (+)
+        if ($request->action == 'increase') {
+            // Cek stok produk sebelum nambah
+            if ($item->quantity < $item->product->stock) {
+                $item->increment('quantity');
+            } else {
+                return back()->with('error', 'Stok maksimal tercapai!');
+            }
+        } 
+        // Logika Tombol Kurang (-)
+        elseif ($request->action == 'decrease') {
+            if ($item->quantity > 1) {
+                $item->decrement('quantity');
+            } else {
+                // Opsional: Jika 1 dikurang, bisa dihapus atau dibiarkan 1
+                // Di sini saya biarkan 1. User harus klik tombol hapus jika ingin membuang.
+                return back()->with('info', 'Minimal pembelian 1 item. Gunakan tombol hapus jika ingin membatalkan.');
+            }
+        }
+
+        return redirect()->route('cart.index');
+    }
+
+    // 4. Hapus Item - DIPERBAIKI (Sesuai Route Delete)
+    public function destroy($id)
     {
         if (!Auth::check()) return redirect()->route('login');
 
-        if($request->id) {
-            CartItem::where('id', $request->id)
+        // Hapus berdasarkan ID dan User ID (agar aman)
+        $deleted = CartItem::where('id', $id)
                     ->where('user_id', Auth::id())
                     ->delete();
-            
-            return redirect()->back()->with('success', 'Produk dihapus dari keranjang');
+        
+        if($deleted) {
+            return redirect()->back()->with('success', 'Produk berhasil dihapus dari keranjang.');
+        } else {
+            return redirect()->back()->with('error', 'Gagal menghapus produk.');
         }
     }
 }

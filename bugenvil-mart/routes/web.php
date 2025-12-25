@@ -26,52 +26,55 @@ Route::get('/produk/{id}/detail', [PageController::class, 'detail'])->name('prod
 Route::get('/tutorial', [PageController::class, 'tutorials'])->name('tutorials.all');
 Route::get('/kontak', [PageController::class, 'contact'])->name('contact');
 
-// Keranjang Belanja
-Route::get('/cart', [CartController::class, 'viewCart'])->name('cart.index');
-Route::match(['get', 'post'], '/add-to-cart/{id}', [CartController::class, 'addToCart'])->name('cart.add');
-Route::delete('/remove-from-cart', [CartController::class, 'remove'])->name('cart.remove');
-
 /*
 |--------------------------------------------------------------------------
 | 2. HALAMAN USER (Wajib Login)
 |--------------------------------------------------------------------------
 */
 Route::middleware(['auth', 'verified'])->group(function () {
-    // Dashboard & Profile
+    
+    // --- KERANJANG BELANJA (CART) ---
+    Route::get('/cart', [CartController::class, 'viewCart'])->name('cart.index');
+    Route::post('/cart/add/{id}', [CartController::class, 'addToCart'])->name('cart.add'); 
+    Route::patch('/cart/{id}', [CartController::class, 'update'])->name('cart.update');    
+    Route::delete('/cart/{id}', [CartController::class, 'destroy'])->name('cart.destroy'); 
+
+    // --- DASHBOARD USER ---
     Route::get('/dashboard', function () {
         $user = Auth::user();
         if ($user->is_admin) return redirect()->route('admin.dashboard');
         
-        // PERUBAHAN: Tambahkan ->with('report') agar data laporan ikut terambil
         $myOrders = \App\Models\Order::with('report') 
                         ->where('user_id', $user->id)
                         ->latest()
-                        ->limit(10) // Tampilkan 10 terakhir agar lebih lengkap
+                        ->limit(10)
                         ->get();
                         
         return view('dashboard', compact('myOrders'));
     })->name('dashboard');
 
+    // --- PROFILE ---
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    // Checkout & Transaksi
-    Route::get('/checkout', [OrderController::class, 'index'])->name('checkout');
+    // --- CHECKOUT & TRANSAKSI ---
+    // PERBAIKAN: Nama route diubah jadi 'checkout.index' agar sesuai dengan tombol di cart
+    Route::get('/checkout', [OrderController::class, 'index'])->name('checkout.index'); 
     Route::post('/checkout', [OrderController::class, 'store'])->name('checkout.store');
     Route::get('/orders/{id}', [OrderController::class, 'show'])->name('orders.show');
 
-    // --- API RAJAONGKIR (Sesuai SantriKoding) ---
+    // --- API RAJAONGKIR ---
     Route::get('/api/provinces', [OngkirController::class, 'getProvinces'])->name('api.provinces');
     Route::get('/api/cities/{id}', [OngkirController::class, 'getCities'])->name('api.cities');
-    Route::get('/api/districts/{id}', [OngkirController::class, 'getDistricts'])->name('api.districts'); // Kecamatan
+    Route::get('/api/districts/{id}', [OngkirController::class, 'getDistricts'])->name('api.districts');
     Route::post('/api/cost', [OngkirController::class, 'checkOngkir'])->name('api.cost');
 
-    // Fitur Lain
+    // --- FITUR LAIN ---
     Route::get('/orders/{order}/lapor', [ReportController::class, 'create'])->name('reports.create');
     Route::post('/orders/{order}/lapor', [ReportController::class, 'store'])->name('reports.store');
     Route::post('/produk/{id}/review', [ReviewController::class, 'store'])->name('reviews.store');
-    
+    Route::get('/checkout/success', [OrderController::class, 'success'])->name('checkout.success');
 });
 
 /*

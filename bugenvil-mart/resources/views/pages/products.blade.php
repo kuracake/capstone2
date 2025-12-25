@@ -1,80 +1,143 @@
 <x-app-layout>
-    {{-- Hero Section --}}
-    <div class="bg-fuchsia-50 py-12">
-        <div class="container mx-auto px-6 text-center">
-            <h1 class="text-4xl font-bold text-fuchsia-800 mb-4 serif">Koleksi Bougenville</h1>
-            <p class="text-gray-600 max-w-2xl mx-auto">
-                Temukan varietas bugenvil terbaik hasil budidaya kami. Siap mempercantik taman dan halaman rumah Anda.
+    {{-- 1. HERO HEADER --}}
+    <div class="bg-fuchsia-900 py-12 md:py-20 relative overflow-hidden">
+        {{-- Dekorasi Latar Belakang --}}
+        <div class="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full translate-x-1/2 -translate-y-1/2 blur-2xl"></div>
+        <div class="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full -translate-x-1/2 translate-y-1/2 blur-2xl"></div>
+        
+        <div class="container mx-auto px-6 text-center relative z-10">
+            <h1 class="text-3xl md:text-5xl font-bold text-white mb-2 md:mb-4 font-serif tracking-wide">
+                Koleksi Bougenville
+            </h1>
+            <p class="text-fuchsia-100 max-w-2xl mx-auto text-sm md:text-lg font-light leading-relaxed">
+                Temukan varietas bugenvil terbaik untuk mempercantik taman Anda.
             </p>
         </div>
     </div>
 
-    {{-- Product Grid --}}
-    <div class="py-12 bg-white">
-        <div class="container mx-auto px-6">
+    {{-- 2. KONTEN UTAMA --}}
+    <div class="py-8 md:py-16 bg-gray-50 min-h-screen">
+        <div class="container mx-auto px-4 md:px-6">
             
-            {{-- Filter & Search Bar (Opsional, biar makin mantap) --}}
-            <div class="flex justify-between items-center mb-8">
-                <p class="text-gray-500">Menampilkan {{ $products->count() }} produk</p>
-                <form method="GET" action="{{ route('products.index') }}" class="flex gap-2">
-                    <select name="filter" onchange="this.form.submit()" class="border-gray-300 rounded-lg text-sm focus:ring-fuchsia-500 focus:border-fuchsia-500">
-                        <option value="terbaru" {{ request('filter') == 'terbaru' ? 'selected' : '' }}>Terbaru</option>
-                        <option value="termurah" {{ request('filter') == 'termurah' ? 'selected' : '' }}>Harga Terendah</option>
-                        <option value="terlaris" {{ request('filter') == 'terlaris' ? 'selected' : '' }}>Harga Tertinggi</option>
-                    </select>
-                </form>
+            {{-- TOOLBAR: PENCARIAN & FILTER --}}
+            <div class="bg-white p-4 md:p-5 rounded-2xl shadow-sm border border-gray-100 mb-8 md:mb-10">
+                <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+                    
+                    {{-- Kiri: Info Jumlah Produk --}}
+                    <p class="text-gray-500 text-xs md:text-sm font-medium order-2 md:order-1">
+                        Menampilkan <span class="text-fuchsia-600 font-bold">{{ $products->total() }}</span> produk
+                    </p>
+
+                    {{-- Kanan: Form Search & Filter --}}
+                    <form method="GET" action="{{ route('products.index') }}" class="w-full md:w-auto flex flex-col sm:flex-row gap-3 order-1 md:order-2">
+                        
+                        {{-- Input Pencarian --}}
+                        <div class="relative w-full sm:w-64 text-gray-500 focus-within:text-fuchsia-600 transition-colors duration-200">
+                            <input type="text" name="search" value="{{ request('search') }}" 
+                                   placeholder="Cari tanaman..." 
+                                   class="w-full pl-4 pr-10 py-2.5 rounded-xl border border-gray-200 text-sm focus:border-fuchsia-500 focus:ring-fuchsia-500 bg-gray-50 focus:bg-white transition-all placeholder-gray-400">
+                            
+                            <button type="submit" class="absolute inset-y-0 right-0 pr-4 flex items-center cursor-pointer hover:text-fuchsia-700 transition-colors focus:outline-none" title="Cari">
+                                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                                </svg>
+                            </button>
+                        </div>
+
+                        {{-- Select Filter --}}
+                        <div class="relative w-full sm:w-48">
+                            <select name="filter" onchange="this.form.submit()" class="w-full pl-4 pr-10 py-2.5 rounded-xl border border-gray-200 text-sm focus:border-fuchsia-500 focus:ring-fuchsia-500 bg-gray-50 cursor-pointer transition-colors text-gray-600 hover:bg-gray-100">
+                                <option value="terbaru" {{ request('filter') == 'terbaru' ? 'selected' : '' }}>Terbaru</option>
+                                <option value="termurah" {{ request('filter') == 'termurah' ? 'selected' : '' }}>Harga Terendah</option>
+                                <option value="terlaris" {{ request('filter') == 'terlaris' ? 'selected' : '' }}>Harga Tertinggi</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
             </div>
 
-            {{-- Jika produk kosong --}}
+            {{-- GRID PRODUK --}}
             @if($products->isEmpty())
-                <div class="text-center py-20 bg-gray-50 rounded-xl">
-                    <svg class="w-16 h-16 mx-auto text-gray-300 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                    </svg>
-                    <p class="text-gray-500 text-lg font-medium">Belum ada produk yang tersedia saat ini.</p>
+                <div class="text-center py-20 bg-white rounded-3xl border border-gray-100 shadow-sm">
+                    {{-- Empty State Content --}}
+                    <div class="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4 text-gray-400">
+                        <svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                    </div>
+                    <h3 class="text-lg font-bold text-gray-800 mb-1">Produk Tidak Ditemukan</h3>
+                    <p class="text-gray-500 text-sm">Coba kata kunci lain atau reset filter pencarian Anda.</p>
+                    <a href="{{ route('products.index') }}" class="inline-block mt-4 px-6 py-2 bg-fuchsia-50 text-fuchsia-600 rounded-full font-bold text-sm hover:bg-fuchsia-100 transition">
+                        Reset Pencarian
+                    </a>
                 </div>
             @else
-                <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-8">
+                {{-- Grid Responsif --}}
+                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6 lg:gap-8">
                     @foreach($products as $product)
-                    <div class="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300 border border-gray-100 flex flex-col h-full group">
+                    <div class="bg-white rounded-xl md:rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 flex flex-col h-full group overflow-hidden">
                         
-                        {{-- Gambar Produk (Klik menuju detail) --}}
-                        <a href="{{ route('products.show', $product->id) }}" class="relative h-64 overflow-hidden block">
+                        {{-- Gambar Produk --}}
+                        <a href="{{ route('products.show', $product->id) }}" class="relative aspect-square overflow-hidden block bg-gray-100">
                             @if($product->image)
-                                <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}" class="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500">
+                                <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}" class="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700">
                             @else
-                                <div class="w-full h-full bg-gray-200 flex items-center justify-center text-gray-400">No Image</div>
+                                <div class="w-full h-full flex items-center justify-center text-gray-300 text-xs md:text-sm">No Image</div>
                             @endif
                             
                             {{-- Badge Stok --}}
-                            <div class="absolute top-2 right-2">
-                                <span class="bg-white/90 backdrop-blur px-3 py-1 rounded-full text-xs font-bold text-fuchsia-600 shadow-sm">
+                            <div class="absolute top-2 right-2 md:top-3 md:right-3">
+                                <span class="bg-white/95 backdrop-blur px-2 py-0.5 md:px-3 md:py-1 rounded-full text-[10px] md:text-xs font-bold text-fuchsia-700 shadow-sm uppercase tracking-wide">
                                     Stok: {{ $product->stock }}
                                 </span>
                             </div>
                         </a>
 
                         {{-- Info Produk --}}
-                        <div class="p-6 flex flex-col flex-grow">
-                            <h3 class="text-xl font-bold text-gray-800 mb-2 serif hover:text-fuchsia-600 transition">
+                        <div class="p-3 md:p-5 flex flex-col flex-grow">
+                            {{-- Judul Produk --}}
+                            <h3 class="text-sm md:text-lg font-bold text-gray-900 mb-1 font-serif group-hover:text-fuchsia-700 transition-colors line-clamp-2 leading-tight">
                                 <a href="{{ route('products.show', $product->id) }}">{{ $product->name }}</a>
                             </h3>
-                            <p class="text-gray-500 text-sm mb-4 line-clamp-2 flex-grow">
+                            
+                            {{-- Deskripsi (Desktop Only) --}}
+                            <p class="hidden md:block text-gray-500 text-xs mb-4 line-clamp-2 leading-relaxed flex-grow">
                                 {{ $product->description }}
                             </p>
                             
-                            <div class="flex items-center justify-between mt-auto pt-4 border-t border-gray-100">
-                                <span class="text-lg font-bold text-fuchsia-600">Rp {{ number_format($product->price, 0, ',', '.') }}</span>
+                            {{-- AREA HARGA & TOMBOL --}}
+                            <div class="mt-auto pt-2 md:pt-4 md:border-t md:border-gray-50">
                                 
-                                {{-- Tombol Tambah ke Keranjang (Sudah Diperbaiki) --}}
-                                <form action="{{ route('cart.add', $product->id) }}" method="POST">
-                                    @csrf
-                                    <button type="submit" class="bg-fuchsia-600 text-white p-2 rounded-lg hover:bg-fuchsia-700 transition shadow-md group-hover:scale-105" title="Tambah ke Keranjang">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 00-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-                                        </svg>
-                                    </button>
-                                </form>
+                                {{-- Harga (Baris Sendiri agar jelas) --}}
+                                <div class="mb-3">
+                                    <span class="text-base md:text-lg font-bold text-fuchsia-600">
+                                        Rp {{ number_format($product->price, 0, ',', '.') }}
+                                    </span>
+                                </div>
+
+                                {{-- Baris Tombol (Keranjang + Beli Langsung) --}}
+                                <div class="flex items-center gap-2 w-full">
+                                    
+                                    {{-- 1. Tombol Keranjang (Ikon Saja) --}}
+                                    <form action="{{ route('cart.add', $product->id) }}" method="POST" class="shrink-0">
+                                        @csrf
+                                        <button type="submit" class="w-10 h-10 rounded-lg bg-fuchsia-50 text-fuchsia-600 border border-fuchsia-100 flex items-center justify-center hover:bg-fuchsia-600 hover:text-white transition-all shadow-sm" title="Tambah ke Keranjang">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 00-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                                            </svg>
+                                        </button>
+                                    </form>
+
+                                    {{-- 2. Tombol Beli Langsung (Full Button) --}}
+                                    <form action="{{ route('cart.add', $product->id) }}" method="POST" class="flex-grow">
+                                        @csrf
+                                        {{-- Input Rahasia untuk memberitahu backend --}}
+                                        <input type="hidden" name="redirect_checkout" value="1">
+                                        
+                                        <button type="submit" class="w-full h-10 rounded-lg bg-fuchsia-600 text-white font-bold text-xs md:text-sm hover:bg-fuchsia-700 transition-all shadow-md active:scale-95">
+                                            Beli Sekarang
+                                        </button>
+                                    </form>
+
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -82,7 +145,7 @@
                 </div>
                 
                 {{-- Pagination --}}
-                <div class="mt-12">
+                <div class="mt-12 md:mt-16">
                     {{ $products->links() }}
                 </div>
             @endif

@@ -1,23 +1,22 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" class="scroll-smooth">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>BougainVilla - Keindahan Alam</title>
+    <title>{{ config('app.name', 'Ainin Ar Store') }}</title>
     
-    <script src="https://cdn.tailwindcss.com"></script>
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <style>
         body { font-family: 'Poppins', sans-serif; }
-        h1, h2, h3, .serif { font-family: 'Playfair Display', serif; }
+        .font-serif { font-family: 'Playfair Display', serif; }
         [x-cloak] { display: none !important; }
         
-        /* Animasi Bounce untuk Badge */
         @keyframes bounce-short {
             0%, 100% { transform: translateY(0); }
             50% { transform: translateY(-25%); }
@@ -27,91 +26,116 @@
         }
     </style>
 </head>
-<body class="bg-pink-50 text-gray-800 antialiased flex flex-col min-h-screen">
+<body class="bg-gray-50 text-gray-800 antialiased flex flex-col min-h-screen">
 
-    <nav x-data="{ open: false }" class="bg-white py-4 px-6 sticky top-0 z-50 shadow-sm">
-        <div class="container mx-auto">
-            <div class="flex justify-between items-center">
+    {{-- NAVBAR --}}
+    <nav x-data="{ open: false, scrolled: false }" 
+         @scroll.window="scrolled = (window.pageYOffset > 20)"
+         :class="{'bg-white/90 backdrop-blur-md shadow-sm': scrolled, 'bg-white': !scrolled}"
+         class="fixed w-full top-0 z-50 transition-all duration-300 border-b border-gray-100">
+        
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-20">
                 
-                {{-- LOGO --}}
-                <a href="/" class="flex items-center gap-2">
-                    <div class="border-2 border-fuchsia-500 rounded-full p-1 text-fuchsia-500">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
-                    </div>
-                    <span class="text-2xl font-bold text-fuchsia-600 serif tracking-wide">BougainVilla</span>
-                </a>
-
-                {{-- MENU DESKTOP --}}
-                <div class="hidden md:flex space-x-8 text-gray-600 font-medium">
-                    <a href="{{ route('home') }}" class="hover:text-fuchsia-600 transition {{ request()->routeIs('home') ? 'text-fuchsia-600 font-bold' : '' }}">Beranda</a>
-                    <a href="{{ route('products.index') }}" class="hover:text-fuchsia-600 transition {{ request()->routeIs('products.index') ? 'text-fuchsia-600 font-bold' : '' }}">Produk</a>
-                    <a href="{{ route('tutorials.all') }}" class="hover:text-fuchsia-600 transition {{ request()->routeIs('tutorials.all') ? 'text-fuchsia-600 font-bold' : '' }}">Tutorial</a>
-                    <a href="{{ route('contact') }}" class="hover:text-fuchsia-600 transition {{ request()->routeIs('contact') ? 'text-fuchsia-600 font-bold' : '' }}">Kontak</a>
+                {{-- LOGO BRAND --}}
+                <div class="flex-shrink-0 flex items-center">
+                    <a href="{{ route('home') }}" class="group flex items-center">
+                        <div class="flex flex-col">
+                            {{-- Teks Logo --}}
+                            <span class="text-3xl font-bold font-serif text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-700 to-purple-600 tracking-tight leading-none group-hover:opacity-80 transition">
+                                Ainin Ar Store
+                            </span>
+                            <span class="text-[10px] text-fuchsia-500 font-medium tracking-widest uppercase mt-0.5 ml-0.5">
+                                Eko Bugenvill 
+                            </span>
+                        </div>
+                    </a>
                 </div>
 
-                {{-- KERANJANG & USER (DESKTOP) --}}
-                <div class="hidden md:flex items-center gap-5">
-                    
-                    {{-- IKON KERANJANG (LOGIKA DATABASE) --}}
-                    <a href="{{ route('cart.index') }}" class="relative text-gray-600 hover:text-fuchsia-600 transition group">
-                        <svg class="w-6 h-6 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 00-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                {{-- MENU DESKTOP --}}
+                <div class="hidden md:flex space-x-8 items-center">
+                    <x-nav-link :href="route('home')" :active="request()->routeIs('home')">
+                        Beranda
+                    </x-nav-link>
+                    <x-nav-link :href="route('products.index')" :active="request()->routeIs('products.index')">
+                        Produk
+                    </x-nav-link>
+                    <x-nav-link :href="route('tutorials.all')" :active="request()->routeIs('tutorials.all')">
+                        Tutorial
+                    </x-nav-link>
+                    <x-nav-link :href="route('contact')" :active="request()->routeIs('contact')">
+                        Kontak
+                    </x-nav-link>
+                </div>
+
+                {{-- KANAN: CART & USER --}}
+                <div class="hidden md:flex items-center gap-6">
+                    {{-- Cart --}}
+                    <a href="{{ route('cart.index') }}" class="relative group text-gray-500 hover:text-fuchsia-600 transition">
+                        <div class="p-2 rounded-full group-hover:bg-fuchsia-50 transition">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+                        </div>
                         @auth
-                            @php
-                                // Hitung total item langsung dari DB agar akurat
-                                $cartCount = \App\Models\CartItem::where('user_id', Auth::id())->sum('quantity');
-                            @endphp
+                            @php $cartCount = \App\Models\CartItem::where('user_id', Auth::id())->sum('quantity'); @endphp
                             @if($cartCount > 0)
-                                <span class="absolute -top-2 -right-2 bg-fuchsia-600 text-white text-[10px] font-bold rounded-full h-5 w-5 flex items-center justify-center border-2 border-white animate-bounce-short">
+                                <span class="absolute top-0 right-0 inline-flex items-center justify-center px-1.5 py-0.5 border-2 border-white text-xs font-bold leading-none text-white transform translate-x-1/4 -translate-y-1/4 bg-red-500 rounded-full animate-bounce-short">
                                     {{ $cartCount }}
                                 </span>
                             @endif
                         @endauth
                     </a>
 
+                    <div class="h-6 w-px bg-gray-200"></div>
+
+                    {{-- User Dropdown --}}
                     @auth
-                        <div class="flex items-center gap-4 border-l border-gray-300 pl-4 ml-2">
-                            <a href="{{ url('/dashboard') }}" class="flex items-center gap-2 text-gray-600 hover:text-fuchsia-600 transition" title="Ke Dashboard">
-                                <div class="text-right">
-                                    <div class="text-xs text-gray-500">Halo,</div>
-                                    <div class="text-sm font-bold leading-none">{{ Auth::user()->name }}</div>
+                        <div x-data="{ dropdownOpen: false }" class="relative">
+                            <button @click="dropdownOpen = !dropdownOpen" @click.away="dropdownOpen = false" class="flex items-center gap-3 focus:outline-none group">
+                                <div class="text-right hidden lg:block">
+                                    <p class="text-xs text-gray-500">Halo,</p>
+                                    <p class="text-sm font-bold text-gray-700 group-hover:text-fuchsia-700 transition">{{ Auth::user()->name }}</p>
                                 </div>
                                 @if(Auth::user()->avatar)
-                                    <img src="{{ asset('storage/' . Auth::user()->avatar) }}" class="w-8 h-8 rounded-full object-cover border border-gray-200" alt="Avatar">
+                                    <img src="{{ asset('storage/' . Auth::user()->avatar) }}" class="h-11 w-11 rounded-full object-cover border-2 border-fuchsia-100 shadow-sm group-hover:border-fuchsia-300 transition">
                                 @else
-                                    <div class="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-gray-500 font-bold">
+                                    <div class="h-11 w-11 rounded-full bg-fuchsia-100 text-fuchsia-600 flex items-center justify-center font-bold text-lg border border-fuchsia-200">
                                         {{ substr(Auth::user()->name, 0, 1) }}
                                     </div>
                                 @endif
-                            </a>
-                            <form method="POST" action="{{ route('logout') }}">
-                                @csrf
-                                <button type="submit" class="text-red-500 hover:text-red-700 p-1" title="Keluar">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
-                                </button>
-                            </form>
+                                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                            </button>
+
+                            <div x-show="dropdownOpen" style="display: none;" class="absolute right-0 mt-3 w-48 bg-white rounded-xl shadow-xl py-2 border border-gray-100 z-50">
+                                <a href="{{ route('dashboard') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-fuchsia-50 hover:text-fuchsia-700">Dashboard</a>
+                                <a href="{{ route('profile.edit') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-fuchsia-50 hover:text-fuchsia-700">Profil Saya</a>
+                                <div class="border-t border-gray-100 my-1"></div>
+                                <form method="POST" action="{{ route('logout') }}">
+                                    @csrf
+                                    <button type="submit" class="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50">Keluar</button>
+                                </form>
+                            </div>
                         </div>
                     @else
-                        <div class="border-l border-gray-300 pl-4 ml-2">
-                            <a href="{{ route('login') }}" class="bg-fuchsia-600 text-white px-5 py-2 rounded-full font-bold text-sm hover:bg-fuchsia-700 transition shadow-md">Masuk</a>
+                        <div class="flex items-center gap-3">
+                            <a href="{{ route('login') }}" class="text-sm font-bold text-gray-600 hover:text-fuchsia-600 transition">Masuk</a>
+                            <a href="{{ route('register') }}" class="px-5 py-2.5 text-sm font-bold text-white bg-gray-900 rounded-full hover:bg-fuchsia-700 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
+                                Daftar
+                            </a>
                         </div>
                     @endauth
                 </div>
 
-                {{-- TOMBOL HAMBURGER (MOBILE) --}}
+                {{-- Mobile Hamburger --}}
                 <div class="-mr-2 flex items-center md:hidden gap-4">
-                    {{-- Ikon Keranjang di Mobile --}}
-                    <a href="{{ route('cart.index') }}" class="relative text-gray-600 hover:text-fuchsia-600">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 00-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                    <a href="{{ route('cart.index') }}" class="relative text-gray-600">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
                         @auth
                             @if(isset($cartCount) && $cartCount > 0)
-                                <span class="absolute -top-2 -right-2 bg-fuchsia-600 text-white text-[10px] font-bold rounded-full h-5 w-5 flex items-center justify-center border-2 border-white">
-                                    {{ $cartCount }}
-                                </span>
+                                <span class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full h-4 w-4 flex items-center justify-center">{{ $cartCount }}</span>
                             @endif
                         @endauth
                     </a>
-
-                    <button @click="open = ! open" class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 focus:text-gray-500 transition duration-150 ease-in-out">
+                    <button @click="open = ! open" class="inline-flex items-center justify-center p-2 rounded-lg text-gray-600 hover:text-fuchsia-600 hover:bg-gray-100 focus:outline-none transition">
                         <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
                             <path :class="{'hidden': open, 'inline-flex': ! open }" class="inline-flex" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
                             <path :class="{'hidden': ! open, 'inline-flex': open }" class="hidden" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -121,117 +145,120 @@
             </div>
         </div>
 
-        {{-- MENU MOBILE (DROPDOWN) --}}
-        <div :class="{'block': open, 'hidden': ! open}" class="hidden md:hidden border-t border-gray-100 mt-4 bg-white shadow-lg">
-            <div class="pt-2 pb-3 space-y-1">
-                <a href="{{ route('home') }}" class="block pl-3 pr-4 py-2 border-l-4 {{ request()->routeIs('home') ? 'border-fuchsia-400 text-fuchsia-700 bg-fuchsia-50' : 'border-transparent text-gray-600 hover:text-gray-800 hover:bg-gray-50' }} text-base font-medium">Beranda</a>
-                <a href="{{ route('products.index') }}" class="block pl-3 pr-4 py-2 border-l-4 {{ request()->routeIs('products.index') ? 'border-fuchsia-400 text-fuchsia-700 bg-fuchsia-50' : 'border-transparent text-gray-600 hover:text-gray-800 hover:bg-gray-50' }} text-base font-medium">Produk</a>
-                <a href="{{ route('tutorials.all') }}" class="block pl-3 pr-4 py-2 border-l-4 {{ request()->routeIs('tutorials.all') ? 'border-fuchsia-400 text-fuchsia-700 bg-fuchsia-50' : 'border-transparent text-gray-600 hover:text-gray-800 hover:bg-gray-50' }} text-base font-medium">Tutorial</a>
-                <a href="{{ route('contact') }}" class="block pl-3 pr-4 py-2 border-l-4 {{ request()->routeIs('contact') ? 'border-fuchsia-400 text-fuchsia-700 bg-fuchsia-50' : 'border-transparent text-gray-600 hover:text-gray-800 hover:bg-gray-50' }} text-base font-medium">Kontak</a>
+        {{-- Mobile Menu --}}
+        <div x-show="open" x-transition class="md:hidden border-t border-gray-100 bg-white shadow-lg">
+            <div class="pt-2 pb-3 space-y-1 px-4">
+                <x-responsive-nav-link :href="route('home')" :active="request()->routeIs('home')">Beranda</x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('products.index')" :active="request()->routeIs('products.index')">Produk</x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('tutorials.all')" :active="request()->routeIs('tutorials.all')">Tutorial</x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('contact')" :active="request()->routeIs('contact')">Kontak</x-responsive-nav-link>
             </div>
-            
-            <div class="pt-4 pb-4 border-t border-gray-200">
+            <div class="pt-4 pb-6 border-t border-gray-100 px-4 bg-gray-50">
                 @auth
-                    <div class="px-4 flex items-center gap-3">
-                        <div class="flex-shrink-0">
-                            @if(Auth::user()->avatar)
-                                <img src="{{ asset('storage/' . Auth::user()->avatar) }}" class="w-10 h-10 rounded-full object-cover">
-                            @else
-                                <div class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center font-bold text-gray-500">
-                                    {{ substr(Auth::user()->name, 0, 1) }}
-                                </div>
-                            @endif
-                        </div>
+                    <div class="flex items-center gap-4 mb-4">
+                        @if(Auth::user()->avatar)
+                            <img src="{{ asset('storage/' . Auth::user()->avatar) }}" class="h-14 w-14 rounded-full object-cover border-2 border-white shadow-md">
+                        @else
+                            <div class="h-14 w-14 rounded-full bg-fuchsia-100 text-fuchsia-600 flex items-center justify-center font-bold text-xl border border-fuchsia-200">{{ substr(Auth::user()->name, 0, 1) }}</div>
+                        @endif
                         <div>
-                            <div class="font-medium text-base text-gray-800">{{ Auth::user()->name }}</div>
-                            <div class="font-medium text-sm text-gray-500">{{ Auth::user()->email }}</div>
+                            <div class="font-bold text-lg text-gray-800">{{ Auth::user()->name }}</div>
+                            <div class="text-sm text-gray-500">{{ Auth::user()->email }}</div>
                         </div>
                     </div>
-                    <div class="mt-3 space-y-1">
-                        <a href="{{ route('dashboard') }}" class="block pl-3 pr-4 py-2 border-l-4 border-transparent text-gray-600 hover:text-gray-800 hover:bg-gray-50 text-base font-medium">Dashboard</a>
+                    <div class="space-y-2">
+                        <a href="{{ route('dashboard') }}" class="block w-full text-center py-2 bg-white border border-gray-200 rounded-lg text-sm font-bold text-gray-700">Dashboard</a>
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf
-                            <a href="{{ route('logout') }}" onclick="event.preventDefault(); this.closest('form').submit();" class="block pl-3 pr-4 py-2 border-l-4 border-transparent text-red-600 hover:text-red-800 hover:bg-red-50 text-base font-medium">Keluar</a>
+                            <button type="submit" class="block w-full py-2 bg-red-50 border border-red-100 rounded-lg text-sm font-bold text-red-600">Keluar</button>
                         </form>
                     </div>
                 @else
-                    <div class="px-4">
-                        <a href="{{ route('login') }}" class="block w-full text-center bg-fuchsia-600 text-white px-5 py-3 rounded-lg font-bold hover:bg-fuchsia-700 transition">Masuk / Daftar</a>
-                    </div>
+                    <a href="{{ route('login') }}" class="block w-full text-center bg-fuchsia-600 text-white py-3 rounded-lg font-bold shadow-md hover:bg-fuchsia-700 transition">Masuk / Daftar Sekarang</a>
                 @endauth
             </div>
         </div>
     </nav>
 
+    {{-- Content --}}
     @if (isset($header))
-        <header class="bg-white shadow">
-            <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-                {{ $header }}
-            </div>
+        <header class="bg-white shadow mt-20">
+            <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">{{ $header }}</div>
         </header>
+    @else
+        <div class="h-20"></div> 
     @endif
 
     <main class="flex-grow">
         {{ $slot }}
     </main>
 
-    <footer id="contact" class="bg-slate-900 text-white pt-16 pb-8 mt-auto">
+    {{-- FOOTER YANG DIPERBAIKI --}}
+    <footer class="bg-gray-900 text-white pt-16 pb-8 mt-20 border-t-4 border-fuchsia-600">
         <div class="container mx-auto px-6">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-8 border-b border-slate-700 pb-12">
-                <div>
-                    <div class="flex items-center gap-2 mb-4 text-fuchsia-400">
-                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
-                        <span class="font-bold text-xl serif">BougainVilla</span>
-                    </div>
-                    <p class="text-slate-400 text-sm leading-relaxed">Destinasi utama Anda untuk tanaman bugenvil yang indah.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
+                
+                {{-- KOLOM 1: BRAND (Ainin Ar Store) --}}
+                <div class="space-y-4">
+                    <h2 class="text-3xl font-bold font-serif text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-purple-400">
+                        Ainin Ar Store
+                    </h2>
+                    <p class="text-gray-400 text-sm leading-relaxed">
+                        Menghadirkan keindahan alam tropis langsung ke halaman rumah Anda dengan koleksi Bougenville premium kami.
+                    </p>
                 </div>
+
+                {{-- KOLOM 2: JELAJAHI (Update: Tanpa Panah & Ada Kontak) --}}
                 <div>
-                    <h4 class="font-bold mb-4 text-lg">Tautan Cepat</h4>
-                    <ul class="space-y-2 text-slate-400 text-sm">
-                        <li><a href="{{ route('home') }}" class="hover:text-fuchsia-400">Beranda</a></li>
-                        <li><a href="{{ route('products.index') }}" class="hover:text-fuchsia-400">Produk</a></li>
-                        <li><a href="{{ route('tutorials.all') }}" class="hover:text-fuchsia-400">Tutorial</a></li>
+                    <h4 class="font-bold text-lg mb-6 text-white border-b border-gray-700 pb-2 inline-block">Jelajahi</h4>
+                    <ul class="space-y-3 text-gray-400 text-sm">
+                        <li><a href="{{ route('home') }}" class="hover:text-fuchsia-400 transition flex items-center gap-2">Beranda</a></li>
+                        <li><a href="{{ route('products.index') }}" class="hover:text-fuchsia-400 transition flex items-center gap-2">Katalog Produk</a></li>
+                        <li><a href="{{ route('tutorials.all') }}" class="hover:text-fuchsia-400 transition flex items-center gap-2">Tips & Tutorial</a></li>
+                        <li><a href="{{ route('contact') }}" class="hover:text-fuchsia-400 transition flex items-center gap-2">Kontak Kami</a></li>
                     </ul>
                 </div>
+
+                {{-- KOLOM 3: KONTAK --}}
                 <div>
-                    <h4 class="font-bold mb-4 text-lg">Info Kontak</h4>
-                    <ul class="space-y-3 text-slate-400 text-sm">
-                        <li class="flex items-center gap-2"> info@bougainvilla.com</li>
-                        <li class="flex items-center gap-2"> Jl. Mawar No. 123, Jakarta</li>
+                    <h4 class="font-bold text-lg mb-6 text-white border-b border-gray-700 pb-2 inline-block">Hubungi Kami</h4>
+                    <ul class="space-y-4 text-gray-400 text-sm">
+                        <li class="flex items-start gap-3">
+                            <svg class="w-5 h-5 text-fuchsia-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                            <span>Jl. Nasional III No.22,<br>Tulungagung, Jawa Timur</span>
+                        </li>
+                        <li class="flex items-center gap-3">
+                            <svg class="w-5 h-5 text-fuchsia-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                            <span>halo@aininarstore.com</span>
+                        </li>
                     </ul>
+                </div>
+
+                {{-- KOLOM 4: JAM OPERASIONAL --}}
+                <div>
+                    <h4 class="font-bold text-lg mb-6 text-white border-b border-gray-700 pb-2 inline-block">Jam Operasional</h4>
+                    <p class="text-gray-400 text-sm mb-2">Senin - Jumat:</p>
+                    <p class="font-bold text-white mb-4">08:00 - 17:00 WIB</p>
+                    <p class="text-gray-400 text-sm mb-2">Sabtu - Minggu:</p>
+                    <p class="font-bold text-white">09:00 - 15:00 WIB</p>
                 </div>
             </div>
-            <div class="pt-8 text-center text-slate-500 text-sm">
-                &copy; {{ date('Y') }} BougainVilla Store. Hak Cipta Dilindungi.
+
+            <div class="border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+                <p class="text-gray-500 text-xs text-center md:text-left">
+                    &copy; {{ date('Y') }} <span class="text-fuchsia-500 font-bold">Ainin Ar Store</span>. All rights reserved.
+                </p>
             </div>
         </div>
     </footer>
 
-    {{-- NOTIFIKASI MELAYANG (TOAST) --}}
+    {{-- Toast --}}
     @if(session('success'))
-    <div x-data="{ show: true }" 
-         x-show="show" 
-         x-transition:enter="transition ease-out duration-300"
-         x-transition:enter-start="opacity-0 translate-y-2"
-         x-transition:enter-end="opacity-100 translate-y-0"
-         x-transition:leave="transition ease-in duration-300"
-         x-transition:leave-start="opacity-100 translate-y-0"
-         x-transition:leave-end="opacity-0 translate-y-2"
-         x-init="setTimeout(() => show = false, 4000)" 
-         class="fixed bottom-5 right-5 z-50 bg-gray-900 text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-4 max-w-sm border border-gray-700">
-        
-        <div class="bg-green-500 rounded-full p-1 flex-shrink-0">
-            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+        <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 5000)" class="fixed bottom-5 right-5 z-50 flex max-w-sm w-full bg-white shadow-2xl rounded-lg p-4 flex items-start gap-3 border-l-4 border-green-500">
+            <div class="flex-shrink-0 text-green-500"><svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg></div>
+            <div class="flex-1"><p class="text-sm font-bold text-gray-900">Berhasil!</p><p class="mt-1 text-sm text-gray-500">{{ session('success') }}</p></div>
+            <button @click="show = false" class="text-gray-400 hover:text-gray-500">Tutup</button>
         </div>
-        <div>
-            <h4 class="font-bold text-sm text-green-400 mb-1">Berhasil!</h4>
-            <p class="text-xs text-gray-300 leading-snug">{!! session('success') !!}</p>
-        </div>
-        <button @click="show = false" class="text-gray-500 hover:text-white transition">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-        </button>
-    </div>
     @endif
-
 </body>
 </html>

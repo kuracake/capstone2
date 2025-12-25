@@ -1,46 +1,72 @@
 <x-app-layout>
-    <div class="bg-white py-12">
+    {{-- 1. HERO HEADER (Gaya Baru) --}}
+    <div class="bg-fuchsia-900 py-16 md:py-20 relative overflow-hidden">
+        {{-- Dekorasi Latar Belakang --}}
+        <div class="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full translate-x-1/2 -translate-y-1/2 blur-2xl"></div>
+        <div class="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full -translate-x-1/2 translate-y-1/2 blur-2xl"></div>
+        
+        <div class="container mx-auto px-6 text-center relative z-10">
+            <h1 class="text-3xl md:text-5xl font-bold text-white mb-4 font-serif tracking-wide">
+                Pusat Belajar
+            </h1>
+            <p class="text-fuchsia-100 max-w-2xl mx-auto text-base md:text-lg font-light leading-relaxed">
+                Kumpulan video panduan perawatan Bougenville untuk hasil terbaik.
+            </p>
+        </div>
+    </div>
+
+    {{-- 2. GRID VIDEO --}}
+    <div class="py-12 md:py-16 bg-white min-h-screen">
         <div class="container mx-auto px-6">
-            <div class="text-center mb-12">
-                <h1 class="text-4xl font-bold text-fuchsia-600 serif mb-4">Pusat Belajar</h1>
-                <p class="text-gray-600">Video panduan lengkap untuk pemula hingga ahli.</p>
-            </div>
+            
+            @if($videos->isEmpty())
+                <div class="text-center py-24 bg-gray-50 rounded-3xl border-2 border-dashed border-gray-100">
+                    <p class="text-gray-500 font-medium">Belum ada video tutorial saat ini.</p>
+                </div>
+            @else
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    @foreach($videos as $video)
+                    <div class="bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 overflow-hidden flex flex-col h-full group">
+                        
+                        {{-- CONTAINER VIDEO (Padding Hack 16:9) --}}
+                        <div class="relative w-full bg-black" style="padding-bottom: 56.25%;">
+                            <video 
+                                class="absolute inset-0 w-full h-full object-contain" 
+                                controls 
+                                preload="metadata"
+                                poster="{{ asset('img/video-placeholder.jpg') }}"> 
+                                <source src="{{ asset('storage/' . $video->video_url) }}" type="video/mp4">
+                                Browser Anda tidak mendukung tag video.
+                            </video>
+                        </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                @foreach($videos as $video)
-                <div class="flex flex-col bg-pink-50 rounded-2xl overflow-hidden shadow hover:shadow-md transition">
-                    
-                    <div class="relative w-full bg-black">
-                        <video controls class="w-full h-auto max-h-[300px] mx-auto">
-                            <source src="{{ asset('storage/' . $video->video_url) }}" type="video/mp4">
-                            Browser Anda tidak mendukung tag video.
-                        </video>
-                    </div>
+                        {{-- INFO VIDEO --}}
+                        <div class="p-6 flex flex-col flex-grow">
+                            <div class="flex items-center gap-2 mb-3">
+                                <span class="text-[10px] font-bold text-fuchsia-600 bg-fuchsia-50 px-2.5 py-1 rounded uppercase tracking-wide">
+                                    Tutorial
+                                </span>
+                                <span class="text-[11px] text-gray-400">
+                                    • {{ $video->created_at->diffForHumans() }}
+                                </span>
+                            </div>
 
-                    <div class="p-6 flex flex-col justify-between h-full">
-                        <div>
-                            <h3 class="font-bold text-xl text-gray-800 mb-2">{{ $video->title }}</h3>
-                            <p class="text-gray-600 text-sm mb-4">
-                                {{ $video->description ?? 'Tonton video tutorial lengkap tentang perawatan Bougenville.' }}
+                            <h3 class="text-lg font-bold text-gray-900 mb-2 leading-snug line-clamp-2 group-hover:text-fuchsia-700 transition-colors" title="{{ $video->title }}">
+                                {{ $video->title }}
+                            </h3>
+                            
+                            <p class="text-gray-500 text-sm leading-relaxed line-clamp-3">
+                                {{ $video->description ?? 'Tidak ada deskripsi.' }}
                             </p>
                         </div>
-                        
-                        <div class="mt-4">
-                            <a href="{{ asset('storage/' . $video->video_url) }}" download class="text-fuchsia-600 font-bold text-sm hover:underline flex items-center gap-2">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
-                                  <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M12 9.75v10.5m0 0L7.5 15.75m4.5 4.5 4.5-4.5m-4.5-10.5h.008v.008H12v-.008Z" />
-                                </svg>
-                                Download Video
-                            </a>
-                        </div>
-                    </div>
-                </div>
-                @endforeach
-            </div>
 
-            @if($videos->isEmpty())
-                <div class="text-center py-10 text-gray-500">
-                    Belum ada video tutorial yang diunggah.
+                    </div>
+                    @endforeach
+                </div>
+
+                {{-- Pagination --}}
+                <div class="mt-16">
+                    {{ $videos->links() }}
                 </div>
             @endif
         </div>

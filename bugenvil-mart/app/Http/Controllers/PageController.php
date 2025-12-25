@@ -64,7 +64,10 @@ class PageController extends Controller
     // Halaman Tutorial
     public function tutorials()
     {
-        $videos = VideoTutorial::latest()->get();
+        // GANTI get() MENJADI paginate(9)
+        // Angka 9 artinya menampilkan 9 video per halaman
+        $videos = VideoTutorial::latest()->paginate(9); 
+        
         return view('pages.tutorials', compact('videos'));
     }
 

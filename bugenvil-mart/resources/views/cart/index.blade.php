@@ -1,135 +1,147 @@
 <x-app-layout>
-    <div class="py-12 bg-gray-50 min-h-screen">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+    {{-- HEADER HALAMAN (Style Clean & Minimalis) --}}
+    <div class="bg-white border-b border-gray-100">
+        <div class="container mx-auto px-4 md:px-6 py-6 md:py-8">
+            <h1 class="text-2xl md:text-3xl font-bold font-serif text-fuchsia-900">
+                Keranjang Belanja
+            </h1>
+            <p class="text-xs md:text-sm text-gray-500 mt-1">
+                <span class="font-medium text-fuchsia-600">{{ $cartItems->sum('quantity') }} item</span> ada di dalam keranjang Anda.
+            </p>
+        </div>
+    </div>
+
+    {{-- KONTEN UTAMA --}}
+    <div class="bg-gray-50 min-h-screen py-6 md:py-10">
+        <div class="container mx-auto px-4 md:px-6">
             
-            {{-- Breadcrumb --}}
-            <nav class="flex text-sm text-gray-500 mb-6">
-                <a href="{{ route('home') }}" class="hover:text-fuchsia-600">Beranda</a> 
-                <span class="mx-2">/</span>
-                <span class="text-gray-800 font-bold">Keranjang Belanja</span>
-            </nav>
+            @if($cartItems->isEmpty())
+                {{-- TAMPILAN KOSONG --}}
+                <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-10 text-center max-w-lg mx-auto mt-10">
+                    <div class="w-20 h-20 bg-fuchsia-50 rounded-full flex items-center justify-center mx-auto mb-5">
+                        <svg class="w-10 h-10 text-fuchsia-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
+                    </div>
+                    <h2 class="text-xl font-bold text-gray-800 font-serif mb-2">Keranjang Kosong</h2>
+                    <p class="text-gray-500 text-sm mb-6">Wah, keranjang Anda masih kosong. Yuk isi dengan tanaman cantik!</p>
+                    <a href="{{ route('products.index') }}" class="inline-block px-6 py-2.5 bg-fuchsia-600 text-white rounded-full font-bold text-sm hover:bg-fuchsia-700 transition shadow-md">
+                        Mulai Belanja
+                    </a>
+                </div>
+            @else
+                <div class="flex flex-col lg:flex-row gap-6 items-start">
+                    
+                    {{-- KIRI: LIST PRODUK --}}
+                    <div class="w-full lg:w-2/3 space-y-4">
+                        @foreach($cartItems as $item)
+                            {{-- CARD PRODUK --}}
+                            <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex gap-4 relative group">
+                                
+                                {{-- 1. GAMBAR (Ukuran Fixed agar Rapi) --}}
+                                <div class="w-20 h-20 md:w-28 md:h-28 flex-shrink-0 bg-gray-50 rounded-xl overflow-hidden border border-gray-100">
+                                    @if($item->product->image)
+                                        <img src="{{ asset('storage/' . $item->product->image) }}" alt="{{ $item->product->name }}" class="w-full h-full object-cover">
+                                    @else
+                                        <div class="w-full h-full flex items-center justify-center text-gray-300 text-xs">No Img</div>
+                                    @endif
+                                </div>
 
-            <h1 class="text-3xl font-bold text-gray-900 mb-8 font-serif">Keranjang Belanja Anda</h1>
+                                {{-- 2. DETAIL & KONTROL --}}
+                                <div class="flex-grow flex flex-col justify-between">
+                                    
+                                    {{-- Atas: Nama & Tombol Hapus --}}
+                                    <div class="flex justify-between items-start">
+                                        <div>
+                                            <h3 class="text-base md:text-lg font-bold font-serif text-gray-800 leading-tight line-clamp-2">
+                                                <a href="{{ route('products.show', $item->product->id) }}" class="hover:text-fuchsia-600 transition">
+                                                    {{ $item->product->name }}
+                                                </a>
+                                            </h3>
+                                            <p class="text-xs text-gray-500 mt-1">Stok: {{ $item->product->stock }}</p>
+                                        </div>
+                                        
+                                        {{-- Tombol Hapus (Desktop & Mobile) --}}
+                                        <form action="{{ route('cart.destroy', $item->id) }}" method="POST">
+                                            @csrf @method('DELETE')
+                                            <button type="submit" class="text-gray-300 hover:text-red-500 transition p-1" title="Hapus">
+                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                            </button>
+                                        </form>
+                                    </div>
 
-            {{-- Pesan Sukses --}}
-            @if(session('success'))
-                <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-6 rounded shadow-sm flex items-center gap-2">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                    <p>{{ session('success') }}</p>
+                                    {{-- Bawah: Harga & Quantity Stepper --}}
+                                    <div class="flex items-end justify-between mt-3">
+                                        <div class="text-fuchsia-700 font-bold text-sm md:text-base">
+                                            Rp {{ number_format($item->product->price * $item->quantity, 0, ',', '.') }}
+                                        </div>
+
+                                        {{-- STEPPER BUTTONS --}}
+                                        <form action="{{ route('cart.update', $item->id) }}" method="POST" class="flex items-center bg-gray-50 rounded-lg border border-gray-200 h-8 md:h-9">
+                                            @csrf @method('PATCH')
+                                            
+                                            {{-- Tombol Kurang --}}
+                                            <button type="submit" name="action" value="decrease" class="w-8 md:w-9 h-full flex items-center justify-center text-gray-500 hover:text-fuchsia-600 hover:bg-gray-100 rounded-l-lg transition">
+                                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M20 12H4"/></svg>
+                                            </button>
+                                            
+                                            {{-- Angka --}}
+                                            <input type="text" readonly value="{{ $item->quantity }}" class="w-8 md:w-10 h-full text-center bg-transparent border-0 p-0 text-xs md:text-sm font-bold text-gray-800 focus:ring-0 cursor-default">
+                                            
+                                            {{-- Tombol Tambah --}}
+                                            <button type="submit" name="action" value="increase" class="w-8 md:w-9 h-full flex items-center justify-center text-gray-500 hover:text-fuchsia-600 hover:bg-gray-100 rounded-r-lg transition">
+                                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4"/></svg>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        @endforeach
+
+                        <div class="pt-4">
+                            <a href="{{ route('products.index') }}" class="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-fuchsia-600 font-medium transition">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16l-4-4m0 0l4-4m-4 4h18" /></svg>
+                                Kembali Belanja
+                            </a>
+                        </div>
+                    </div>
+
+                    {{-- KANAN: RINGKASAN PESANAN (Sticky) --}}
+                    <div class="w-full lg:w-1/3">
+                        <div class="bg-white p-5 md:p-6 rounded-2xl shadow-sm border border-gray-100 sticky top-24">
+                            <h3 class="text-lg font-bold font-serif text-gray-900 mb-4 pb-3 border-b border-gray-100">
+                                Ringkasan
+                            </h3>
+                            
+                            <div class="space-y-3 text-sm text-gray-600 mb-6">
+                                <div class="flex justify-between">
+                                    <span>Total Harga ({{ $cartItems->sum('quantity') }} item)</span>
+                                    <span class="font-bold text-gray-900">Rp {{ number_format($cartItems->sum(function($item){ return $item->product->price * $item->quantity; }), 0, ',', '.') }}</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span>Ongkos Kirim</span>
+                                    <span class="text-gray-400 text-xs italic">Hitung di checkout</span>
+                                </div>
+                            </div>
+
+                            <div class="flex justify-between items-end mb-6">
+                                <span class="text-base font-bold text-gray-800">Total Bayar</span>
+                                <span class="text-xl font-bold text-fuchsia-600">
+                                    Rp {{ number_format($cartItems->sum(function($item){ return $item->product->price * $item->quantity; }), 0, ',', '.') }}
+                                </span>
+                            </div>
+
+                            <a href="{{ route('checkout.index') }}" class="block w-full py-3.5 bg-gradient-to-r from-fuchsia-700 to-purple-700 text-white text-center font-bold rounded-xl hover:shadow-lg hover:opacity-90 transition transform active:scale-95 text-sm md:text-base">
+                                Lanjut Pembayaran
+                            </a>
+                            
+                            <p class="text-center text-xs text-gray-400 mt-4 flex justify-center gap-2 items-center">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                                Transaksi Aman & Terenkripsi
+                            </p>
+                        </div>
+                    </div>
+
                 </div>
             @endif
-
-            <div class="bg-white overflow-hidden shadow-xl sm:rounded-2xl border border-gray-100">
-                {{-- Cek apakah keranjang tidak kosong --}}
-                @if($cartItems->count() > 0)
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left border-collapse">
-                            <thead class="bg-gray-50 text-gray-600 uppercase text-xs tracking-wider border-b border-gray-200">
-                                <tr>
-                                    <th class="p-6 font-semibold">Produk</th>
-                                    <th class="p-6 font-semibold">Harga Satuan</th>
-                                    <th class="p-6 font-semibold text-center">Jumlah</th>
-                                    <th class="p-6 font-semibold">Total</th>
-                                    <th class="p-6 font-semibold text-center">Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-gray-100">
-                                @foreach($cartItems as $item)
-                                    <tr class="hover:bg-gray-50 transition-colors">
-                                        {{-- 1. KOLOM PRODUK --}}
-                                        <td class="p-6">
-                                            <div class="flex items-center gap-4">
-                                                <div class="w-20 h-20 flex-shrink-0 bg-gray-100 rounded-lg overflow-hidden border border-gray-200">
-                                                    {{-- LOGIKA GAMBAR CADANGAN (FALLBACK) --}}
-                                                    @if($item->product->image)
-                                                        <img src="{{ asset('storage/'.$item->product->image) }}" class="w-full h-full object-cover">
-                                                    @elseif($item->product->images->count() > 0)
-                                                        <img src="{{ asset('storage/'.$item->product->images->first()->image_path) }}" class="w-full h-full object-cover">
-                                                    @else
-                                                        <div class="w-full h-full flex items-center justify-center text-gray-400 text-xs">No Image</div>
-                                                    @endif
-                                                </div>
-                                                <div>
-                                                    <a href="{{ route('products.show', $item->product->id) }}" class="font-bold text-gray-800 text-lg hover:text-fuchsia-600 transition">
-                                                        {{ $item->product->name }}
-                                                    </a>
-                                                    <p class="text-sm text-gray-500 mt-1">Stok: {{ $item->product->stock }}</p>
-                                                </div>
-                                            </div>
-                                        </td>
-
-                                        {{-- 2. HARGA SATUAN --}}
-                                        <td class="p-6 text-gray-600 font-medium">
-                                            Rp {{ number_format($item->product->price, 0, ',', '.') }}
-                                        </td>
-
-                                        {{-- 3. QUANTITY --}}
-                                        <td class="p-6 text-center">
-                                            <span class="inline-block bg-gray-100 px-4 py-2 rounded-lg font-bold text-gray-700">
-                                                {{ $item->quantity }}
-                                            </span>
-                                        </td>
-
-                                        {{-- 4. SUBTOTAL --}}
-                                        <td class="p-6 font-bold text-fuchsia-600 text-lg">
-                                            Rp {{ number_format($item->product->price * $item->quantity, 0, ',', '.') }}
-                                        </td>
-
-                                        {{-- 5. AKSI (HAPUS) --}}
-                                        <td class="p-6 text-center">
-                                            <form action="{{ route('cart.remove') }}" method="POST">
-                                                @csrf @method('DELETE')
-                                                <input type="hidden" name="id" value="{{ $item->id }}">
-                                                <button type="submit" 
-                                                        class="text-gray-400 hover:text-red-500 transition p-2 hover:bg-red-50 rounded-full" 
-                                                        title="Hapus dari keranjang">
-                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                                                </button>
-                                            </form>
-                                        </td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-
-                    {{-- FOOTER KERANJANG --}}
-                    <div class="bg-gray-50 p-6 sm:p-10 border-t border-gray-200">
-                        <div class="flex flex-col sm:flex-row justify-between items-center gap-6">
-                            <a href="{{ route('products.index') }}" class="text-gray-500 hover:text-fuchsia-600 font-medium flex items-center gap-2 transition">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
-                                Lanjut Belanja
-                            </a>
-
-                            <div class="text-right w-full sm:w-auto">
-                                <div class="text-gray-500 text-sm mb-1">Total Pesanan</div>
-                                <div class="text-3xl font-bold text-gray-900 mb-6 font-serif">
-                                    Rp {{ number_format($grandTotal, 0, ',', '.') }}
-                                </div>
-                                
-                                <a href="{{ route('checkout') }}" class="block w-full sm:w-auto bg-fuchsia-600 text-white px-8 py-4 rounded-xl font-bold hover:bg-fuchsia-700 transition shadow-lg shadow-fuchsia-200 text-center">
-                                    Checkout Sekarang &rarr;
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-
-                @else
-                    {{-- JIKA KOSONG --}}
-                    <div class="text-center py-20 px-6">
-                        <div class="bg-pink-50 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6">
-                            <svg class="w-12 h-12 text-fuchsia-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
-                            </svg>
-                        </div>
-                        <h3 class="text-xl font-bold text-gray-900 mb-2">Keranjang Belanja Kosong</h3>
-                        <p class="text-gray-500 mb-8 max-w-sm mx-auto">Wah, sepertinya Anda belum memilih bunga cantik untuk taman Anda.</p>
-                        <a href="{{ route('products.index') }}" class="inline-block bg-fuchsia-600 text-white px-8 py-3 rounded-full font-bold hover:bg-fuchsia-700 transition shadow-lg hover:shadow-xl transform hover:-translate-y-1">
-                            Mulai Belanja
-                        </a>
-                    </div>
-                @endif
-            </div>
         </div>
     </div>
 </x-app-layout>
