@@ -99,20 +99,23 @@
                                         
                                         {{-- Kolom Status Pesanan --}}
                                         <td class="px-6 py-4">
-                                            @php
-                                                $statusColor = match($order->status) {
-                                                    'pending' => 'bg-yellow-100 text-yellow-800 border-yellow-200',
-                                                    'packing' => 'bg-blue-100 text-blue-800 border-blue-200',
-                                                    'shipping' => 'bg-indigo-100 text-indigo-800 border-indigo-200',
-                                                    'completed' => 'bg-green-100 text-green-800 border-green-200',
-                                                    'cancelled' => 'bg-red-100 text-red-800 border-red-200',
-                                                    default => 'bg-gray-100 text-gray-800',
-                                                };
-                                            @endphp
-                                            <span class="px-2.5 py-0.5 rounded-full text-xs font-bold border {{ $statusColor }}">
-                                                {{ ucfirst($order->status) }}
-                                            </span>
-                                        </td>
+    {{-- Status Badge --}}
+    <span class="px-3 py-1 rounded-full text-xs font-bold
+        {{ $order->status == 'pending' ? 'bg-yellow-100 text-yellow-700' : '' }}
+        {{ $order->status == 'packing' ? 'bg-blue-100 text-blue-700' : '' }}
+        {{ $order->status == 'shipping' ? 'bg-purple-100 text-purple-700' : '' }}
+        {{ $order->status == 'completed' ? 'bg-green-100 text-green-700' : '' }}
+        {{ $order->status == 'cancelled' ? 'bg-red-100 text-red-700' : '' }}">
+        {{ ucfirst($order->status) }}
+    </span>
+
+    {{-- TAMBAHAN: Tampilkan Resi Kecil di Bawah Status --}}
+    @if($order->resi)
+        <div class="mt-2 text-xs text-gray-500 font-mono bg-gray-50 px-2 py-1 rounded border border-gray-100 inline-block">
+            Resi: {{ $order->resi }}
+        </div>
+    @endif
+</td>
 
                                         {{-- KOLOM BARU: Status Laporan --}}
                                         <td class="px-6 py-4 text-center">

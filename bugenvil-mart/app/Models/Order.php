@@ -5,7 +5,7 @@ use Illuminate\Database\Eloquent\Model;
 class Order extends Model
 {
 // Tambahkan/Ganti isi class Order dengan ini
-protected $fillable = ['user_id', 'total_price', 'status', 'shipping_address', 'tracking_number', 'snap_token'];
+protected $fillable = ['user_id', 'total_price', 'status', 'shipping_address', 'tracking_number', 'snap_token', 'resi'];
 
 public function report()
 {

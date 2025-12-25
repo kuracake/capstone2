@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers; // Pastikan namespace ini sesuai folder (jika di folder Admin, ubah jadi App\Http\Controllers\Admin)
 
 use Illuminate\Http\Request;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
-use App\Models\CartItem; // <--- JANGAN LUPA IMPORT INI
+use App\Models\CartItem;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Midtrans\Config;
@@ -16,14 +16,12 @@ class OrderController extends Controller
 {
     public function index()
     {
-        // AMBIL DARI DATABASE
         $cartItems = CartItem::with('product')->where('user_id', Auth::id())->get();
 
         if ($cartItems->isEmpty()) {
             return redirect()->route('products.index')->with('error', 'Keranjang belanja Anda kosong.');
         }
 
-        // Hitung subtotal manual untuk dikirim ke view checkout
         $subtotal = 0;
         foreach($cartItems as $item) {
             $subtotal += $item->product->price * $item->quantity;
@@ -45,17 +43,14 @@ class OrderController extends Controller
             'shipping_cost' => 'required|numeric',
         ]);
 
-        // 1. AMBIL KERANJANG DARI DATABASE
         $cartItems = CartItem::with('product')->where('user_id', Auth::id())->get();
         
         if ($cartItems->isEmpty()) {
             return redirect()->route('products.index')->with('error', 'Keranjang kosong.');
         }
 
-        // 2. HITUNG TOTAL
         $itemTotal = 0;
         foreach($cartItems as $item) { 
-            // Akses harga dari relasi product
             $itemTotal += $item->product->price * $item->quantity; 
         }
 
@@ -76,7 +71,6 @@ class OrderController extends Controller
         try {
             DB::beginTransaction();
 
-            // 3. BUAT ORDER UTAMA
             $order = Order::create([
                 'user_id' => Auth::id(),
                 'total_price' => $grandTotal,
@@ -85,9 +79,7 @@ class OrderController extends Controller
                 'tracking_number' => 'INV-' . strtoupper(uniqid())
             ]);
 
-            // 4. LOOP ITEM & CEK STOK (LOGIKA BARU)
             foreach($cartItems as $item) {
-                // Lock row for update
                 $product = Product::lockForUpdate()->find($item->product_id);
 
                 if (!$product) {
@@ -98,20 +90,17 @@ class OrderController extends Controller
                     throw new \Exception("Stok untuk produk '{$product->name}' tidak mencukupi. Sisa stok: {$product->stock}");
                 }
 
-                // Kurangi Stok
                 $product->decrement('stock', $item->quantity);
 
-                // Simpan Item Order
                 OrderItem::create([
                     'order_id' => $order->id,
                     'product_id' => $product->id,
                     'product_name' => $product->name,
                     'quantity' => $item->quantity,
-                    'price' => $product->price // Simpan harga saat transaksi terjadi
+                    'price' => $product->price 
                 ]);
             }
 
-            // 5. MIDTRANS (Tidak Berubah)
             Config::$serverKey = env('MIDTRANS_SERVER_KEY');
             Config::$isProduction = env('MIDTRANS_IS_PRODUCTION');
             Config::$isSanitized = env('MIDTRANS_IS_SANITIZED');
@@ -127,13 +116,15 @@ class OrderController extends Controller
                     'email' => Auth::user()->email,
                     'phone' => Auth::user()->phone ?? '08123456789',
                 ],
+                'callbacks' => [
+                    'finish' => route('dashboard'),
+                ],
             ];
 
             $snapToken = Snap::getSnapToken($params);
             $order->snap_token = $snapToken;
             $order->save();
 
-            // 6. HAPUS KERANJANG DI DATABASE (PENTING!)
             CartItem::where('user_id', Auth::id())->delete();
 
             DB::commit();
@@ -146,17 +137,40 @@ class OrderController extends Controller
         }
     }
 
+    // === BAGIAN INI YANG SAYA PERBAIKI ===
+    // Saya ubah nama function jadi 'update' agar sesuai dengan route resources admin
+    // GANTI function update YANG TADI, MENJADI SEPERTI INI:
     public function updateStatus(Request $request, $id) 
     {
         $order = Order::findOrFail($id);
-        $request->validate(['status' => 'required|in:packing,shipping,completed']);
-        $order->update(['status' => $request->status]);
-        return back()->with('success', 'Status pesanan berhasil diperbarui.');
+        
+        // 1. Validasi Input (Status wajib, Resi boleh kosong/nullable)
+        $request->validate([
+            'status' => 'required',
+            'resi'   => 'nullable|string'
+        ]);
+
+        // 2. Siapkan data update dasar
+        $updateData = [
+            'status' => $request->status
+        ];
+
+        // 3. LOGIKA PENTING: Cek apakah Admin menginput Resi?
+        // Jika ada isinya, masukkan ke array updateData
+        if ($request->filled('resi')) {
+            $updateData['resi'] = $request->resi;
+        }
+
+        // 4. Lakukan Update ke Database
+        $order->update($updateData);
+
+        return back()->with('success', 'Status pesanan dan nomor resi berhasil diperbarui.');
     }
+    // ======================================
 
     public function show($id)
     {
-        $order = Order::with('items')->where('user_id', Auth::id())->findOrFail($id);
+        $order = Order::with('items.product')->where('user_id', Auth::id())->findOrFail($id);
         return view('orders.show', compact('order'));
     }
 }

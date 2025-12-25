@@ -12,10 +12,10 @@ class PaymentCallbackController extends Controller
     public function receive()
     {
         // 1. Konfigurasi Midtrans
-        Config::$serverKey = config('services.midtrans.server_key'); // Pastikan key ada di .env/services
+        Config::$serverKey = config('services.midtrans.server_key');
         Config::$isProduction = config('services.midtrans.is_production');
-        Config::$isSanitized = config('services.midtrans.is_sanitized');
-        Config::$is3ds = config('services.midtrans.is_3ds');
+        Config::$isSanitized = true;
+        Config::$is3ds = true;
 
         try {
             // 2. Ambil Notifikasi dari Midtrans
@@ -26,26 +26,25 @@ class PaymentCallbackController extends Controller
             $orderId = $notif->order_id;
             $fraud = $notif->fraud_status;
 
-            // 3. Cari Order berdasarkan Tracking Number (karena di OrderController Anda pakai INV-...)
-            // Tips: Midtrans mengirim order_id sesuai yang kita kirim saat snap token dibuat.
-            // Di OrderController Anda: 'order_id' => $order->tracking_number
+            // 3. Cari Order berdasarkan ID
             $order = Order::where('tracking_number', $orderId)->first();
 
             if (!$order) {
                 return response()->json(['message' => 'Order not found'], 404);
             }
 
-            // 4. Logika Status Order
+            // 4. Logika Update Status
             if ($transaction == 'capture') {
                 if ($type == 'credit_card') {
                     if ($fraud == 'challenge') {
                         $order->update(['status' => 'pending']);
                     } else {
-                        $order->update(['status' => 'packing']); // LUNAS -> Dikemas
+                        $order->update(['status' => 'packing']); // LUNAS -> DIKEMAS
                     }
                 }
             } else if ($transaction == 'settlement') {
-                $order->update(['status' => 'packing']); // LUNAS -> Dikemas
+                // Settlement = Uang masuk (Transfer Bank/Gopay/dll)
+                $order->update(['status' => 'packing']); // LUNAS -> DIKEMAS
             } else if ($transaction == 'pending') {
                 $order->update(['status' => 'pending']);
             } else if ($transaction == 'deny') {

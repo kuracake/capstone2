@@ -1,55 +1,63 @@
 <x-admin-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Daftar Pesanan Masuk') }}
-        </h2>
-    </x-slot>
-
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900">
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50">
+    <div class="p-4 sm:ml-64">
+        <div class="p-4 mt-14">
+            
+            <div class="flex justify-between items-center mb-6">
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-800">Daftar Pesanan</h1>
+                    <p class="text-gray-500 text-sm">Kelola semua transaksi masuk.</p>
+                </div>
+            </div>
+            
+            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg border border-gray-100">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-left text-gray-500">
+                        <thead class="text-xs text-gray-700 uppercase bg-gray-50 border-b">
                             <tr>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID Order</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Pembeli</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aksi</th>
+                                <th class="px-6 py-3">ID Order</th>
+                                <th class="px-6 py-3">Pembeli</th>
+                                <th class="px-6 py-3">Total</th>
+                                <th class="px-6 py-3">Status</th>
+                                <th class="px-6 py-3 text-center">Aksi</th>
                             </tr>
                         </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
+                        <tbody>
                             @foreach($orders as $order)
-                            <tr>
-                                <td class="px-6 py-4 whitespace-nowrap">#{{ $order->tracking_number }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap">{{ $order->user->name }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap">Rp {{ number_format($order->total_price) }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                                        {{ $order->status == 'packing' ? 'bg-green-100 text-green-800' : 
-                                           ($order->status == 'pending' ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-800') }}">
+                            <tr class="bg-white border-b hover:bg-gray-50">
+                                <td class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
+                                    #{{ $order->tracking_number }}
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="font-bold">{{ $order->user->name }}</div>
+                                    <div class="text-xs text-gray-400">{{ $order->user->email }}</div>
+                                </td>
+                                <td class="px-6 py-4 font-bold text-fuchsia-600">
+                                    Rp {{ number_format($order->total_price, 0, ',', '.') }}
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="px-2.5 py-0.5 rounded text-xs font-bold
+                                        {{ $order->status == 'pending' ? 'bg-orange-100 text-orange-600' : '' }}
+                                        {{ $order->status == 'packing' ? 'bg-blue-100 text-blue-600' : '' }}
+                                        {{ $order->status == 'shipping' ? 'bg-purple-100 text-purple-600' : '' }}
+                                        {{ $order->status == 'completed' ? 'bg-green-100 text-green-600' : '' }}
+                                        {{ $order->status == 'cancelled' ? 'bg-red-100 text-red-600' : '' }}">
                                         {{ ucfirst($order->status) }}
                                     </span>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                    <form action="{{ route('admin.orders.update', $order->id) }}" method="POST" class="inline">
-                                        @csrf @method('PATCH')
-                                        <select name="status" onchange="this.form.submit()" class="text-sm border-gray-300 rounded-md shadow-sm">
-                                            <option value="pending" {{ $order->status=='pending'?'selected':'' }}>Pending</option>
-                                            <option value="packing" {{ $order->status=='packing'?'selected':'' }}>Packing</option>
-                                            <option value="shipping" {{ $order->status=='shipping'?'selected':'' }}>Shipping</option>
-                                            <option value="completed" {{ $order->status=='completed'?'selected':'' }}>Selesai</option>
-                                        </select>
-                                    </form>
+                                <td class="px-6 py-4 text-center">
+                                    {{-- TOMBOL LIHAT DETAIL (INI YANG PENTING) --}}
+                                    <a href="{{ route('admin.orders.show', $order->id) }}" class="inline-flex items-center gap-1 px-3 py-2 bg-fuchsia-50 text-fuchsia-600 rounded-lg hover:bg-fuchsia-100 transition font-bold text-xs border border-fuchsia-200">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                                        Kelola
+                                    </a>
                                 </td>
                             </tr>
                             @endforeach
                         </tbody>
                     </table>
-                    <div class="mt-4">
-                        {{ $orders->links() }}
-                    </div>
+                </div>
+                <div class="p-4">
+                    {{ $orders->links() }}
                 </div>
             </div>
         </div>
