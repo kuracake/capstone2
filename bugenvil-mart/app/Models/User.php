@@ -24,7 +24,8 @@ class User extends Authenticatable
     'phone',   // Tambahan
     'gender',  // Tambahan
     'address', 
-    'is_admin', 
+    'is_admin',
+    'resi', 
 ];
 
     /**
