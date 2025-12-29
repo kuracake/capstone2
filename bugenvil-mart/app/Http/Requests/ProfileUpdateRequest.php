@@ -25,7 +25,6 @@ class ProfileUpdateRequest extends FormRequest
             // PASTIKAN TIGA BARIS INI ADA:
             'phone' => ['nullable', 'string', 'max:20'],
             'gender' => ['nullable', 'in:Laki-laki,Perempuan'],
-            'address' => ['nullable', 'string', 'max:500'],
         ];
     }
 }

@@ -57,6 +57,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    
+    // TAMBAHAN: Route Manajemen Alamat
+    Route::patch('/profile/address/{id}', [ProfileController::class, 'updateAddress'])->name('profile.address.update');
+    Route::delete('/profile/address/{id}', [ProfileController::class, 'destroyAddress'])->name('profile.address.destroy');
 
     // --- CHECKOUT & TRANSAKSI ---
     // PERBAIKAN: Nama route diubah jadi 'checkout.index' agar sesuai dengan tombol di cart

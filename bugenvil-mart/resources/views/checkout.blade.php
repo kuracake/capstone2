@@ -25,7 +25,41 @@
                 {{-- === KOLOM KIRI: FORM ALAMAT === --}}
                 <div class="w-full lg:w-2/3 space-y-6">
                     
-                    {{-- Card: Alamat --}}
+                    {{-- FITUR BARU: PILIH ALAMAT TERSIMPAN (Hanya muncul jika ada alamat) --}}
+                    @if(isset($savedAddresses) && $savedAddresses->count() > 0)
+                    <div class="bg-blue-50 border border-blue-100 p-6 rounded-3xl shadow-sm">
+                        <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                            <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+                            Gunakan Alamat Tersimpan
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            @foreach($savedAddresses as $addr)
+                            <div class="relative">
+                                <input type="radio" name="selected_address_trigger" id="addr_{{ $addr->id }}" 
+                                    class="peer hidden"
+                                    onclick="fillAddress(
+                                        '{{ $addr->address_detail }}', 
+                                        '{{ $addr->postal_code }}', 
+                                        '{{ $addr->province_id }}', '{{ $addr->province_name }}', 
+                                        '{{ $addr->city_id }}', '{{ $addr->city_name }}', 
+                                        '{{ $addr->district_id }}', '{{ $addr->district_name }}',
+                                        '{{ $addr->village_name ?? '' }}'
+                                    )">
+                                <label for="addr_{{ $addr->id }}" class="block p-4 bg-white border-2 border-gray-200 rounded-xl cursor-pointer hover:border-blue-400 peer-checked:border-blue-600 peer-checked:bg-blue-50 transition-all">
+                                    <div class="font-bold text-gray-800 text-sm">{{ $addr->district_name }}, {{ $addr->city_name }}</div>
+                                    <div class="text-xs text-gray-500 mt-1 line-clamp-1">{{ $addr->address_detail }}</div>
+                                    <div class="text-xs text-blue-600 font-semibold mt-1">Pilih Alamat Ini</div>
+                                </label>
+                            </div>
+                            @endforeach
+                        </div>
+                        <button type="button" onclick="window.location.reload()" class="mt-4 text-xs text-red-500 underline font-semibold">
+                            Reset / Input Alamat Baru Manual
+                        </button>
+                    </div>
+                    @endif
+                    
+                    {{-- Card: Form Alamat Manual (Program Asli Anda) --}}
                     <div class="bg-white p-6 md:p-8 rounded-3xl shadow-lg shadow-gray-100 border border-gray-100 relative overflow-hidden">
                         <div class="absolute top-0 left-0 w-2 h-full bg-fuchsia-500"></div> 
                         
@@ -77,7 +111,7 @@
                                 </div>
                                 <div>
                                     <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Desa / Kelurahan <span class="text-red-500">*</span></label>
-                                    <input type="text" name="village_name" class="w-full border-gray-300 rounded-xl p-3.5 focus:ring-2 focus:ring-fuchsia-200 focus:border-fuchsia-500 transition shadow-sm" placeholder="Contoh: Ds. Sukamaju" required>
+                                    <input type="text" name="village_name" id="village_name" class="w-full border-gray-300 rounded-xl p-3.5 focus:ring-2 focus:ring-fuchsia-200 focus:border-fuchsia-500 transition shadow-sm" placeholder="Contoh: Ds. Sukamaju" required>
                                 </div>
                             </div>
 
@@ -89,7 +123,7 @@
                                         <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                                             <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
                                         </div>
-                                        <input type="text" name="address_detail" class="w-full border-gray-300 rounded-xl pl-12 pr-4 p-3.5 focus:ring-2 focus:ring-fuchsia-200 focus:border-fuchsia-500 transition shadow-sm" placeholder="Contoh: Jl. Mawar No. 10, Depan Masjid" required>
+                                        <input type="text" name="address_detail" id="address_detail" class="w-full border-gray-300 rounded-xl pl-12 pr-4 p-3.5 focus:ring-2 focus:ring-fuchsia-200 focus:border-fuchsia-500 transition shadow-sm" placeholder="Contoh: Jl. Mawar No. 10, Depan Masjid" required>
                                     </div>
                                 </div>
                                 <div>
@@ -227,20 +261,62 @@
         }
     </style>
 
-    {{-- SCRIPT TETAP SAMA --}}
+    {{-- LOGIKA JAVASCRIPT --}}
     <script>
+        // --- FUNCTION HELPER UNTUK ALAMAT TERSIMPAN ---
+        function fillAddress(detail, postal, provId, provName, cityId, cityName, distId, distName, village) {
+            // 1. Isi Text Box Manual
+            // Menggunakan selector name="..." agar lebih pasti kena
+            $('input[name="address_detail"]').val(detail);
+            $('input[name="postal_code"]').val(postal);
+            $('input[name="village_name"]').val(village); // <--- Perbaikan di sini
+
+            // 2. Manipulasi Dropdown (Trik agar RajaOngkir membacanya)
+            
+            // Set Provinsi
+            $('#province_id').html(`<option value="${provId}" selected>${provName}</option>`);
+            $('#province_name').val(provName);
+
+            // Set Kota
+            $('#city_id').html(`<option value="${cityId}" selected>${cityName}</option>`)
+                .prop('disabled', false)
+                .removeClass('bg-gray-100 cursor-not-allowed');
+            $('#city_name').val(cityName);
+
+            // Set Kecamatan
+            $('#district_id').html(`<option value="${distId}" selected>${distName}</option>`)
+                .prop('disabled', false)
+                .removeClass('bg-gray-100 cursor-not-allowed');
+            $('#district_name').val(distName);
+
+            // 3. Buka Kurir
+            $('#courier').prop('disabled', false).removeClass('bg-gray-100 cursor-not-allowed');
+
+            // Reset kalkulasi ongkir
+            $('#shipping_display').text('Pilih Kurir...');
+            $('#shipping_cost_input').val(0);
+            $('#service_container').addClass('hidden');
+        }
+
+        // --- 2. LOGIKA UTAMA (TIDAK BERUBAH DARI CODE LAMA ANDA) ---
         $(document).ready(function() {
             let subtotal = {{ $subtotal }};
             const rupiah = (number) => new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", minimumFractionDigits: 0 }).format(number);
 
-            // 1. Load Provinsi
-            $.ajax({
-                url: "{{ route('api.provinces') }}", type: "GET", dataType: "json",
-                success: function(data) {
-                    $('#province_id').empty().append('<option value="">-- Pilih Provinsi --</option>');
-                    $.each(data, function(key, value) { $('#province_id').append(`<option value="${value.id}">${value.name}</option>`); });
-                }
-            });
+            // 1. Load Provinsi (Hanya jika belum dipilih via Saved Address)
+            // Kita cek dulu apakah dropdown provinsi kosong (berarti user manual)
+            if($('#province_id').children('option').length <= 1) {
+                $.ajax({
+                    url: "{{ route('api.provinces') }}", type: "GET", dataType: "json",
+                    success: function(data) {
+                        // Jangan timpa jika user sudah klik "Saved Address"
+                        if($('#province_id').children('option').length <= 1) {
+                            $('#province_id').empty().append('<option value="">-- Pilih Provinsi --</option>');
+                            $.each(data, function(key, value) { $('#province_id').append(`<option value="${value.id}">${value.name}</option>`); });
+                        }
+                    }
+                });
+            }
 
             // 2. Load Kota
             $('#province_id').on('change', function() {
@@ -316,7 +392,10 @@
                                 $('#type').append(`<option value="${value.code}" data-cost="${value.cost}" data-desc="${value.description}">${value.name} - ${rupiah(value.cost)} (${value.description})</option>`);
                             });
                         },
-                        error: function() { alert('Gagal mengambil ongkir. Cek koneksi internet.'); }
+                        error: function() { 
+                            $('#shipping_display').text('Error').addClass('text-red-500');
+                            alert('Gagal mengambil ongkir. Cek koneksi internet.'); 
+                        }
                     });
                 }
             });

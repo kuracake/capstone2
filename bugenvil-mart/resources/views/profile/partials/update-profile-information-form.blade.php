@@ -49,10 +49,6 @@
                 <span class="block text-xs font-bold text-gray-400 uppercase mb-1 tracking-wider">Jenis Kelamin</span>
                 <p class="text-sm font-semibold text-gray-800">{{ $user->gender ?? '-' }}</p>
             </div>
-            <div class="md:col-span-2">
-                <span class="block text-xs font-bold text-gray-400 uppercase mb-1 tracking-wider">Alamat Lengkap</span>
-                <p class="text-sm font-medium text-gray-800 leading-relaxed">{{ $user->address ?? '-' }}</p>
-            </div>
         </div>
     </div>
 
@@ -112,12 +108,6 @@
                     <option value="Perempuan" {{ old('gender', $user->gender) == 'Perempuan' ? 'selected' : '' }}>Perempuan</option>
                 </select>
             </div>
-        </div>
-
-        {{-- Alamat --}}
-        <div>
-            <x-input-label for="address" :value="__('Alamat Lengkap')" class="text-xs font-bold text-gray-700 uppercase tracking-wider" />
-            <textarea id="address" name="address" rows="3" class="mt-2 block w-full text-sm border-gray-300 rounded-xl px-4 py-3 font-medium focus:border-fuchsia-500 focus:ring-fuchsia-500 transition" placeholder="Nama Jalan, RT/RW, Kelurahan...">{{ old('address', $user->address) }}</textarea>
         </div>
 
         {{-- Tombol Aksi --}}

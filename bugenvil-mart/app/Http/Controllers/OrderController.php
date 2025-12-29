@@ -27,7 +27,9 @@ class OrderController extends Controller
             $subtotal += $item->product->price * $item->quantity;
         }
 
-        return view('checkout', compact('cartItems', 'subtotal'));
+        $savedAddresses = \App\Models\UserAddress::where('user_id', Auth::id())->get();
+
+        return view('checkout', compact('cartItems', 'subtotal', 'savedAddresses'));
     }
 
     public function store(Request $request)
@@ -42,6 +44,27 @@ class OrderController extends Controller
             'courier'       => 'required|string',
             'shipping_cost' => 'required|numeric',
         ]);
+
+        try {
+        \App\Models\UserAddress::firstOrCreate(
+            [
+                'user_id'       => Auth::id(),
+                'address_detail'=> $request->address_detail, // Kunci pengecekan (biar gak duplikat persis)
+                'city_id'       => $request->city_id,        // Kunci pengecekan
+            ],
+            [
+                'province_id'   => $request->province_id,
+                'province_name' => $request->province_name,
+                'city_name'     => $request->city_name,
+                'district_id'   => $request->district_id ?? 0, // jaga-jaga kalau null
+                'district_name' => $request->district_name,
+                'village_name'  => $request->village_name,
+                'postal_code'   => $request->postal_code,
+            ]
+        );
+    } catch (\Exception $e) {
+        // Jika gagal simpan alamat, abaikan saja. Jangan sampai user gagal belanja cuma gara-gara fitur "save address" error.
+    }
 
         $cartItems = CartItem::with('product')->where('user_id', Auth::id())->get();
         

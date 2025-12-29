@@ -3,11 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
+use App\Models\UserAddress; // Pastikan Model ini dipanggil
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
-use Illuminate\Support\Facades\Storage; // PENTING: Untuk menangani file gambar
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
 class ProfileController extends Controller
@@ -17,8 +18,12 @@ class ProfileController extends Controller
      */
     public function edit(Request $request): View
     {
+        // TAMBAHAN: Ambil alamat user untuk ditampilkan
+        $addresses = UserAddress::where('user_id', $request->user()->id)->get();
+
         return view('profile.edit', [
             'user' => $request->user(),
+            'addresses' => $addresses, // Kirim ke view
         ]);
     }
 
@@ -28,28 +33,18 @@ class ProfileController extends Controller
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
         $user = $request->user();
-
-        // 1. Ambil data yang sudah divalidasi (name, email, phone, gender, address)
         $data = $request->validated();
 
-        // 2. Logika Upload Avatar/Foto
         if ($request->hasFile('avatar')) {
-            // Hapus avatar lama jika ada (agar storage tidak penuh sampah file lama)
             if ($user->avatar && Storage::disk('public')->exists($user->avatar)) {
                 Storage::disk('public')->delete($user->avatar);
             }
-
-            // Simpan foto baru ke folder 'avatars' di storage public
             $path = $request->file('avatar')->store('avatars', 'public');
-            
-            // Masukkan path gambar ke array data
             $data['avatar'] = $path;
         }
 
-        // 3. Update data User dengan array $data
         $user->fill($data);
 
-        // Jika email diubah, reset status verifikasi
         if ($user->isDirty('email')) {
             $user->email_verified_at = null;
         }
@@ -57,6 +52,51 @@ class ProfileController extends Controller
         $user->save();
 
         return Redirect::route('profile.edit')->with('status', 'profile-updated');
+    }
+
+    /**
+     * FITUR BARU: Update Alamat Spesifik
+     */
+    public function updateAddress(Request $request, $id)
+    {
+        $address = UserAddress::where('user_id', Auth::id())->findOrFail($id);
+
+        $request->validate([
+            'province_id' => 'required',
+            'province_name' => 'required',
+            'city_id' => 'required',
+            'city_name' => 'required',
+            'district_id' => 'required',
+            'district_name' => 'required',
+            'village_name' => 'required|string', // Pastikan desa diisi
+            'address_detail' => 'required|string',
+            'postal_code' => 'required',
+        ]);
+
+        $address->update([
+            'province_id' => $request->province_id,
+            'province_name' => $request->province_name,
+            'city_id' => $request->city_id,
+            'city_name' => $request->city_name,
+            'district_id' => $request->district_id,
+            'district_name' => $request->district_name,
+            'village_name' => $request->village_name,
+            'address_detail' => $request->address_detail,
+            'postal_code' => $request->postal_code,
+        ]);
+
+        return back()->with('status', 'address-updated')->with('message', 'Alamat berhasil diperbarui!');
+    }
+
+    /**
+     * FITUR BARU: Hapus Alamat
+     */
+    public function destroyAddress($id)
+    {
+        $address = UserAddress::where('user_id', Auth::id())->findOrFail($id);
+        $address->delete();
+
+        return back()->with('status', 'address-deleted')->with('message', 'Alamat berhasil dihapus.');
     }
 
     /**

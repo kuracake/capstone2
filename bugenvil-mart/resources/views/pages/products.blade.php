@@ -85,7 +85,7 @@
                             
                             {{-- Badge Stok --}}
                             <div class="absolute top-2 right-2 md:top-3 md:right-3">
-                                <span class="bg-white/95 backdrop-blur px-2 py-0.5 md:px-3 md:py-1 rounded-full text-[10px] md:text-xs font-bold text-fuchsia-700 shadow-sm uppercase tracking-wide">
+                                <span class="bg-white/95 backdrop-blur px-2 py-0.5 md:px-3 md:py-1 rounded-full text-[10px] md:text-xs font-bold text-white shadow-sm uppercase tracking-wide">
                                     Stok: {{ $product->stock }}
                                 </span>
                             </div>

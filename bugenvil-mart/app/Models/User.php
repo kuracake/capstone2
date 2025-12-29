@@ -22,8 +22,7 @@ class User extends Authenticatable
     'password',
     'avatar',  // Tambahan
     'phone',   // Tambahan
-    'gender',  // Tambahan
-    'address', 
+    'gender',  // Tambahan 
     'is_admin',
     'resi', 
 ];
@@ -60,4 +59,11 @@ class User extends Authenticatable
     {
         return $this->hasMany(Report::class);
     }
+
+    // Tambahkan di dalam class User
+public function addresses()
+{
+    return $this->hasMany(UserAddress::class);
+}
+
 }
