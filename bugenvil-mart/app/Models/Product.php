@@ -27,18 +27,25 @@ class Product extends Model
     }
 
     /**
+     * Relasi ke Order Items (Untuk hitung Terjual)
+     * BARU DITAMBAHKAN
+     */
+    public function orderItems()
+    {
+        return $this->hasMany(OrderItem::class);
+    }
+
+    /**
      * Relasi ke ProductImage (Galeri Foto)
-     * PERBAIKAN: Menggunakan $this, bukan $table
      */
     public function images()
     {
         return $this->hasMany(ProductImage::class);
     }
 
-    // Helper untuk mengambil foto utama (foto pertama)
+    // Helper untuk mengambil foto utama
     public function getThumbnailAttribute()
     {
-        // Prioritas: Ambil dari kolom 'image', jika kosong baru cari di galeri
         if ($this->image) {
             return $this->image;
         }

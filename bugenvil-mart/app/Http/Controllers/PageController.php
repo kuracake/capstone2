@@ -11,7 +11,10 @@ class PageController extends Controller
     // Halaman Semua Produk (Katalog)
     public function products(Request $request)
     {
-        $query = Product::query();
+        // PERBAIKAN: Tambahkan withSum untuk menghitung 'Terjual' otomatis
+        $query = Product::withAvg('reviews', 'rating')
+                        ->withCount('reviews')
+                        ->withSum('orderItems', 'quantity'); // Menghitung total qty terjual
 
         // 1. Logika Pencarian
         if ($request->filled('search')) {
@@ -25,8 +28,8 @@ class PageController extends Controller
                     $query->latest();
                     break;
                 case 'terlaris':
-                    // Karena belum ada kolom 'sold', kita simulasikan dengan harga tertinggi dulu
-                    $query->orderBy('price', 'desc'); 
+                    // Sekarang kita bisa urutkan berdasarkan jumlah terjual beneran!
+                    $query->orderBy('order_items_sum_quantity', 'desc'); 
                     break;
                 case 'termurah':
                     $query->orderBy('price', 'asc');
@@ -48,15 +51,20 @@ class PageController extends Controller
     // Halaman Detail Produk
    public function detail($id)
     {
-        // Ambil produk beserta relasi reviews dan usernya (Eager Loading biar cepat)
-        // withAvg menghitung rata-rata kolom 'rating' di relasi 'reviews' otomatis
-        // withCount menghitung jumlah review
+        // Tambahkan withSum juga di sini
         $product = Product::with(['reviews.user'])
-                    ->withAvg('reviews', 'rating')
-                    ->withCount('reviews')
-                    ->findOrFail($id);
+                        ->withAvg('reviews', 'rating')
+                        ->withCount('reviews')
+                        ->withSum('orderItems', 'quantity')
+                        ->findOrFail($id);
         
-        $relatedProducts = Product::where('id', '!=', $id)->inRandomOrder()->take(4)->get();
+        $relatedProducts = Product::where('id', '!=', $id)
+                                ->withAvg('reviews', 'rating')
+                                ->withCount('reviews')
+                                ->withSum('orderItems', 'quantity')
+                                ->inRandomOrder()
+                                ->take(4)
+                                ->get();
 
         return view('pages.detail', compact('product', 'relatedProducts'));
     }
@@ -64,10 +72,7 @@ class PageController extends Controller
     // Halaman Tutorial
     public function tutorials()
     {
-        // GANTI get() MENJADI paginate(9)
-        // Angka 9 artinya menampilkan 9 video per halaman
         $videos = VideoTutorial::latest()->paginate(9); 
-        
         return view('pages.tutorials', compact('videos'));
     }
 

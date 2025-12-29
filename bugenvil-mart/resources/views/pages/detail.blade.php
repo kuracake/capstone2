@@ -12,7 +12,6 @@
         .opacity-0 { opacity: 0; }
         .opacity-100 { opacity: 1; }
 
-        /* Hide scrollbar for cleaner look in gallery if needed */
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
@@ -47,28 +46,19 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-0 md:gap-12 p-0 md:p-8">
                     
                     {{-- === BAGIAN KIRI: GALERI FOTO === --}}
-                    {{-- Di Desktop, bagian ini akan Sticky agar tetap terlihat saat scroll --}}
                     <div class="space-y-4 md:sticky md:top-24 md:self-start h-fit p-4 md:p-0">
-                        
                         {{-- 1. FOTO UTAMA --}}
                         <div class="aspect-square w-full bg-gray-100 rounded-2xl overflow-hidden relative group border border-gray-200">
-                            {{-- Logic Gambar --}}
                             @if($product->image)
-                                <img id="mainImage" src="{{ asset('storage/' . $product->image) }}" 
-                                     class="w-full h-full object-cover cursor-zoom-in" 
-                                     alt="{{ $product->name }}">
+                                <img id="mainImage" src="{{ asset('storage/' . $product->image) }}" class="w-full h-full object-cover cursor-zoom-in" alt="{{ $product->name }}">
                             @elseif($product->images->count() > 0)
-                                <img id="mainImage" src="{{ asset('storage/' . $product->images->first()->image_path) }}" 
-                                     class="w-full h-full object-cover cursor-zoom-in" 
-                                     alt="{{ $product->name }}">
+                                <img id="mainImage" src="{{ asset('storage/' . $product->images->first()->image_path) }}" class="w-full h-full object-cover cursor-zoom-in" alt="{{ $product->name }}">
                             @else
                                 <div class="w-full h-full flex flex-col items-center justify-center text-gray-400">
                                     <svg class="w-12 h-12 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
                                     <span class="text-sm">No Image</span>
                                 </div>
                             @endif
-                            
-                            {{-- Badge --}}
                             @if($product->stock <= 0)
                                 <span class="absolute top-4 left-4 bg-red-500/90 backdrop-blur-sm text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-sm">Habis</span>
                             @else
@@ -76,15 +66,13 @@
                             @endif
                         </div>
 
-                        {{-- 2. THUMBNAIL (Scrollable on Mobile) --}}
+                        {{-- 2. THUMBNAIL --}}
                         @if($product->images->count() > 0)
                         <div class="flex md:grid md:grid-cols-5 gap-3 overflow-x-auto md:overflow-visible pb-2 md:pb-0 no-scrollbar">
-                            {{-- Loop Gambar --}}
                             @foreach($product->images as $img)
                                 <button onclick="changeMainImage('{{ asset('storage/' . $img->image_path) }}')"
                                         class="flex-shrink-0 w-20 h-20 md:w-auto md:h-auto aspect-square rounded-xl overflow-hidden border-2 border-transparent hover:border-fuchsia-500 focus:border-fuchsia-500 transition-all">
-                                    <img src="{{ asset('storage/' . $img->image_path) }}" 
-                                         class="w-full h-full object-cover">
+                                    <img src="{{ asset('storage/' . $img->image_path) }}" class="w-full h-full object-cover">
                                 </button>
                             @endforeach
                         </div>
@@ -92,20 +80,27 @@
                     </div>
 
                     {{-- === BAGIAN KANAN: INFO PRODUK === --}}
-                    {{-- Hapus 'justify-center' agar teks rata atas (Top Alignment) --}}
                     <div class="flex flex-col p-6 md:p-0 pt-0 md:pt-2">
                         
                         <h1 class="text-2xl md:text-4xl font-extrabold text-gray-900 mb-2 leading-tight tracking-tight">{{ $product->name }}</h1>
                         
-                        {{-- Rating & Stats --}}
+                        {{-- Rating & Stats (STYLE BARU) --}}
                         <div class="flex flex-wrap items-center gap-4 text-sm text-gray-500 mb-6 md:mb-8">
-                            <div class="flex items-center gap-1.5 text-yellow-400 bg-yellow-50 px-2 py-1 rounded-lg">
-                                <span class="text-yellow-500 font-bold text-base">{{ number_format($product->reviews_avg_rating ?? 0, 1) }}</span>
-                                <svg class="w-4 h-4 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                            
+                            {{-- Bintang + Rating --}}
+                            <div class="flex items-center gap-1.5 text-yellow-500 font-bold text-base">
+                                <svg class="w-5 h-5 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                                <span>{{ number_format($product->reviews_avg_rating ?? 0, 1) }}</span>
+                                <span class="text-gray-400 font-normal text-sm">({{ $product->reviews_count }} Ulasan)</span>
                             </div>
+
                             <span class="w-1 h-1 bg-gray-300 rounded-full"></span>
-                            <span>{{ $product->reviews_count }} Ulasan</span>
+                            
+                            {{-- Terjual --}}
+                            <span class="text-gray-800 font-medium">Terjual {{ $product->order_items_sum_quantity ?? 0 }}</span>
+                            
                             <span class="w-1 h-1 bg-gray-300 rounded-full"></span>
+                            
                             <span class="text-fuchsia-600 font-medium">{{ $product->stock }} Stok Tersedia</span>
                         </div>
 
@@ -121,11 +116,10 @@
                             <p>{{ $product->description }}</p>
                         </div>
 
-                        {{-- Actions Area (Sticky Bottom on Mobile, Regular on Desktop) --}}
+                        {{-- Actions Area --}}
                         <div class="mt-auto pt-6 border-t border-gray-100">
                             @if($product->stock > 0)
                                 <div class="flex flex-col sm:flex-row gap-3 md:gap-4">
-                                    {{-- Keranjang (Hanya User) --}}
                                     @if(!Auth::check() || (Auth::check() && !Auth::user()->is_admin))
                                         <form action="{{ route('cart.add', $product->id) }}" method="POST" class="flex-1">
                                             @csrf
@@ -159,13 +153,14 @@
                 </div>
             </div>
 
-            {{-- REVIEW SECTION --}}
+            {{-- REVIEW SECTION & RELATED PRODUCTS --}}
+            {{-- (Kode Review dan Related Products di bawah ini tidak berubah, hanya saya sertakan penutupnya) --}}
             <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 md:p-10 mb-10">
+                {{-- ... (Isi review sama seperti sebelumnya) ... --}}
                 <h3 class="text-2xl font-bold text-gray-900 mb-8 flex items-center gap-2">
                     <span>Ulasan Pembeli</span>
                     <span class="text-sm font-normal text-gray-500 bg-gray-100 px-3 py-1 rounded-full">{{ $product->reviews_count }}</span>
                 </h3>
-                
                 {{-- Form Review --}}
                 @if(Auth::check() && !Auth::user()->is_admin)
                 <div class="bg-gray-50/80 backdrop-blur rounded-2xl p-6 mb-10 border border-gray-200">
@@ -173,7 +168,6 @@
                     <form action="{{ route('reviews.store', $product->id) }}" method="POST" enctype="multipart/form-data">
                         @csrf
                         <div class="flex flex-col md:flex-row gap-6">
-                            {{-- Input Kiri --}}
                             <div class="flex-1 space-y-4">
                                 <div>
                                     <label class="block text-sm font-medium text-gray-600 mb-1">Berikan Bintang</label>
@@ -186,14 +180,11 @@
                                     </div>
                                     @error('rating') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
                                 </div>
-                                
                                 <div>
                                     <label class="block text-sm font-medium text-gray-600 mb-1">Foto (Opsional)</label>
                                     <input type="file" name="image" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-fuchsia-50 file:text-fuchsia-700 hover:file:bg-fuchsia-100"/>
                                 </div>
                             </div>
-                            
-                            {{-- Input Kanan --}}
                             <div class="flex-1 flex flex-col">
                                 <label class="block text-sm font-medium text-gray-600 mb-1">Komentar</label>
                                 <textarea name="comment" rows="3" class="w-full border-gray-200 rounded-xl focus:ring-fuchsia-500 focus:border-fuchsia-500 flex-grow" placeholder="Ceritakan kepuasan Anda tentang produk ini..."></textarea>
@@ -208,7 +199,6 @@
                 </div>
                 @endif
 
-                {{-- List Review --}}
                 <div class="space-y-8">
                     @forelse($product->reviews as $review)
                     <div class="flex gap-4">
@@ -244,13 +234,11 @@
                 </div>
             </div>
 
-            {{-- RELATED PRODUCTS --}}
             <div class="mb-20">
                 <div class="flex items-center justify-between mb-8">
                     <h3 class="text-2xl font-bold text-gray-900">Produk Serupa</h3>
                     <a href="{{ route('products.index') }}" class="text-fuchsia-600 font-semibold hover:underline">Lihat Semua &rarr;</a>
                 </div>
-                
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8">
                     @foreach($relatedProducts as $related)
                     <a href="{{ route('products.show', $related->id) }}" class="group bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300">
@@ -262,8 +250,6 @@
                             @else
                                 <div class="w-full h-full flex items-center justify-center text-gray-400 text-xs">No Image</div>
                             @endif
-                            
-                            {{-- Quick Add Button (Visible on Hover Desktop) --}}
                             <div class="absolute bottom-0 left-0 right-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300 hidden md:block">
                                 <div class="bg-white/90 backdrop-blur text-center py-2 rounded-lg text-sm font-bold text-gray-800 shadow-sm">
                                     Lihat Detail
@@ -272,6 +258,13 @@
                         </div>
                         <div class="p-4">
                             <h4 class="font-bold text-gray-800 mb-1 truncate group-hover:text-fuchsia-600 transition">{{ $related->name }}</h4>
+                             {{-- Rating Mini di Related Products --}}
+                            <div class="flex items-center gap-1 mb-2 text-xs text-gray-500">
+                                <svg class="w-3 h-3 text-yellow-500 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                                <span>{{ number_format($related->reviews_avg_rating ?? 0, 1) }}</span>
+                                <span class="mx-1">•</span>
+                                <span>Terjual {{ $related->order_items_sum_quantity ?? 0 }}</span>
+                            </div>
                             <p class="text-fuchsia-600 font-bold">Rp {{ number_format($related->price, 0, ',', '.') }}</p>
                         </div>
                     </a>
