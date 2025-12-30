@@ -18,8 +18,9 @@
         [x-cloak] { display: none !important; }
     </style>
 
-    {{-- Script AlpineJS & Vite --}}
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js"></script>
+
+    {{-- Pastikan juga Vite sudah dipanggil jika menggunakan aset lokal --}}
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="font-sans antialiased bg-gray-50 text-gray-800">

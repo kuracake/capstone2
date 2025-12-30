@@ -97,6 +97,9 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
     Route::patch('/orders/{id}/status', [OrderController::class, 'updateStatus'])->name('orders.update');
     Route::resource('orders', \App\Http\Controllers\AdminOrderController::class)->only(['index', 'show']);
     Route::delete('/product-image/{id}/delete', [AdminProductController::class, 'deleteImage'])->name('product.image.delete');
+
+    Route::get('/admin/dashboard', [AdminController::class, 'index'])->name('admin.dashboard');
+    Route::get('/report/print', [AdminController::class, 'printReport'])->name('report.print');
 });
 
 require __DIR__ . '/auth.php';

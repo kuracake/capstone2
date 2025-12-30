@@ -5,7 +5,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
-        <title>{{ config('app.name', 'BougainVilla') }}</title>
+        <title>{{ config('app.name', 'Ainin Ar Store') }}</title>
 
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600,700,800&display=swap" rel="stylesheet" />
@@ -31,7 +31,7 @@
                 {{-- Logo Brand --}}
                 <div class="text-center mb-8">
                     <h1 class="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-700 to-purple-600">
-                        BougainVilla
+                        Ainin Ar Store
                     </h1>
                 </div>
 
@@ -41,7 +41,7 @@
 
             {{-- Footer Kecil (Opsional) --}}
             <div class="mt-8 text-center text-xs text-gray-400">
-                &copy; {{ date('Y') }} BougainVilla. All rights reserved.
+                &copy; {{ date('Y') }} Ainin Ar Store. All rights reserved.
             </div>
         </div>
     </body>
