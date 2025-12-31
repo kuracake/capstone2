@@ -16,6 +16,8 @@
         body { font-family: 'Poppins', sans-serif; }
         .font-serif { font-family: 'Playfair Display', serif; }
         [x-cloak] { display: none !important; }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #e0e0e0; border-radius: 4px; }
         
         @keyframes bounce-short {
             0%, 100% { transform: translateY(0); }
@@ -31,22 +33,23 @@
     {{-- NAVBAR --}}
     <nav x-data="{ open: false, scrolled: false }" 
          @scroll.window="scrolled = (window.pageYOffset > 20)"
-         :class="{'bg-white/90 backdrop-blur-md shadow-sm': scrolled, 'bg-white': !scrolled}"
+         :class="{'bg-white/95 backdrop-blur-md shadow-sm': scrolled, 'bg-white': !scrolled}"
          class="fixed w-full top-0 z-50 transition-all duration-300 border-b border-gray-100">
         
         <div class="container mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center h-20">
+            <div class="flex justify-between items-center h-16 md:h-20">
                 
-                {{-- LOGO BRAND --}}
+                {{-- LOGO BRAND (Hanya Teks) --}}
                 <div class="flex-shrink-0 flex items-center">
-                    <a href="{{ route('home') }}" class="group flex items-center">
+                    <a href="{{ route('home') }}" class="group flex items-center gap-2">
                         <div class="flex flex-col">
-                            {{-- Teks Logo --}}
-                            <span class="text-3xl font-bold font-serif text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-700 to-purple-600 tracking-tight leading-none group-hover:opacity-80 transition">
+                            {{-- LOGO UTAMA --}}
+                            <span class="text-lg md:text-2xl font-bold font-serif text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-700 to-purple-600 tracking-tight leading-none group-hover:opacity-80 transition">
                                 Ainin Ar Store
                             </span>
-                            <span class="text-[10px] text-fuchsia-500 font-medium tracking-widest uppercase mt-0.5 ml-0.5">
-                                Eko Bugenvill 
+                            {{-- SUBTITLE --}}
+                            <span class="text-[9px] md:text-[10px] text-fuchsia-500 font-medium tracking-[0.2em] uppercase mt-0.5 ml-0.5">
+                                Eko Bugenvil 
                             </span>
                         </div>
                     </a>
@@ -54,27 +57,18 @@
 
                 {{-- MENU DESKTOP --}}
                 <div class="hidden md:flex space-x-8 items-center">
-                    <x-nav-link :href="route('home')" :active="request()->routeIs('home')">
-                        Beranda
-                    </x-nav-link>
-                    <x-nav-link :href="route('products.index')" :active="request()->routeIs('products.index')">
-                        Produk
-                    </x-nav-link>
-                    <x-nav-link :href="route('tutorials.all')" :active="request()->routeIs('tutorials.all')">
-                        Tutorial
-                    </x-nav-link>
-                    <x-nav-link :href="route('contact')" :active="request()->routeIs('contact')">
-                        Kontak
-                    </x-nav-link>
+                    <x-nav-link :href="route('home')" :active="request()->routeIs('home')">Beranda</x-nav-link>
+                    <x-nav-link :href="route('products.index')" :active="request()->routeIs('products.index')">Produk</x-nav-link>
+                    <x-nav-link :href="route('tutorials.all')" :active="request()->routeIs('tutorials.all')">Tutorial</x-nav-link>
+                    <x-nav-link :href="route('contact')" :active="request()->routeIs('contact')">Kontak</x-nav-link>
                 </div>
 
-                {{-- KANAN: CART & USER --}}
-                <div class="hidden md:flex items-center gap-6">
-                    {{-- Cart --}}
-                    <a href="{{ route('cart.index') }}" class="relative group text-gray-500 hover:text-fuchsia-600 transition">
-                        <div class="p-2 rounded-full group-hover:bg-fuchsia-50 transition">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
-                        </div>
+                {{-- KANAN: ICON GROUP (Desktop) --}}
+                <div class="hidden md:flex items-center gap-4">
+                    
+                    {{-- 1. KERANJANG --}}
+                    <a href="{{ route('cart.index') }}" class="relative group text-gray-500 hover:text-fuchsia-600 transition p-2 rounded-full hover:bg-fuchsia-50">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
                         @auth
                             @php $cartCount = \App\Models\CartItem::where('user_id', Auth::id())->sum('quantity'); @endphp
                             @if($cartCount > 0)
@@ -85,10 +79,60 @@
                         @endauth
                     </a>
 
-                    <div class="h-6 w-px bg-gray-200"></div>
-
-                    {{-- User Dropdown --}}
                     @auth
+                        {{-- 2. NOTIFIKASI --}}
+                        <div class="relative" x-data="{ openNotif: false }">
+                            <button @click="openNotif = !openNotif" class="relative p-2 text-gray-500 hover:text-fuchsia-600 rounded-full hover:bg-fuchsia-50 transition">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+                                @if(Auth::user()->unreadNotifications->count() > 0)
+                                    <span class="absolute top-1 right-1 flex h-2.5 w-2.5">
+                                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                                        <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500 border border-white"></span>
+                                    </span>
+                                @endif
+                            </button>
+
+                            <div x-show="openNotif" 
+                                 @click.outside="openNotif = false"
+                                 x-transition:enter="transition ease-out duration-200"
+                                 x-transition:enter-start="transform opacity-0 scale-95"
+                                 x-transition:enter-end="transform opacity-100 scale-100"
+                                 x-transition:leave="transition ease-in duration-75"
+                                 x-transition:leave-start="transform opacity-100 scale-100"
+                                 x-transition:leave-end="transform opacity-0 scale-95"
+                                 class="absolute right-0 mt-3 w-80 bg-white rounded-xl shadow-xl border border-gray-100 z-50 overflow-hidden" 
+                                 style="display: none;">
+                                <div class="px-4 py-3 border-b border-gray-50 bg-gray-50 flex justify-between items-center">
+                                    <span class="font-bold text-xs text-gray-500 uppercase">Notifikasi</span>
+                                    @if(Auth::user()->unreadNotifications->count() > 0)
+                                        <span class="text-[10px] bg-fuchsia-100 text-fuchsia-600 px-2 py-0.5 rounded-full font-bold">{{ Auth::user()->unreadNotifications->count() }} Baru</span>
+                                    @endif
+                                </div>
+                                <div class="max-h-80 overflow-y-auto custom-scrollbar">
+                                    @forelse(Auth::user()->notifications as $notification)
+                                        <a href="{{ route('user.notification.read', $notification->id) }}" class="block p-4 hover:bg-fuchsia-50 transition border-b border-gray-50 {{ $notification->read_at ? 'opacity-60' : 'bg-fuchsia-50/20' }}">
+                                            <div class="flex gap-3">
+                                                <div class="flex-shrink-0 mt-1">
+                                                    <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-500 flex items-center justify-center">
+                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <p class="text-sm text-gray-800 font-semibold leading-snug">{{ $notification->data['message'] }}</p>
+                                                    <p class="text-xs text-gray-400 mt-1">{{ $notification->created_at->diffForHumans() }}</p>
+                                                </div>
+                                            </div>
+                                        </a>
+                                    @empty
+                                        <div class="py-8 text-center text-gray-400 text-sm">Belum ada notifikasi.</div>
+                                    @endforelse
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="h-6 w-px bg-gray-200 mx-2"></div>
+
+                        {{-- 3. PROFIL --}}
                         <div x-data="{ dropdownOpen: false }" class="relative">
                             <button @click="dropdownOpen = !dropdownOpen" @click.away="dropdownOpen = false" class="flex items-center gap-3 focus:outline-none group">
                                 <div class="text-right hidden lg:block">
@@ -96,15 +140,11 @@
                                     <p class="text-sm font-bold text-gray-700 group-hover:text-fuchsia-700 transition">{{ Auth::user()->name }}</p>
                                 </div>
                                 @if(Auth::user()->avatar)
-                                    <img src="{{ asset('storage/' . Auth::user()->avatar) }}" class="h-11 w-11 rounded-full object-cover border-2 border-fuchsia-100 shadow-sm group-hover:border-fuchsia-300 transition">
+                                    <img src="{{ asset('storage/' . Auth::user()->avatar) }}" class="h-10 w-10 rounded-full object-cover border-2 border-fuchsia-100 shadow-sm group-hover:border-fuchsia-300 transition">
                                 @else
-                                    <div class="h-11 w-11 rounded-full bg-fuchsia-100 text-fuchsia-600 flex items-center justify-center font-bold text-lg border border-fuchsia-200">
-                                        {{ substr(Auth::user()->name, 0, 1) }}
-                                    </div>
+                                    <div class="h-10 w-10 rounded-full bg-fuchsia-100 text-fuchsia-600 flex items-center justify-center font-bold text-lg border border-fuchsia-200">{{ substr(Auth::user()->name, 0, 1) }}</div>
                                 @endif
-                                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                             </button>
-
                             <div x-show="dropdownOpen" style="display: none;" class="absolute right-0 mt-3 w-48 bg-white rounded-xl shadow-xl py-2 border border-gray-100 z-50">
                                 <a href="{{ route('dashboard') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-fuchsia-50 hover:text-fuchsia-700">Dashboard</a>
                                 <a href="{{ route('profile.edit') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-fuchsia-50 hover:text-fuchsia-700">Profil Saya</a>
@@ -118,24 +158,23 @@
                     @else
                         <div class="flex items-center gap-3">
                             <a href="{{ route('login') }}" class="text-sm font-bold text-gray-600 hover:text-fuchsia-600 transition">Masuk</a>
-                            <a href="{{ route('register') }}" class="px-5 py-2.5 text-sm font-bold text-white bg-gray-900 rounded-full hover:bg-fuchsia-700 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
-                                Daftar
-                            </a>
+                            <a href="{{ route('register') }}" class="px-5 py-2.5 text-sm font-bold text-white bg-gray-900 rounded-full hover:bg-fuchsia-700 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">Daftar</a>
                         </div>
                     @endauth
                 </div>
 
-                {{-- Mobile Hamburger --}}
-                <div class="-mr-2 flex items-center md:hidden gap-4">
-                    <a href="{{ route('cart.index') }}" class="relative text-gray-600">
+                {{-- TOMBOL MOBILE (Cart + Hamburger) --}}
+                <div class="flex items-center gap-3 md:hidden">
+                    <a href="{{ route('cart.index') }}" class="relative text-gray-600 p-2 hover:bg-gray-100 rounded-full transition">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
                         @auth
                             @if(isset($cartCount) && $cartCount > 0)
-                                <span class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full h-4 w-4 flex items-center justify-center">{{ $cartCount }}</span>
+                                <span class="absolute top-1 right-1 bg-red-500 text-white text-[9px] font-bold rounded-full h-3.5 w-3.5 flex items-center justify-center">{{ $cartCount }}</span>
                             @endif
                         @endauth
                     </a>
-                    <button @click="open = ! open" class="inline-flex items-center justify-center p-2 rounded-lg text-gray-600 hover:text-fuchsia-600 hover:bg-gray-100 focus:outline-none transition">
+                    
+                    <button @click="open = ! open" class="inline-flex items-center justify-center p-2 rounded-lg text-gray-600 hover:text-fuchsia-600 hover:bg-fuchsia-50 focus:outline-none transition border border-gray-200">
                         <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
                             <path :class="{'hidden': open, 'inline-flex': ! open }" class="inline-flex" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
                             <path :class="{'hidden': ! open, 'inline-flex': open }" class="hidden" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -145,36 +184,54 @@
             </div>
         </div>
 
-        {{-- Mobile Menu --}}
-        <div x-show="open" x-transition class="md:hidden border-t border-gray-100 bg-white shadow-lg">
+        {{-- MOBILE MENU DROPDOWN --}}
+        <div x-show="open" x-transition class="md:hidden border-t border-gray-100 bg-white shadow-lg h-screen overflow-y-auto pb-20">
             <div class="pt-2 pb-3 space-y-1 px-4">
                 <x-responsive-nav-link :href="route('home')" :active="request()->routeIs('home')">Beranda</x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('products.index')" :active="request()->routeIs('products.index')">Produk</x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('tutorials.all')" :active="request()->routeIs('tutorials.all')">Tutorial</x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('contact')" :active="request()->routeIs('contact')">Kontak</x-responsive-nav-link>
             </div>
+            
             <div class="pt-4 pb-6 border-t border-gray-100 px-4 bg-gray-50">
                 @auth
-                    <div class="flex items-center gap-4 mb-4">
+                    @if(Auth::user()->unreadNotifications->count() > 0)
+                        <div class="mb-6 bg-white p-4 rounded-xl border border-fuchsia-100 shadow-sm">
+                            <div class="flex items-center gap-2 mb-3">
+                                <span class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
+                                <p class="text-xs font-bold text-gray-500 uppercase">Notifikasi Baru</p>
+                            </div>
+                            <div class="space-y-2">
+                                @foreach(Auth::user()->unreadNotifications->take(3) as $notif)
+                                    <a href="{{ route('user.notification.read', $notif->id) }}" class="flex items-start gap-3 p-2 hover:bg-fuchsia-50 rounded-lg transition">
+                                        <svg class="w-4 h-4 text-fuchsia-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                        <span class="text-sm text-gray-700 leading-tight">{{ $notif->data['message'] }}</span>
+                                    </a>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endif
+
+                    <div class="flex items-center gap-4 mb-4 mt-2">
                         @if(Auth::user()->avatar)
-                            <img src="{{ asset('storage/' . Auth::user()->avatar) }}" class="h-14 w-14 rounded-full object-cover border-2 border-white shadow-md">
+                            <img src="{{ asset('storage/' . Auth::user()->avatar) }}" class="h-12 w-12 rounded-full object-cover border border-gray-200">
                         @else
-                            <div class="h-14 w-14 rounded-full bg-fuchsia-100 text-fuchsia-600 flex items-center justify-center font-bold text-xl border border-fuchsia-200">{{ substr(Auth::user()->name, 0, 1) }}</div>
+                            <div class="h-12 w-12 rounded-full bg-fuchsia-100 text-fuchsia-600 flex items-center justify-center font-bold text-lg border border-fuchsia-200">{{ substr(Auth::user()->name, 0, 1) }}</div>
                         @endif
                         <div>
-                            <div class="font-bold text-lg text-gray-800">{{ Auth::user()->name }}</div>
-                            <div class="text-sm text-gray-500">{{ Auth::user()->email }}</div>
+                            <div class="font-bold text-gray-800">{{ Auth::user()->name }}</div>
+                            <div class="text-sm text-gray-500 truncate max-w-[150px]">{{ Auth::user()->email }}</div>
                         </div>
                     </div>
                     <div class="space-y-2">
-                        <a href="{{ route('dashboard') }}" class="block w-full text-center py-2 bg-white border border-gray-200 rounded-lg text-sm font-bold text-gray-700">Dashboard</a>
+                        <a href="{{ route('dashboard') }}" class="block w-full text-center py-2.5 bg-white border border-gray-200 rounded-lg text-sm font-bold text-gray-700 hover:bg-gray-50">Dashboard</a>
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf
-                            <button type="submit" class="block w-full py-2 bg-red-50 border border-red-100 rounded-lg text-sm font-bold text-red-600">Keluar</button>
+                            <button type="submit" class="block w-full py-2.5 bg-red-50 border border-red-100 rounded-lg text-sm font-bold text-red-600 hover:bg-red-100 transition">Keluar</button>
                         </form>
                     </div>
                 @else
-                    <a href="{{ route('login') }}" class="block w-full text-center bg-fuchsia-600 text-white py-3 rounded-lg font-bold shadow-md hover:bg-fuchsia-700 transition">Masuk / Daftar Sekarang</a>
+                    <a href="{{ route('login') }}" class="block w-full text-center bg-gray-900 text-white py-3 rounded-xl font-bold shadow-md hover:bg-gray-800 transition">Masuk / Daftar Sekarang</a>
                 @endauth
             </div>
         </div>
@@ -182,11 +239,11 @@
 
     {{-- Content --}}
     @if (isset($header))
-        <header class="bg-white shadow mt-20">
+        <header class="bg-white shadow mt-16 md:mt-20">
             <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">{{ $header }}</div>
         </header>
     @else
-        <div class="h-20"></div> 
+        <div class="h-16 md:h-20"></div> 
     @endif
 
     <main class="flex-grow">
@@ -252,7 +309,7 @@
         </div>
     </footer>
 
-    {{-- Toast --}}
+
     @if(session('success'))
         <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 5000)" class="fixed bottom-5 right-5 z-50 flex max-w-sm w-full bg-white shadow-2xl rounded-lg p-4 flex items-start gap-3 border-l-4 border-green-500">
             <div class="flex-shrink-0 text-green-500"><svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg></div>

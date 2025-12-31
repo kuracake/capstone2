@@ -13,6 +13,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AdminProductController;
 use App\Http\Controllers\AdminVideoController;
+use App\Http\Controllers\AdminOrderController; // Tambahkan ini
 use App\Http\Controllers\PaymentCallbackController;
 
 /*
@@ -42,6 +43,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // --- DASHBOARD USER ---
     Route::get('/dashboard', function () {
         $user = Auth::user();
+        // Redirect Admin ke Dashboard Admin jika salah masuk
         if ($user->is_admin) return redirect()->route('admin.dashboard');
         
         $myOrders = \App\Models\Order::with('report') 
@@ -53,6 +55,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         return view('dashboard', compact('myOrders'));
     })->name('dashboard');
 
+    // --- Notifikasi ---
+    Route::get('/user/notification/{id}/read', [ProfileController::class, 'markNotification'])->name('user.notification.read');
+
     // --- PROFILE ---
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
@@ -63,7 +68,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('/profile/address/{id}', [ProfileController::class, 'destroyAddress'])->name('profile.address.destroy');
 
     // --- CHECKOUT & TRANSAKSI ---
-    // PERBAIKAN: Nama route diubah jadi 'checkout.index' agar sesuai dengan tombol di cart
     Route::get('/checkout', [OrderController::class, 'index'])->name('checkout.index'); 
     Route::post('/checkout', [OrderController::class, 'store'])->name('checkout.store');
     Route::get('/orders/{id}', [OrderController::class, 'show'])->name('orders.show');
@@ -89,17 +93,26 @@ Route::middleware(['auth', 'verified'])->group(function () {
 Route::post('payments/midtrans-notification', [PaymentCallbackController::class, 'receive']);
 
 Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(function () {
+    // Dashboard Admin
     Route::get('/dashboard', [AdminController::class, 'index'])->name('dashboard');
+
+    // Route Notifikasi
+    Route::get('/notification/{id}/mark-as-read', [AdminController::class, 'markNotification'])->name('notification.read');
+    
+    // Manajemen Produk & Video
     Route::resource('products', AdminProductController::class);
+    Route::delete('/product-image/{id}/delete', [AdminProductController::class, 'deleteImage'])->name('product.image.delete');
     Route::resource('videos', AdminVideoController::class);
+
+    // Laporan & Cetak
     Route::get('/laporan', [ReportController::class, 'indexAdmin'])->name('reports.index');
     Route::patch('/laporan/{id}', [ReportController::class, 'updateStatus'])->name('reports.update');
-    Route::patch('/orders/{id}/status', [OrderController::class, 'updateStatus'])->name('orders.update');
-    Route::resource('orders', \App\Http\Controllers\AdminOrderController::class)->only(['index', 'show']);
-    Route::delete('/product-image/{id}/delete', [AdminProductController::class, 'deleteImage'])->name('product.image.delete');
-
-    Route::get('/admin/dashboard', [AdminController::class, 'index'])->name('admin.dashboard');
     Route::get('/report/print', [AdminController::class, 'printReport'])->name('report.print');
+
+    // Manajemen Order (PERBAIKAN UTAMA DI SINI)
+    // Menggunakan AdminOrderController agar fitur Resi berfungsi
+    Route::patch('/orders/{id}/status', [AdminOrderController::class, 'updateStatus'])->name('orders.update');
+    Route::resource('orders', AdminOrderController::class)->only(['index', 'show']);
 });
 
 require __DIR__ . '/auth.php';

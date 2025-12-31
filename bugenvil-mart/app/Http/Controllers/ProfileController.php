@@ -119,4 +119,11 @@ class ProfileController extends Controller
 
         return Redirect::to('/');
     }
+
+    public function markNotification($id)
+{
+    $notification = auth()->user()->notifications()->findOrFail($id);
+    $notification->markAsRead();
+    return redirect($notification->data['link']);
+}
 }

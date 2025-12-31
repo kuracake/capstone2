@@ -11,6 +11,9 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Midtrans\Config;
 use Midtrans\Snap;
+use App\Notifications\NewOrderNotification;
+use App\Models\User;
+use Illuminate\Support\Facades\Notification;
 
 class OrderController extends Controller
 {
@@ -149,6 +152,14 @@ class OrderController extends Controller
             $order->save();
 
             CartItem::where('user_id', Auth::id())->delete();
+
+            // 1. Cari semua user yang berstatus Admin
+            $admins = User::where('is_admin', true)->get();
+            
+            // 2. Kirim notifikasi ke mereka
+            if ($admins->count() > 0) {
+                Notification::send($admins, new NewOrderNotification($order));
+            }
 
             DB::commit();
             

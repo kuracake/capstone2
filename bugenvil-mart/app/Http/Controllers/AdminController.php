@@ -127,5 +127,15 @@ class AdminController extends Controller
         return $pdf->stream('Laporan-Penjualan-' . ucfirst($period) . '.pdf');
     }
 
-
+public function markNotification($id)
+    {
+        $notification = auth()->user()->notifications()->findOrFail($id);
+        
+        // Tandai sudah dibaca
+        $notification->markAsRead();
+        
+        // Redirect ke link yang ada di data notifikasi (misal: detail order)
+        return redirect($notification->data['link']);
+    }
+    
 }

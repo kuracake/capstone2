@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Order;
 use Illuminate\Http\Request;
+use App\Notifications\OrderStatusUpdated;
 
 class AdminOrderController extends Controller
 {
@@ -40,6 +41,10 @@ class AdminOrderController extends Controller
         // ---------------------------------------------------------
 
         $order->update($data);
+
+        if ($order->user) {
+        $order->user->notify(new OrderStatusUpdated($order));
+    }
 
         // Perhatikan pesan suksesnya ada kata "& Resi"
         return back()->with('success', 'Status pesanan & Resi berhasil diperbarui!');
