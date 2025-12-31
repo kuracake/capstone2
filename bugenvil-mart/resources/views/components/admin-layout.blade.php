@@ -4,124 +4,155 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Admin Dashboard - AininArStore</title>
-    
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-    <script src="https://cdn.tailwindcss.com"></script>
-    
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
-                    },
-                    colors: {
-                        teal: {
-                            50: '#f0fdfa',
-                            100: '#ccfbf1',
-                            400: '#2dd4bf',
-                            500: '#14b8a6',
-                            600: '#0d9488',
-                        },
-                        emerald: {
-                            500: '#10b981',
-                            600: '#059669',
-                        }
-                    }
-                }
-            }
-        }
-    </script>
+    <title>{{ config('app.name', 'Ainin Ar Store') }} - Admin</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 
     <style>
-        body { font-family: 'Plus Jakarta Sans', sans-serif; }
-        /* Hilangkan scrollbar default tapi tetap bisa scroll */
-        .no-scrollbar::-webkit-scrollbar {
-            display: none;
+        body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
+        
+        /* Sidebar Styles */
+        .sidebar-menu-link {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            margin-bottom: 4px;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            color: #4b5563; /* text-gray-600 */
         }
-        .no-scrollbar {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
+        
+        .sidebar-menu-link:hover {
+            background-color: #f9fafb; /* gray-50 */
+            color: #111827; /* text-gray-900 */
+        }
+
+        .sidebar-menu-link.active {
+            background-color: #fdf4ff; /* fuchsia-50 */
+            color: #a21caf; /* fuchsia-700 */
+            font-weight: 600;
+        }
+
+        .sidebar-icon {
+            width: 20px;
+            height: 20px;
+            margin-right: 12px;
+        }
+
+        /* Responsive Utilities */
+        @media (min-width: 768px) {
+            #mobile-overlay { display: none !important; }
+            #sidebar { 
+                transform: translateX(0) !important; 
+                position: fixed !important;
+                top: 0; bottom: 0; left: 0;
+                width: 16rem; /* 64 aka 256px */
+                z-index: 30;
+            }
+            #main-content {
+                margin-left: 16rem; /* Same as sidebar width */
+            }
+            #mobile-header { display: none !important; }
         }
     </style>
 </head>
-<body class="bg-gray-50 text-gray-800 antialiased">
-    
-    <div class="min-h-screen flex flex-row">
+<body class="antialiased text-gray-900">
+
+    <header id="mobile-header" class="bg-white shadow-sm h-16 fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-4">
+        <div class="flex items-center gap-3">
+            <button onclick="toggleSidebar()" class="p-2 -ml-2 rounded-lg text-gray-600 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-fuchsia-100">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+            </button>
+        </div>
+    </header>
+
+    <div id="mobile-overlay" onclick="closeSidebar()" class="fixed inset-0 bg-black/50 z-40 hidden transition-opacity opacity-0"></div>
+
+    <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-gray-200 transform -translate-x-full transition-transform duration-300 ease-in-out flex flex-col h-full shadow-2xl md:shadow-none">
         
-        <aside class="w-64 bg-white border-r border-gray-100 hidden md:flex flex-col fixed h-full z-30 shadow-[4px_0_24px_rgba(0,0,0,0.02)]">
-            <div class="h-24 flex items-center px-8 border-b border-gray-50">
-                <div class="flex items-center gap-2">
-                
-                    <h1 class="text-xl font-extrabold text-fuchsia-600 tracking-tight">Ainin Ar Store</span></h1>
+        <div class="h-16 flex items-center justify-center border-b border-gray-100 shrink-0">
+            <h1 class="text-2xl font-bold tracking-tight text-gray-800">
+                <span class="text-fuchsia-600">Aini Ar Store</span>
+            </h1>
+        </div>
+
+        <nav class="flex-1 overflow-y-auto p-4 space-y-1">
+            
+            <a href="{{ route('admin.dashboard') }}" class="sidebar-menu-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
+                <svg class="sidebar-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
+                Dashboard
+            </a>
+
+            <a href="{{ route('admin.products.index') }}" class="sidebar-menu-link {{ request()->routeIs('admin.products*') ? 'active' : '' }}">
+                <svg class="sidebar-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
+                Produk
+            </a>
+
+            <a href="{{ route('admin.orders.index') }}" class="sidebar-menu-link {{ request()->routeIs('admin.orders*') ? 'active' : '' }}">
+                <svg class="sidebar-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
+                Pesanan
+            </a>
+
+            <a href="{{ Route::has('admin.videos.index') ? route('admin.videos.index') : '#' }}" class="sidebar-menu-link {{ request()->routeIs('admin.videos*') ? 'active' : '' }}">
+                <svg class="sidebar-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                Video Tutorial
+            </a>
+
+            <a href="{{ Route::has('admin.reports.index') ? route('admin.reports.index') : '#' }}" class="sidebar-menu-link {{ request()->routeIs('admin.reports*') ? 'active' : '' }}">
+                <svg class="sidebar-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                Laporan
+            </a>
+
+        </nav>
+
+        <div class="border-t border-gray-200 p-4 bg-gray-50">
+            <div class="flex items-center">
+                <div class="w-9 h-9 rounded-full bg-fuchsia-600 flex items-center justify-center text-white font-bold shrink-0 shadow-md">
+                    {{ substr(Auth::user()->name ?? 'A', 0, 1) }}
+                </div>
+                <div class="ml-3 min-w-0 flex-1">
+                    <p class="text-sm font-semibold text-gray-900 truncate">{{ Auth::user()->name ?? 'Administrator' }}</p>
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <button type="submit" class="text-xs text-red-500 hover:text-red-700 font-medium hover:underline">Log Out</button>
+                    </form>
                 </div>
             </div>
+        </div>
+    </aside>
 
-            <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto no-scrollbar">
-                
-                {{-- Dashboard Link --}}
-                <a href="{{ route('admin.dashboard') }}" class="flex items-center px-4 py-3.5 text-sm font-semibold rounded-2xl transition-all duration-300 group {{ request()->routeIs('admin.dashboard') ? 'bg-fuchsia-600 text-white shadow-lg shadow-teal-200 translate-x-1' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900' }}">
-                    <svg class="w-5 h-5 mr-3 {{ request()->routeIs('admin.dashboard') ? 'text-white' : 'text-gray-400 group-hover:text-teal-500' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
-                    Dashboard
-                </a>
-
-                {{-- Products Link --}}
-                <a href="{{ route('admin.products.index') }}" class="flex items-center px-4 py-3.5 text-sm font-medium rounded-2xl transition-all duration-300 group {{ request()->routeIs('admin.products*') ? 'bg-fuchsia-600 text-white shadow-lg shadow-teal-200 translate-x-1' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900' }}">
-                    <svg class="w-5 h-5 mr-3 {{ request()->routeIs('admin.products*') ? 'text-white' : 'text-gray-400 group-hover:text-teal-500' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
-                    Produk
-                </a>
-
-               {{-- Orders Link (Gaya Teal/White - Sesuai Tema Asli) --}}
-                <a href="{{ route('admin.orders.index') }}" class="flex items-center px-4 py-3.5 text-sm font-medium rounded-2xl transition-all duration-300 group {{ request()->routeIs('admin.orders*') ? 'bg-fuchsia-600 text-white shadow-lg shadow-teal-200 translate-x-1' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900' }}">
-                    <svg class="w-5 h-5 mr-3 {{ request()->routeIs('admin.orders*') ? 'text-white' : 'text-gray-400 group-hover:text-teal-500' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
-                    </svg>
-                    Daftar Pesanan
-                </a>
-
-                {{-- Videos Link --}}
-                <a href="{{ route('admin.videos.index') }}" class="flex items-center px-4 py-3.5 text-sm font-medium rounded-2xl transition-all duration-300 group {{ request()->routeIs('admin.videos*') ? 'bg-fuchsia-600 text-white shadow-lg shadow-teal-200 translate-x-1' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900' }}">
-                    <svg class="w-5 h-5 mr-3 {{ request()->routeIs('admin.videos*') ? 'text-white' : 'text-gray-400 group-hover:text-teal-500' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                    Tutorial Video
-                </a>
-
-                {{-- Laporan Link --}}
-                <a href="{{ route('admin.reports.index') }}" class="flex items-center px-4 py-3.5 text-sm font-medium rounded-2xl transition-all duration-300 group {{ request()->routeIs('admin.reports*') ? 'bg-fuchsia-600 text-white shadow-lg shadow-teal-200 translate-x-1' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900' }}">
-                    <svg class="w-5 h-5 mr-3 {{ request()->routeIs('admin.reports*') ? 'text-white' : 'text-gray-400 group-hover:text-teal-500' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                    Laporan
-                </a>
-            </nav>
-
-            <div class="p-6 border-t border-gray-50 flex flex-col gap-3">
-                {{-- Tombol BARU: Kembali ke Website --}}
-                <a href="{{ route('home') }}" class="flex items-center justify-center w-full px-4 py-3 text-sm font-bold text-teal-700 bg-teal-50 rounded-xl hover:bg-teal-100 transition-colors group">
-                    <svg class="w-5 h-5 mr-2 text-teal-500 group-hover:text-teal-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
-                    Lihat Website
-                </a>
-
-                {{-- Tombol Logout (Tetap Ada) --}}
-                <form method="POST" action="{{ route('logout') }}">
-                    @csrf
-                    <button type="submit" class="flex items-center justify-center w-full px-4 py-3 text-sm font-bold text-red-500 bg-red-50 rounded-xl hover:bg-red-100 transition-colors">
-                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
-                        Logout
-                    </button>
-                </form>
-            </div>
-        </aside>
-
-        <main class="flex-1 md:ml-64 bg-gray-50 min-h-screen relative">
-            
-
-            <div class="p-8">
-                {{ $slot }}
-            </div>
+    <div id="main-content" class="min-h-screen flex flex-col pt-16 md:pt-0 transition-all duration-300">
+        <main class="flex-1 p-4 sm:p-6 lg:p-8">
+            {{ $slot }}
         </main>
-        
     </div>
+
+    <script>
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('mobile-overlay');
+
+        function toggleSidebar() {
+            // Tampilkan Sidebar
+            sidebar.classList.remove('-translate-x-full');
+            // Tampilkan Overlay
+            overlay.classList.remove('hidden');
+            setTimeout(() => { overlay.classList.remove('opacity-0'); }, 10);
+        }
+
+        function closeSidebar() {
+            // Sembunyikan Sidebar
+            sidebar.classList.add('-translate-x-full');
+            // Sembunyikan Overlay
+            overlay.classList.add('opacity-0');
+            setTimeout(() => { overlay.classList.add('hidden'); }, 300);
+        }
+    </script>
+
 </body>
 </html>

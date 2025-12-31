@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Laporan Penjualan - Bugenvil Mart</title>
+    <title>Laporan Penjualan - Ainin Ar Store</title>
     <style>
         body { font-family: sans-serif; font-size: 12px; color: #333; }
         .header { text-align: center; margin-bottom: 20px; border-bottom: 2px solid #d946ef; padding-bottom: 10px; }
@@ -28,7 +28,7 @@
 
     {{-- KOP SURAT --}}
     <div class="header">
-        <h1>Bugenvil Mart</h1>
+        <h1>Ainin Ar Store</h1>
         <p>Laporan Rekapitulasi Penjualan Resmi</p>
     </div>
 
@@ -93,7 +93,7 @@
 
     {{-- FOOTER --}}
     <div class="footer">
-        Dokumen ini digenerate otomatis oleh sistem Bugenvil Mart pada {{ now()->format('Y-m-d H:i:s') }}.
+        Dokumen ini digenerate otomatis oleh sistem Ainin Ar Store pada {{ now()->format('Y-m-d H:i:s') }}.
     </div>
 
 </body>
