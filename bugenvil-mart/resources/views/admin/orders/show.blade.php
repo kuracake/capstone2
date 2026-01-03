@@ -21,14 +21,14 @@
 
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 
-                {{-- KOLOM KIRI: INFO (Biarkan tetap sama) --}}
+                {{-- KOLOM KIRI: INFO (Tidak Berubah) --}}
                 <div class="lg:col-span-2 space-y-6">
                     <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
                         <h3 class="font-bold text-lg text-gray-800 mb-4">Data Pengiriman</h3>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div class="bg-gray-50 p-4 rounded-lg">
                                 <p class="text-xs text-gray-400 uppercase font-bold mb-1">Penerima</p>
-                                <p class="text-gray-800 font-bold text-lg">{{ $order->user->name }}</p>
+                                <p class="text-gray-800 font-bold text-lg">{{ $order->user->name ?? 'User Terhapus' }}</p>
                             </div>
                             <div class="bg-gray-50 p-4 rounded-lg">
                                 <p class="text-xs text-gray-400 uppercase font-bold mb-1">Alamat</p>
@@ -44,90 +44,91 @@
                             <div class="flex items-center gap-4 bg-gray-50 p-3 rounded-lg mb-2">
                                 <div class="font-bold">{{ $item->product_name }}</div>
                                 <div class="text-sm text-gray-500">{{ $item->quantity }} pcs</div>
+                                <div class="ml-auto font-mono text-sm">Rp {{ number_format($item->price, 0, ',', '.') }}</div>
                             </div>
                         @endforeach
+                        <div class="mt-4 pt-4 border-t flex justify-between items-center">
+                            <span class="font-bold text-gray-600">Total Transaksi</span>
+                            <span class="font-bold text-xl text-fuchsia-600">Rp {{ number_format($order->total_price, 0, ',', '.') }}</span>
+                        </div>
                     </div>
                 </div>
 
-                {{-- KOLOM KANAN: STATUS & RESI (LOGIKA PENGUNCI) --}}
+                {{-- KOLOM KANAN: STATUS & RESI (SUDAH DIPERBAIKI) --}}
                 <div class="lg:col-span-1">
-                    
-                    {{-- JIKA RESI SUDAH ADA, KUNCI TAMPILAN --}}
-                    @if($order->resi)
+                    <div class="bg-white rounded-xl shadow-lg border border-fuchsia-100 p-6 sticky top-24">
+                        <h3 class="font-bold text-lg text-gray-800 mb-4 border-b pb-2">Kelola Pesanan</h3>
                         
-                        <div class="bg-green-50 border border-green-200 rounded-xl p-6 sticky top-24 shadow-sm">
-                            <div class="flex items-center gap-3 mb-6">
-                                <div class="bg-green-100 p-2 rounded-full text-green-600">
-                                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                                </div>
-                                <div>
-                                    <h3 class="font-bold text-green-800 text-lg">Tersimpan</h3>
-                                    <p class="text-xs text-green-600">Data resi sudah permanen.</p>
-                                </div>
+                        {{-- Form selalu muncul, tidak peduli sudah ada resi atau belum --}}
+                        <form action="{{ route('admin.orders.update', $order->id) }}" method="POST">
+                            @csrf
+                            @method('PATCH')
+
+                            {{-- Status Dropdown --}}
+                            <div class="mb-4">
+                                <label class="block text-sm font-bold text-gray-600 mb-2">Update Status</label>
+                                <select name="status" id="status" class="w-full border-gray-300 rounded-lg p-2.5 focus:ring-fuchsia-500 focus:border-fuchsia-500 transition" onchange="toggleResi()">
+                                    <option value="pending" {{ $order->status == 'pending' ? 'selected' : '' }}>Pending (Menunggu)</option>
+                                    <option value="packing" {{ $order->status == 'packing' ? 'selected' : '' }}>Packing (Dikemas)</option>
+                                    <option value="shipping" {{ $order->status == 'shipping' ? 'selected' : '' }}>Shipping (Dikirim)</option>
+                                    <option value="completed" {{ $order->status == 'completed' ? 'selected' : '' }}>Completed (Selesai)</option>
+                                    <option value="cancelled" {{ $order->status == 'cancelled' ? 'selected' : '' }}>Cancelled (Batal)</option>
+                                </select>
                             </div>
 
-                            <div class="bg-white p-4 rounded-xl border border-green-100 shadow-sm mb-4">
-                                <p class="text-xs text-gray-400 uppercase font-bold mb-1">Status</p>
-                                <span class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-bold capitalize">
-                                    {{ ucfirst($order->status) }}
-                                </span>
+                            {{-- Resi Input --}}
+                            {{-- Logic class: Jika status shipping/completed ATAU resi sudah ada isinya, maka tampilkan --}}
+                            <div id="resi_field" class="mb-6 {{ ($order->status == 'shipping' || $order->status == 'completed' || !empty($order->resi)) ? '' : 'hidden' }}">
+                                <label class="block text-sm font-bold text-gray-600 mb-2">Nomor Resi / AWB</label>
+                                <input type="text" 
+                                       name="resi" 
+                                       value="{{ old('resi', $order->resi) }}" 
+                                       class="w-full border-gray-300 rounded-lg p-2.5 font-mono text-gray-800 focus:ring-fuchsia-500 focus:border-fuchsia-500" 
+                                       placeholder="Masukkan Nomor Resi">
+                                <p class="text-xs text-gray-400 mt-1">Isi nomor resi jika barang sudah dikirim.</p>
                             </div>
 
-                            <div class="bg-white p-4 rounded-xl border border-green-100 shadow-sm">
-                                <p class="text-xs text-gray-400 uppercase font-bold mb-1">Nomor Resi</p>
-                                <p class="text-gray-800 font-mono text-xl font-bold tracking-wider">{{ $order->resi }}</p>
+                            <button type="submit" class="w-full bg-fuchsia-600 text-white font-bold py-3 rounded-lg hover:bg-fuchsia-700 transition shadow-lg shadow-fuchsia-200">
+                                Simpan Perubahan
+                            </button>
+                        </form>
+
+                        {{-- Info Tambahan (Opsional) --}}
+                        @if($order->resi)
+                            <div class="mt-6 pt-4 border-t border-gray-100">
+                                <p class="text-xs text-gray-400 mb-1">Resi Terakhir Disimpan:</p>
+                                <p class="font-mono font-bold text-gray-600 bg-gray-50 p-2 rounded text-center">{{ $order->resi }}</p>
                             </div>
-                        </div>
-
-                    {{-- JIKA RESI KOSONG, TAMPILKAN FORM --}}
-                    @else
-                        
-                        <div class="bg-white rounded-xl shadow-lg border border-fuchsia-100 p-6 sticky top-24">
-                            <h3 class="font-bold text-lg text-gray-800 mb-4 border-b pb-2">Proses Pesanan</h3>
-                            
-                            <form action="{{ route('admin.orders.update', $order->id) }}" method="POST">
-                                @csrf
-                                @method('PATCH')
-
-                                <div class="mb-4">
-                                    <label class="block text-sm font-bold text-gray-600 mb-2">Update Status</label>
-                                    <select name="status" id="status" class="w-full border-gray-300 rounded-lg p-2.5" onchange="toggleResi()">
-                                        <option value="pending" {{ $order->status == 'pending' ? 'selected' : '' }}>Pending</option>
-                                        <option value="packing" {{ $order->status == 'packing' ? 'selected' : '' }}>Packing</option>
-                                        <option value="shipping" {{ $order->status == 'shipping' ? 'selected' : '' }}>Shipping</option>
-                                        <option value="completed" {{ $order->status == 'completed' ? 'selected' : '' }}>Completed</option>
-                                        <option value="cancelled" {{ $order->status == 'cancelled' ? 'selected' : '' }}>Cancelled</option>
-                                    </select>
-                                </div>
-
-                                <div id="resi_field" class="mb-6 {{ ($order->status == 'shipping' || $order->status == 'completed') ? '' : 'hidden' }}">
-                                    <label class="block text-sm font-bold text-gray-600 mb-2">Nomor Resi / AWB</label>
-                                    <input type="text" name="resi" class="w-full border-gray-300 rounded-lg p-2.5 font-mono" placeholder="Contoh: JP1234567890">
-                                    <p class="text-xs text-gray-400 mt-1">Pastikan benar, tidak bisa diedit setelah disimpan.</p>
-                                </div>
-
-                                <button type="submit" class="w-full bg-fuchsia-600 text-white font-bold py-3 rounded-lg hover:bg-fuchsia-700 transition" onclick="return confirm('Yakin simpan resi? Data tidak bisa diubah lagi.')">
-                                    Simpan Permanen
-                                </button>
-                            </form>
-                        </div>
-
-                    @endif
+                        @endif
+                    </div>
                 </div>
 
             </div>
         </div>
     </div>
 
+    {{-- Script untuk Handle Tampilan Input Resi --}}
     <script>
         function toggleResi() {
             const status = document.getElementById('status').value;
             const resiField = document.getElementById('resi_field');
+            
+            // Tampilkan field resi jika status Shipping atau Completed
             if (status === 'shipping' || status === 'completed') {
                 resiField.classList.remove('hidden');
             } else {
-                resiField.classList.add('hidden');
+                // Opsional: Sembunyikan jika status kembali ke pending/packing
+                // Tapi jika sudah ada isinya, sebaiknya biarkan saja user menghapusnya manual jika mau
+                // resiField.classList.add('hidden'); 
+                
+                // Jika ingin strict (hidden kalau bukan shipping):
+                 resiField.classList.add('hidden');
             }
         }
+        
+        // Jalankan saat halaman dimuat (agar field tidak hilang saat refresh jika status sudah shipping)
+        document.addEventListener('DOMContentLoaded', function() {
+            toggleResi();
+        });
     </script>
 </x-app-layout>
