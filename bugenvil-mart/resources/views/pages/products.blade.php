@@ -71,91 +71,48 @@
                 </div>
             @else
                 {{-- Grid Responsif --}}
-                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6 lg:gap-8">
+                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
                     @foreach($products as $product)
-                    <div class="bg-white rounded-xl md:rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 flex flex-col h-full group overflow-hidden">
+                    <div class="bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 border border-gray-100 flex flex-col h-full group overflow-hidden">
                         
                         {{-- Gambar Produk --}}
                         <a href="{{ route('products.show', $product->id) }}" class="relative aspect-square overflow-hidden block bg-gray-100">
                             @if($product->image)
-                                <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}" class="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700">
+                                <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}" class="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500">
                             @else
                                 <div class="w-full h-full flex items-center justify-center text-gray-300 text-xs md:text-sm">No Image</div>
                             @endif
                             
                             {{-- Badge Stok --}}
-                            <div class="absolute top-2 right-2 md:top-3 md:right-3">
-                                <span class="bg-black/95 backdrop-blur px-2 py-0.5 md:px-3 md:py-1 rounded-full text-[10px] md:text-xs font-bold text-white shadow-sm uppercase tracking-wide">
+                            <div class="absolute top-2 right-2">
+                                <span class="bg-black/80 backdrop-blur px-2 py-0.5 rounded text-[10px] font-bold text-white shadow-sm uppercase tracking-wide">
                                     Stok: {{ $product->stock }}
                                 </span>
                             </div>
                         </a>
 
-                        {{-- Info Produk --}}
-                        <div class="p-3 md:p-5 flex flex-col flex-grow">
+                        {{-- Info Produk (Compact Layout) --}}
+                        <div class="p-3 md:p-4 flex flex-col flex-grow">
                             {{-- Judul Produk --}}
-                            <h3 class="text-sm md:text-lg font-bold text-gray-900 mb-1.5 font-serif group-hover:text-fuchsia-700 transition-colors line-clamp-2 leading-tight">
+                            <h3 class="text-sm font-bold text-gray-900 mb-1 leading-tight line-clamp-2 group-hover:text-fuchsia-700 transition-colors">
                                 <a href="{{ route('products.show', $product->id) }}">{{ $product->name }}</a>
                             </h3>
 
-                            {{-- === RATING & TERJUAL (BARU) === --}}
-                            <div class="flex items-center gap-1.5 text-[11px] md:text-xs mb-3">
-                                {{-- Bintang & Rating --}}
-                                <div class="flex items-center text-yellow-500 font-bold">
-                                    <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 20 20">
-                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
-                                    </svg>
-                                    <span class="ml-0.5">{{ number_format($product->reviews_avg_rating ?? 0, 1) }}</span>
-                                </div>
-                                
-                                {{-- Jumlah Ulasan --}}
-                                <span class="text-gray-400">({{ $product->reviews_count }})</span>
-
-                                {{-- Divider --}}
-                                <span class="text-gray-300">|</span>
-
-                                {{-- Terjual --}}
-                                <span class="text-gray-500">Terjual {{ $product->order_items_sum_quantity ?? 0 }}</span>
+                            {{-- Rating & Terjual --}}
+                            <div class="flex items-center gap-1 text-[10px] md:text-xs text-gray-500 mb-2">
+                                <svg class="w-3 h-3 text-yellow-400 fill-current" viewBox="0 0 20 20">
+                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                                </svg>
+                                <span class="font-bold text-gray-700">{{ number_format($product->reviews_avg_rating ?? 0, 1) }}</span>
+                                <span class="mx-1">•</span>
+                                <span>Terjual {{ $product->order_items_sum_quantity ?? 0 }}</span>
                             </div>
                             
-                            {{-- Deskripsi (Desktop Only) --}}
-                            <p class="hidden md:block text-gray-500 text-xs mb-4 line-clamp-2 leading-relaxed flex-grow">
-                                {{ $product->description }}
-                            </p>
-                            
-                            {{-- AREA HARGA & TOMBOL --}}
-                            <div class="mt-auto pt-2 md:pt-4 md:border-t md:border-gray-50">
-                                
-                                {{-- Harga --}}
-                                <div class="mb-3">
-                                    <span class="text-base md:text-lg font-bold text-fuchsia-600">
-                                        Rp {{ number_format($product->price, 0, ',', '.') }}
-                                    </span>
-                                </div>
-
-                                {{-- Baris Tombol --}}
-                                <div class="flex items-center gap-2 w-full">
-                                    
-                                    {{-- 1. Tombol Keranjang --}}
-                                    <form action="{{ route('cart.add', $product->id) }}" method="POST" class="shrink-0">
-                                        @csrf
-                                        <button type="submit" class="w-10 h-10 rounded-lg bg-fuchsia-50 text-fuchsia-600 border border-fuchsia-100 flex items-center justify-center hover:bg-fuchsia-600 hover:text-white transition-all shadow-sm" title="Tambah ke Keranjang">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 00-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-                                            </svg>
-                                        </button>
-                                    </form>
-
-                                    {{-- 2. Tombol Beli Langsung --}}
-                                    <form action="{{ route('cart.add', $product->id) }}" method="POST" class="flex-grow">
-                                        @csrf
-                                        <input type="hidden" name="redirect_checkout" value="1">
-                                        <button type="submit" class="w-full h-10 rounded-lg bg-fuchsia-600 text-white font-bold text-xs md:text-sm hover:bg-fuchsia-700 transition-all shadow-md active:scale-95">
-                                            Beli Sekarang
-                                        </button>
-                                    </form>
-
-                                </div>
+                            {{-- Harga (Langsung dibawah info, tanpa tombol, tanpa link text) --}}
+                            <div class="mt-auto pt-1">
+                                <span class="text-base font-bold text-fuchsia-600">
+                                    Rp {{ number_format($product->price, 0, ',', '.') }}
+                                </span>
                             </div>
                         </div>
                     </div>
@@ -163,7 +120,7 @@
                 </div>
                 
                 {{-- Pagination --}}
-                <div class="mt-12 md:mt-16">
+                <div class="mt-10 md:mt-14">
                     {{ $products->links() }}
                 </div>
             @endif
