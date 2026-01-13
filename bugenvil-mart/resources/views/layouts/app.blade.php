@@ -250,12 +250,12 @@
         {{ $slot }}
     </main>
 
-    {{-- FOOTER YANG DIPERBAIKI --}}
+    {{-- FOOTER --}}
     <footer class="bg-gray-900 text-white pt-16 pb-8 mt-20 border-t-4 border-fuchsia-600">
         <div class="container mx-auto px-6">
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
                 
-                {{-- KOLOM 1: BRAND (Ainin Ar Store) --}}
+                {{-- KOLOM 1: BRAND --}}
                 <div class="space-y-4">
                     <h2 class="text-3xl font-bold font-serif text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-purple-400">
                         Ainin Ar Store
@@ -265,7 +265,7 @@
                     </p>
                 </div>
 
-                {{-- KOLOM 2: JELAJAHI (Update: Tanpa Panah & Ada Kontak) --}}
+                {{-- KOLOM 2: JELAJAHI --}}
                 <div>
                     <h4 class="font-bold text-lg mb-6 text-white border-b border-gray-700 pb-2 inline-block">Jelajahi</h4>
                     <ul class="space-y-3 text-gray-400 text-sm">
@@ -276,10 +276,10 @@
                     </ul>
                 </div>
 
-                {{-- KOLOM 3: KONTAK --}}
+                {{-- KOLOM 3: KONTAK & SOSIAL MEDIA --}}
                 <div>
                     <h4 class="font-bold text-lg mb-6 text-white border-b border-gray-700 pb-2 inline-block">Hubungi Kami</h4>
-                    <ul class="space-y-4 text-gray-400 text-sm">
+                    <ul class="space-y-4 text-gray-400 text-sm mb-6">
                         <li class="flex items-start gap-3">
                             <svg class="w-5 h-5 text-fuchsia-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
                             <span>Jl. Nasional III No.22,<br>Tulungagung, Jawa Timur</span>
@@ -289,6 +289,29 @@
                             <span>halo@aininarstore.com</span>
                         </li>
                     </ul>
+
+                    {{-- SOSIAL MEDIA ICONS (FIXED - INLINE STYLE) --}}
+                    <h5 class="font-bold text-sm text-white mb-3 uppercase tracking-wider">Ikuti Kami</h5>
+                    <div style="display: flex; gap: 1rem;">
+                        
+                        {{-- TikTok Button --}}
+                        <a href="https://www.tiktok.com/@ainin.arstore" target="_blank" 
+                           style="width: 40px; height: 40px; background-color: #ffffff; color: #000000; display: flex; align-items: center; justify-content: center; border-radius: 50%; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: transform 0.2s;"
+                           onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
+                            <svg style="width: 20px; height: 20px;" fill="currentColor" viewBox="0 0 448 512">
+                                <path d="M448,209.91a210.06,210.06,0,0,1-122.77-39.25V349.38A162.55,162.55,0,1,1,185,188.31V278.2a74.62,74.62,0,1,0,52.23,71.18V0l88,0a121.18,121.18,0,0,0,1.86,22.17h0A122.18,122.18,0,0,0,381,102.39a121.43,121.43,0,0,0,67,20.14Z"/>
+                            </svg>
+                        </a>
+                        
+                        {{-- Shopee Button (FIXED LOGO PATH - Bag with 'S') --}}
+                        <a href="https://shopee.co.id/ainin.arstore" target="_blank" 
+                           style="width: 40px; height: 40px; background-color: #ffffff; color: #ee4d2d; display: flex; align-items: center; justify-content: center; border-radius: 50%; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: transform 0.2s;"
+                           onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
+                            <svg style="width: 24px; height: 24px;" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M21.2 6.5C19.6 4.7 17.6 3.8 15.4 3.6L16.9 1C17.2 0.4 17 0.3 16.4 0C15.8 0.3 15.7 0.5 15.4 1.1L14 3.7C12.7 3.6 11.3 3.6 10 3.7L8.6 1.1C8.3 0.5 8.2 0.3 7.6 0C7 0.3 6.8 0.4 7.1 1L8.6 3.6C6.4 3.8 4.4 4.7 2.8 6.5C0.9 8.7 0 11.3 0 13.9V16.4C0 18.4 1.6 20 3.6 20H20.4C22.4 20 24 18.4 24 16.4V13.9C24 11.3 23.1 8.7 21.2 6.5ZM11.2 13.6C11.2 13.9 11.3 14.1 11.7 14.3C12 14.5 12.5 14.6 13 14.5C13.5 14.4 14.1 14.1 14.1 13.5C14.1 13.1 13.9 12.8 13.4 12.6C12.9 12.4 12.3 12.2 11.8 12C11.1 11.8 10.5 11.5 10.1 11C9.7 10.5 9.6 9.9 9.7 9.3C9.9 8.3 10.6 7.6 11.7 7.3C12.7 7 13.8 7.2 14.7 7.7C15 7.9 15.1 8.2 15 8.5C14.9 8.8 14.6 9 14.3 9C14.2 9 14.2 9 14.1 8.9C13.4 8.5 12.6 8.3 11.9 8.5C11.4 8.6 11 8.9 11 9.4C11 9.7 11.2 10 11.6 10.2C12.1 10.4 12.7 10.6 13.2 10.8C14 11.1 14.6 11.4 15 11.9C15.4 12.4 15.5 13 15.4 13.6C15.2 14.7 14.4 15.4 13.3 15.7C12.3 15.9 11.2 15.8 10.3 15.3C10 15.1 9.9 14.8 10 14.5C10.1 14.2 10.4 14 10.7 14C10.8 14 10.8 14 10.9 14.1C11 14.1 11.1 14.2 11.2 13.6Z"/>
+                            </svg>
+                        </a>
+                    </div>
                 </div>
 
                 {{-- KOLOM 4: JAM OPERASIONAL --}}

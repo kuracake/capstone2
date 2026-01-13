@@ -1,7 +1,6 @@
 <x-app-layout>
 
-    {{-- HERO SECTION (MODIFIKASI UTAMA) --}}
-    {{-- Ubah h-[800px] jadi h-[600px] untuk HP dan h-screen untuk Desktop --}}
+    {{-- HERO SECTION --}}
     <div class="relative w-full h-[600px] md:h-screen flex items-center justify-center overflow-hidden">
         
         {{-- Background Image --}}
@@ -14,18 +13,14 @@
         
         {{-- Content --}}
         <div class="relative z-20 container mx-auto px-6 text-center text-white mt-8 md:mt-0">
-            
-            {{-- JUDUL: Responsive Text (4xl di HP, 7xl di Desktop) --}}
             <h1 class="text-4xl sm:text-5xl md:text-7xl font-bold serif mb-4 md:mb-6 drop-shadow-lg leading-tight">
                 Bawa Keindahan Alam <br class="hidden md:block"> Ke Taman Anda
             </h1>
             
-            {{-- SUBJUDUL: Responsive Text (Base di HP, XL di Desktop) --}}
             <p class="text-base sm:text-lg md:text-xl text-gray-100 mb-8 md:mb-10 max-w-2xl mx-auto font-light leading-relaxed drop-shadow-md px-2">
                 Temukan koleksi premium bunga Bugenvil kami. Warna cerah, tanaman sehat, dikirim langsung ke depan pintu rumah Anda.
             </p>
             
-            {{-- TOMBOL: Padding Responsive --}}
             <a href="#products" class="inline-block bg-fuchsia-600 hover:bg-fuchsia-700 text-white font-bold py-3 px-8 md:py-4 md:px-12 rounded-full shadow-xl transition transform hover:scale-105 hover:shadow-2xl">
                 Belanja Sekarang
             </a>
@@ -76,41 +71,43 @@
                 <p class="text-gray-600 text-base md:text-lg">Jelajahi varietas Bugenvil paling populer kami</p>
             </div>
 
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-10">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8">
                 @foreach($products as $product)
-                <div class="bg-white rounded-3xl shadow-lg hover:shadow-xl transition overflow-hidden group border border-purple-50 flex flex-col h-full">
-                    <div class="relative h-40 md:h-64 bg-gray-200 flex-shrink-0 cursor-pointer">
+                <div class="bg-white rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 flex flex-col h-full group overflow-hidden">
+                    
+                    {{-- Gambar Produk --}}
+                    <div class="relative aspect-square overflow-hidden bg-gray-100">
                         <a href="{{ route('products.show', $product->id) }}" class="block w-full h-full">
                             @php
                                 $badges = ['Paling Laris', 'Tersedia', 'Baru', 'Favorit'];
                                 $badge = $badges[array_rand($badges)];
                                 $color = $badge == 'Paling Laris' ? 'bg-fuchsia-500' : ($badge == 'Tersedia' ? 'bg-green-500' : 'bg-orange-500');
                             @endphp
-                            <span class="absolute top-2 right-2 md:top-4 md:right-4 {{ $color }} text-white text-[10px] md:text-xs font-bold px-2 py-1 md:px-3 md:py-1 rounded-full z-10">{{ $badge }}</span>
+                            {{-- Badge --}}
+                            <span class="absolute top-2 right-2 {{ $color }} text-white text-[10px] font-bold px-2 py-1 rounded-full z-10 shadow-sm uppercase tracking-wide">{{ $badge }}</span>
+                            
+                            {{-- Image --}}
                             <img src="{{ $product->image ? asset('storage/' . $product->image) : 'https://source.unsplash.com/random/400x400?bougainvillea,flower&sig='.$product->id }}"
-                                 class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                                 class="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700">
                         </a>
                     </div>
-                    <div class="p-4 md:p-6 flex flex-col flex-grow">
+
+                    {{-- Info Produk --}}
+                    <div class="p-4 flex flex-col flex-grow">
                         <a href="{{ route('products.show', $product->id) }}" class="hover:text-fuchsia-600 transition">
-                            <h3 class="font-bold text-sm md:text-lg text-gray-800 mb-1 serif line-clamp-2">{{ $product->name }}</h3>
+                            <h3 class="font-bold text-sm md:text-lg text-gray-900 mb-1 serif line-clamp-2 leading-tight">{{ $product->name }}</h3>
                         </a>
-                        <div class="hidden md:flex text-yellow-400 text-xs mb-3">
+                        
+                        {{-- Rating --}}
+                        <div class="flex items-center gap-1 text-yellow-400 text-xs mb-3">
                             ★★★★★ <span class="text-gray-400 ml-1">({{ rand(20, 100) }})</span>
                         </div>
-                        <div class="flex flex-col md:flex-row items-start md:items-center justify-between mt-auto pt-2 md:pt-4 border-t border-gray-100 gap-2">
-                            <span class="text-sm md:text-xl font-bold text-fuchsia-600">Rp {{ number_format($product->price, 0, ',', '.') }}</span>
-                            @if(!Auth::check() || (Auth::check() && !Auth::user()->is_admin))
-                                <form action="{{ route('cart.add', $product->id) }}" method="POST" class="w-full md:w-auto">
-                                    @csrf
-                                    <button type="submit" class="w-full md:w-auto bg-purple-100 text-purple-600 p-2 md:p-3 rounded-full hover:bg-fuchsia-500 hover:text-white transition shadow-sm flex justify-center items-center">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 md:h-5 md:w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-                                        </svg>
-                                        <span class="md:hidden ml-1 text-xs font-bold">Beli</span>
-                                    </button>
-                                </form>
-                            @endif
+
+                        {{-- Harga (CLEAN LAYOUT - Tanpa Tombol) --}}
+                        <div class="mt-auto pt-3 border-t border-gray-50">
+                            <span class="text-base md:text-xl font-bold text-fuchsia-600 block">
+                                Rp {{ number_format($product->price, 0, ',', '.') }}
+                            </span>
                         </div>
                     </div>
                 </div>
@@ -118,7 +115,7 @@
             </div>
 
             <div class="text-center mt-12 md:mt-16">
-                 <a href="{{ route('products.index') }}" class="inline-block bg-fuchsia-500 hover:bg-fuchsia-600 text-white font-bold py-3 px-10 rounded-full shadow-lg transition">Lihat Semua Produk</a>
+                 <a href="{{ route('products.index') }}" class="inline-block bg-fuchsia-500 hover:bg-fuchsia-600 text-white font-bold py-3 px-10 rounded-full shadow-lg transition transform hover:scale-105">Lihat Semua Produk</a>
             </div>
         </div>
     </div>
