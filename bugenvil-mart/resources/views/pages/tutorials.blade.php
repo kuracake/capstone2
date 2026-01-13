@@ -7,7 +7,7 @@
         
         <div class="container mx-auto px-6 text-center relative z-10">
             <h1 class="text-3xl md:text-5xl font-bold text-white mb-4 font-serif tracking-wide">
-                Pusat Belajar
+                Video Tutorial
             </h1>
             <p class="text-fuchsia-100 max-w-2xl mx-auto text-base md:text-lg font-light leading-relaxed">
                 Kumpulan video panduan perawatan Bougenville untuk hasil terbaik.

@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>{{ config('app.name', 'Bugenvil Mart') }} - Admin</title>
+    <title>{{ config('app.name', 'Ainin Ar Store') }} - Admin</title>
 
     {{-- Fonts --}}
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -86,7 +86,7 @@
         
         <div class="h-16 flex items-center justify-center border-b border-gray-100 shrink-0">
             <h1 class="text-2xl font-bold tracking-tight text-gray-800 font-serif">
-                <span class="text-fuchsia-600">Bugenvil</span>Mart
+                <span class="text-fuchsia-600">Ainin Ar Store</span>
             </h1>
         </div>
 

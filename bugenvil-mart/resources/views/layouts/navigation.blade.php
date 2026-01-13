@@ -4,7 +4,7 @@
             <div class="flex">
                 <div class="shrink-0 flex items-center">
                     <a href="{{ route('dashboard') }}" class="font-bold text-xl tracking-tight">
-                        <span class="text-fuchsia-600">Bugenvil</span>Mart
+                        <span class="text-fuchsia-600">Ainin Ar Store</span>
                     </a>
                 </div>
 
