@@ -21,7 +21,7 @@
                 Temukan koleksi premium bunga Bugenvil kami. Warna cerah, tanaman sehat, dikirim langsung ke depan pintu rumah Anda.
             </p>
             
-            <a href="#products" class="inline-block bg-fuchsia-600 hover:bg-fuchsia-700 text-white font-bold py-3 px-8 md:py-4 md:px-12 rounded-full shadow-xl transition transform hover:scale-105 hover:shadow-2xl">
+            <a href="{{ route('products.index') }}" class="inline-block bg-fuchsia-600 hover:bg-fuchsia-700 text-white font-bold py-3 px-8 md:py-4 md:px-12 rounded-full shadow-xl transition transform hover:scale-105 hover:shadow-2xl">
                 Belanja Sekarang
             </a>
         </div>
@@ -71,24 +71,45 @@
                 <p class="text-gray-600 text-base md:text-lg">Jelajahi varietas Bugenvil paling populer kami</p>
             </div>
 
+            {{-- Grid Produk --}}
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8">
                 @foreach($products as $product)
-                <div class="bg-white rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 flex flex-col h-full group overflow-hidden">
+                <div class="bg-white rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 flex flex-col h-full group overflow-hidden relative">
                     
                     {{-- Gambar Produk --}}
                     <div class="relative aspect-square overflow-hidden bg-gray-100">
-                        <a href="{{ route('products.show', $product->id) }}" class="block w-full h-full">
-                            @php
-                                $badges = ['Paling Laris', 'Tersedia', 'Baru', 'Favorit'];
-                                $badge = $badges[array_rand($badges)];
-                                $color = $badge == 'Paling Laris' ? 'bg-fuchsia-500' : ($badge == 'Tersedia' ? 'bg-green-500' : 'bg-orange-500');
-                            @endphp
-                            {{-- Badge --}}
-                            <span class="absolute top-2 right-2 {{ $color }} text-white text-[10px] font-bold px-2 py-1 rounded-full z-10 shadow-sm uppercase tracking-wide">{{ $badge }}</span>
+                        <a href="{{ route('products.show', $product->id) }}" class="block w-full h-full relative">
+                            
+                            {{-- LOGIKA BADGE "PALING LARIS" (REAL DATA) --}}
+                            {{-- Z-Index 20 agar di atas overlay --}}
+                            <div class="absolute top-2 right-2 flex flex-col items-end gap-1 z-20">
+                                {{-- 1. Badge Stok Habis --}}
+                                @if($product->stock == 0)
+                                    <span class="bg-gray-800 text-white text-[10px] font-bold px-2 py-1 rounded-full shadow-sm uppercase tracking-wide">
+                                        Stok Habis
+                                    </span>
+                                {{-- 2. Badge Segera Habis (Jika stok < 5) --}}
+                                @elseif($product->stock <= 5)
+                                    <span class="bg-red-500 text-white text-[10px] font-bold px-2 py-1 rounded-full shadow-sm uppercase tracking-wide animate-pulse">
+                                        Segera Habis
+                                    </span>
+                                @endif
+
+                                {{-- 3. Badge Paling Laris (Jika terjual > 0) --}}
+                                @if(($product->order_items_sum_quantity ?? 0) > 0)
+                                    <span class="bg-amber-400 text-white text-[10px] font-bold px-2 py-1 rounded-full shadow-sm uppercase tracking-wide flex items-center gap-1">
+                                        <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                                        Paling Laris
+                                    </span>
+                                @endif
+                            </div>
                             
                             {{-- Image --}}
                             <img src="{{ $product->image ? asset('storage/' . $product->image) : 'https://source.unsplash.com/random/400x400?bougainvillea,flower&sig='.$product->id }}"
-                                 class="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700">
+                                 class="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700 z-0">
+                            
+                            {{-- OVERLAY GRADIENT (Seperti Halaman Produk) --}}
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10"></div>
                         </a>
                     </div>
 
@@ -98,16 +119,23 @@
                             <h3 class="font-bold text-sm md:text-lg text-gray-900 mb-1 serif line-clamp-2 leading-tight">{{ $product->name }}</h3>
                         </a>
                         
-                        {{-- Rating --}}
+                        {{-- Rating (Data Nyata) --}}
                         <div class="flex items-center gap-1 text-yellow-400 text-xs mb-3">
-                            ★★★★★ <span class="text-gray-400 ml-1">({{ rand(20, 100) }})</span>
+                            @php $rating = round($product->reviews_avg_rating ?? 0); @endphp
+                            @for($i=0; $i<5; $i++)
+                                <svg class="w-3 h-3 {{ $i < $rating ? 'fill-current' : 'text-gray-300 fill-current' }}" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                            @endfor
+                            <span class="text-gray-400 ml-1">({{ $product->reviews_count ?? 0 }})</span>
                         </div>
 
-                        {{-- Harga (CLEAN LAYOUT - Tanpa Tombol) --}}
-                        <div class="mt-auto pt-3 border-t border-gray-50">
+                        {{-- Harga --}}
+                        <div class="mt-auto pt-3 border-t border-gray-50 flex justify-between items-center">
                             <span class="text-base md:text-xl font-bold text-fuchsia-600 block">
                                 Rp {{ number_format($product->price, 0, ',', '.') }}
                             </span>
+                            @if(($product->order_items_sum_quantity ?? 0) > 0)
+                                <span class="text-[10px] text-gray-500">{{ $product->order_items_sum_quantity }} Terjual</span>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -132,7 +160,19 @@
                 @foreach($videos as $video)
                 <div class="bg-white rounded-3xl shadow-lg hover:shadow-xl transition overflow-hidden group border border-purple-50 flex flex-col h-full">
                     
-                    <div class="relative h-48 md:h-64 bg-black flex-shrink-0">
+                    {{-- Container Video dengan Overlay Play Button --}}
+                    <div class="relative h-48 md:h-64 bg-black flex-shrink-0 cursor-pointer" onclick="playVideo(this)">
+                        
+                        {{-- Overlay Play Button (Akan hilang saat diklik) --}}
+                        <div class="absolute inset-0 flex items-center justify-center bg-black/30 group-hover:bg-black/40 transition z-10 play-overlay">
+                            <div class="w-14 h-14 bg-white/90 rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                                <svg class="w-6 h-6 text-fuchsia-600 ml-1" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M8 5v14l11-7z"/>
+                                </svg>
+                            </div>
+                        </div>
+
+                        {{-- Video Element --}}
                         <video 
                             class="w-full h-full object-cover" 
                             controls 
@@ -170,8 +210,29 @@
         </div>
     </section>
 
-    {{-- LAYANAN PENGADUAN & UPLOAD BUKTI (Script) --}}
+    {{-- SCRIPTS --}}
     <script>
+        function playVideo(element) {
+            const video = element.querySelector('video');
+            const overlay = element.querySelector('.play-overlay');
+            
+            if (video.paused) {
+                document.querySelectorAll('video').forEach(v => {
+                    if(v !== video) v.pause();
+                });
+                
+                document.querySelectorAll('.play-overlay').forEach(o => {
+                    if(o !== overlay) o.classList.remove('hidden');
+                });
+
+                video.play();
+                overlay.classList.add('hidden'); 
+            } else {
+                video.pause();
+                overlay.classList.remove('hidden'); 
+            }
+        }
+
         function openGallery() {
             const input = document.getElementById('evidenceInput');
             input.removeAttribute('capture'); 

@@ -6,9 +6,16 @@ use App\Models\VideoTutorial;
 
 class HomeController extends Controller {
     public function index() {
-        // Ambil semua produk dan video untuk ditampilkan di Homepage
-        $products = Product::take(4)->get();
+        // PERBAIKAN: Tambahkan withSum, withAvg, dan withCount
+        // Agar data terjual & rating tersedia di Halaman Beranda
+        $products = Product::withSum('orderItems', 'quantity') // Hitung total terjual
+                           ->withAvg('reviews', 'rating')      // Hitung rata-rata bintang
+                           ->withCount('reviews')              // Hitung jumlah ulasan
+                           ->take(8) // Tampilkan 8 produk (bukan 4, agar grid lebih penuh)
+                           ->get();
+
         $videos = VideoTutorial::take(4)->get();
+        
         return view('welcome', compact('products', 'videos'));
     }
 }
